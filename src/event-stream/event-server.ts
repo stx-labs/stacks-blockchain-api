@@ -22,7 +22,7 @@ import {
   DataStoreTxEventData,
   DbMicroblock,
   DataStoreAttachmentData,
-  DbPoxSyntheticEvent,
+  DbPox4SyntheticEvent,
   DbTxStatus,
   DbPoxSetSigners,
   DbBurnBlockPoxTx,
@@ -36,7 +36,12 @@ import {
   isPoxPrintEvent,
   newCoreNoreBlockEventCounts,
 } from './reader.js';
-import { decodeClarityValue, decodeTransaction, TxPayloadTypeID } from '@stacks/codec';
+import {
+  decodeClarityValue,
+  decodePoxSyntheticEvent,
+  decodeTransaction,
+  TxPayloadTypeID,
+} from '@stacks/codec';
 import type { ClarityValueBuffer, ClarityValueStringAscii, ClarityValueTuple } from '@stacks/codec';
 import { BnsContractIdentifier } from './bns/bns-constants.js';
 import {
@@ -51,10 +56,9 @@ import {
   getTxDbStatus,
 } from '../datastore/helpers.js';
 import { handleBnsImport } from '../import-v1/index.js';
-import { decodePoxSyntheticPrintEvent } from './pox-event-parsing.js';
 import { hexToBuffer, isProdEnv, logger, PINO_LOGGER_CONFIG, stopwatch } from '@stacks/api-toolkit';
 import { ENV } from '../env.js';
-import { POX_2_CONTRACT_NAME, POX_3_CONTRACT_NAME, POX_4_CONTRACT_NAME } from '../pox-helpers.js';
+import { POX_2_CONTRACT_NAME, POX_3_CONTRACT_NAME, POX_4_CONTRACT_NAME } from './pox-constants.js';
 import {
   DropMempoolTxMessage,
   NewBlockEvent,
@@ -277,6 +281,7 @@ function parseDataStoreTxEventData(
       pox2Events: [],
       pox3Events: [],
       pox4Events: [],
+      pox5Events: [],
     };
     switch (tx.parsed_tx.payload.type_id) {
       case TxPayloadTypeID.VersionedSmartContract:
@@ -313,7 +318,7 @@ function parseDataStoreTxEventData(
     return dbTx;
   });
 
-  const poxEventLogs: Map<DbPoxSyntheticEvent, DbSmartContractEvent> = new Map();
+  const poxEventLogs: Map<DbPox4SyntheticEvent, DbSmartContractEvent> = new Map();
 
   for (const event of events) {
     if (!event.committed) {
@@ -364,39 +369,37 @@ function parseDataStoreTxEventData(
         dbTx.contractLogEvents.push(entry);
 
         if (isPoxPrintEvent(event)) {
-          const network = getChainIDNetwork(chainId) === 'mainnet' ? 'mainnet' : 'testnet';
+          const network = getChainIDNetwork(chainId);
           const [, contractName] = event.contract_event.contract_identifier.split('.');
-          // pox-1 is handled in custom node events
-          const processSyntheticEvent = [
-            POX_2_CONTRACT_NAME,
-            POX_3_CONTRACT_NAME,
-            POX_4_CONTRACT_NAME,
-          ].includes(contractName);
-          if (processSyntheticEvent) {
-            const poxEventData = decodePoxSyntheticPrintEvent(
-              event.contract_event.raw_value,
-              network
-            );
-            if (poxEventData !== null) {
-              logger.debug(`Synthetic pox event data for ${contractName}:`, poxEventData);
-              const dbPoxEvent: DbPoxSyntheticEvent = {
-                ...dbEvent,
-                ...poxEventData,
-              };
-              poxEventLogs.set(dbPoxEvent, entry);
-              switch (contractName) {
-                case POX_2_CONTRACT_NAME: {
-                  dbTx.pox2Events.push(dbPoxEvent);
-                  break;
+          const poxEvent = decodePoxSyntheticEvent(event.contract_event.raw_value, network);
+          if (poxEvent) {
+            logger.debug(`Decoded pox event for ${contractName}:`, poxEvent);
+            switch (poxEvent.pox_version) {
+              case 'pox4': {
+                const dbPoxEvent: DbPox4SyntheticEvent = {
+                  ...dbEvent,
+                  ...poxEvent,
+                };
+                poxEventLogs.set(dbPoxEvent, entry);
+                switch (contractName) {
+                  case POX_2_CONTRACT_NAME: {
+                    dbTx.pox2Events.push(dbPoxEvent);
+                    break;
+                  }
+                  case POX_3_CONTRACT_NAME: {
+                    dbTx.pox3Events.push(dbPoxEvent);
+                    break;
+                  }
+                  case POX_4_CONTRACT_NAME: {
+                    dbTx.pox4Events.push(dbPoxEvent);
+                    break;
+                  }
                 }
-                case POX_3_CONTRACT_NAME: {
-                  dbTx.pox3Events.push(dbPoxEvent);
-                  break;
-                }
-                case POX_4_CONTRACT_NAME: {
-                  dbTx.pox4Events.push(dbPoxEvent);
-                  break;
-                }
+                break;
+              }
+              case 'pox5': {
+                // dbTx.pox5Events.push(dbPoxEvent);
+                break;
               }
             }
           }

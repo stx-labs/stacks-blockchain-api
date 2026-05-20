@@ -12,7 +12,7 @@ import { BootContractAddress } from '../../../src/helpers.ts';
 import * as btc from 'bitcoinjs-lib';
 import { b58ToC32, c32ToB58 } from 'c32check';
 import supertest from 'supertest';
-import { PoxContractIdentifier } from '../../../src/pox-helpers.ts';
+import { PoxContractIdentifier } from '../../../src/event-stream/pox-constants.ts';
 import { decodeClarityValue } from '@stacks/codec';
 import type { ClarityValueUInt } from '@stacks/codec';
 import { decodeBtcAddress, poxAddressToBtcAddress } from '@stacks/stacking';

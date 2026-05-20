@@ -51,14 +51,14 @@ import {
   DataStoreAttachmentData,
   DataStoreAttachmentSubdomainData,
   DataStoreBnsBlockData,
-  PoxSyntheticEventInsertValues,
+  Pox4SyntheticEventInsertValues,
   DbTxRaw,
   DbMempoolTxRaw,
   DbChainTip,
   NftCustodyInsertValues,
   DataStoreBnsBlockTxData,
-  DbPoxSyntheticEvent,
-  PoxSyntheticEventTable,
+  DbPox4SyntheticEvent,
+  Pox4SyntheticEventTable,
   DbPoxSetSigners,
   PoxSetSignerValues,
   PoxCycleInsertValues,
@@ -84,7 +84,6 @@ import { PgNotifier } from './pg-notifier.js';
 import { MIGRATIONS_DIR, PgStore } from './pg-store.js';
 import * as zoneFileParser from 'zone-file';
 import { parseResolver, parseZoneFileTxt } from '../event-stream/bns/bns-helpers.js';
-import { SyntheticPoxEventName } from '../pox-helpers.js';
 import {
   PgSqlClient,
   batchIterate,
@@ -98,6 +97,7 @@ import { PgServer, getConnectionArgs, getConnectionConfig } from './connection.j
 import { BigNumber } from 'bignumber.js';
 import { RedisNotifier } from './redis-notifier.js';
 import { ENV } from '../env.js';
+import { Pox4EventName } from '@stacks/codec';
 
 const INSERT_BATCH_SIZE = 500;
 
@@ -364,9 +364,9 @@ export class PgWriteStore extends PgStore {
           q.enqueue(() => this.updateStxEvents(sql, newTxData));
           q.enqueue(() => this.updatePrincipalTxs(sql, newTxData));
           q.enqueue(() => this.updateSmartContractEvents(sql, newTxData));
-          q.enqueue(() => this.updatePoxSyntheticEvents(sql, 'pox2_events', newTxData));
-          q.enqueue(() => this.updatePoxSyntheticEvents(sql, 'pox3_events', newTxData));
-          q.enqueue(() => this.updatePoxSyntheticEvents(sql, 'pox4_events', newTxData));
+          q.enqueue(() => this.updatePox4SyntheticEvents(sql, 'pox2_events', newTxData));
+          q.enqueue(() => this.updatePox4SyntheticEvents(sql, 'pox3_events', newTxData));
+          q.enqueue(() => this.updatePox4SyntheticEvents(sql, 'pox4_events', newTxData));
           q.enqueue(() => this.updateStxLockEvents(sql, newTxData));
           q.enqueue(() => this.updateFtEvents(sql, newTxData));
           for (const entry of newTxData) {
@@ -763,6 +763,7 @@ export class PgWriteStore extends PgStore {
           pox2Events: entry.pox2Events.map(e => ({ ...e, block_height: blockHeight })),
           pox3Events: entry.pox3Events.map(e => ({ ...e, block_height: blockHeight })),
           pox4Events: entry.pox4Events.map(e => ({ ...e, block_height: blockHeight })),
+          pox5Events: entry.pox5Events.map(e => ({ ...e, block_height: blockHeight })),
         });
         deployedSmartContracts.push(...entry.smartContracts);
         contractLogEvents.push(...entry.contractLogEvents);
@@ -908,20 +909,20 @@ export class PgWriteStore extends PgStore {
     logger.info('Updated block zero boot data', tablesUpdates);
   }
 
-  async updatePoxSyntheticEvents<
-    T extends PoxSyntheticEventTable,
+  async updatePox4SyntheticEvents<
+    T extends Pox4SyntheticEventTable,
     Entry extends { tx: DbTx } & ('pox2_events' extends T
-      ? { pox2Events: DbPoxSyntheticEvent[] }
+      ? { pox2Events: DbPox4SyntheticEvent[] }
       : 'pox3_events' extends T
-        ? { pox3Events: DbPoxSyntheticEvent[] }
+        ? { pox3Events: DbPox4SyntheticEvent[] }
         : 'pox4_events' extends T
-          ? { pox4Events: DbPoxSyntheticEvent[] }
+          ? { pox4Events: DbPox4SyntheticEvent[] }
           : never),
   >(sql: PgSqlClient, poxTable: T, entries: Entry[]) {
-    const values: PoxSyntheticEventInsertValues[] = [];
+    const values: Pox4SyntheticEventInsertValues[] = [];
     for (const entry of entries) {
       // eslint-disable-next-line no-useless-assignment
-      let events: DbPoxSyntheticEvent[] | null = null;
+      let events: DbPox4SyntheticEvent[] | null = null;
       switch (poxTable) {
         case 'pox2_events':
           assert('pox2Events' in entry);
@@ -940,7 +941,8 @@ export class PgWriteStore extends PgStore {
       }
       const tx = entry.tx;
       for (const event of events ?? []) {
-        const value: PoxSyntheticEventInsertValues = {
+        assert(event.pox_version === 'pox4', 'only pox4 events are supported');
+        const value: Pox4SyntheticEventInsertValues = {
           event_index: event.event_index,
           tx_id: event.tx_id,
           tx_index: event.tx_index,
@@ -980,12 +982,12 @@ export class PgWriteStore extends PgStore {
 
         // Set event-specific columns
         switch (event.name) {
-          case SyntheticPoxEventName.HandleUnlock: {
+          case Pox4EventName.HandleUnlock: {
             value.first_cycle_locked = event.data.first_cycle_locked.toString();
             value.first_unlocked_cycle = event.data.first_unlocked_cycle.toString();
             break;
           }
-          case SyntheticPoxEventName.StackStx: {
+          case Pox4EventName.StackStx: {
             value.lock_period = event.data.lock_period.toString();
             value.lock_amount = event.data.lock_amount.toString();
             value.start_burn_height = event.data.start_burn_height.toString();
@@ -997,7 +999,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.StackIncrease: {
+          case Pox4EventName.StackIncrease: {
             value.increase_by = event.data.increase_by.toString();
             value.total_locked = event.data.total_locked.toString();
             if (poxTable === 'pox4_events') {
@@ -1007,7 +1009,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.StackExtend: {
+          case Pox4EventName.StackExtend: {
             value.extend_count = event.data.extend_count.toString();
             value.unlock_burn_height = event.data.unlock_burn_height.toString();
             if (poxTable === 'pox4_events') {
@@ -1017,7 +1019,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.DelegateStx: {
+          case Pox4EventName.DelegateStx: {
             value.amount_ustx = event.data.amount_ustx.toString();
             value.delegate_to = event.data.delegate_to;
             value.unlock_burn_height = event.data.unlock_burn_height?.toString() ?? null;
@@ -1027,7 +1029,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.DelegateStackStx: {
+          case Pox4EventName.DelegateStackStx: {
             value.lock_period = event.data.lock_period.toString();
             value.lock_amount = event.data.lock_amount.toString();
             value.start_burn_height = event.data.start_burn_height.toString();
@@ -1039,7 +1041,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.DelegateStackIncrease: {
+          case Pox4EventName.DelegateStackIncrease: {
             value.increase_by = event.data.increase_by.toString();
             value.total_locked = event.data.total_locked.toString();
             value.delegator = event.data.delegator;
@@ -1049,7 +1051,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.DelegateStackExtend: {
+          case Pox4EventName.DelegateStackExtend: {
             value.extend_count = event.data.extend_count.toString();
             value.unlock_burn_height = event.data.unlock_burn_height.toString();
             value.delegator = event.data.delegator;
@@ -1059,7 +1061,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.StackAggregationCommit: {
+          case Pox4EventName.StackAggregationCommit: {
             value.reward_cycle = event.data.reward_cycle.toString();
             value.amount_ustx = event.data.amount_ustx.toString();
             if (poxTable === 'pox4_events') {
@@ -1069,7 +1071,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.StackAggregationCommitIndexed: {
+          case Pox4EventName.StackAggregationCommitIndexed: {
             value.reward_cycle = event.data.reward_cycle.toString();
             value.amount_ustx = event.data.amount_ustx.toString();
             if (poxTable === 'pox4_events') {
@@ -1079,7 +1081,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.StackAggregationIncrease: {
+          case Pox4EventName.StackAggregationIncrease: {
             value.reward_cycle = event.data.reward_cycle.toString();
             value.amount_ustx = event.data.amount_ustx.toString();
             if (poxTable === 'pox4_events') {
@@ -1088,7 +1090,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.RevokeDelegateStx: {
+          case Pox4EventName.RevokeDelegateStx: {
             value.delegate_to = event.data.delegate_to;
             if (poxTable === 'pox4_events') {
               value.end_cycle_id = event.data.end_cycle_id?.toString() ?? null;
@@ -1098,7 +1100,7 @@ export class PgWriteStore extends PgStore {
           }
           default: {
             throw new Error(
-              `Unexpected Pox synthetic event name: ${(event as DbPoxSyntheticEvent).name}`
+              `Unexpected Pox synthetic event name: ${(event as DbPox4SyntheticEvent).name}`
             );
           }
         }
@@ -2923,9 +2925,9 @@ export class PgWriteStore extends PgStore {
       q.enqueue(() => this.updateStxEvents(sql, txs));
       q.enqueue(() => this.updatePrincipalTxs(sql, txs));
       q.enqueue(() => this.updateSmartContractEvents(sql, txs));
-      q.enqueue(() => this.updatePoxSyntheticEvents(sql, 'pox2_events', txs));
-      q.enqueue(() => this.updatePoxSyntheticEvents(sql, 'pox3_events', txs));
-      q.enqueue(() => this.updatePoxSyntheticEvents(sql, 'pox4_events', txs));
+      q.enqueue(() => this.updatePox4SyntheticEvents(sql, 'pox2_events', txs));
+      q.enqueue(() => this.updatePox4SyntheticEvents(sql, 'pox3_events', txs));
+      q.enqueue(() => this.updatePox4SyntheticEvents(sql, 'pox4_events', txs));
       q.enqueue(() => this.updateStxLockEvents(sql, txs));
       q.enqueue(() => this.updateFtEvents(sql, txs));
       for (const entry of txs) {

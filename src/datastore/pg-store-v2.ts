@@ -48,7 +48,7 @@ import {
   parseDbPoxSyntheticEvent,
   prefixedCols,
 } from './helpers.js';
-import { SyntheticPoxEventName } from '../pox-helpers.js';
+import { Pox4EventName } from '@stacks/codec';
 
 async function assertTxIdExists(sql: PgSqlClient, tx_id: string) {
   const txCheck = await sql`SELECT tx_id FROM txs WHERE tx_id = ${tx_id} LIMIT 1`;
@@ -1194,21 +1194,19 @@ export class PgStoreV2 extends BasePgStoreModule {
           AND block_height <= ${blockHeight}
           AND (
             (name != ${
-              SyntheticPoxEventName.HandleUnlock
+              Pox4EventName.HandleUnlock
             } AND burnchain_unlock_height >= ${burnBlockHeight})
             OR
-            (name = ${
-              SyntheticPoxEventName.HandleUnlock
-            } AND burnchain_unlock_height < ${burnBlockHeight})
+            (name = ${Pox4EventName.HandleUnlock} AND burnchain_unlock_height < ${burnBlockHeight})
           )
           ORDER BY block_height DESC, microblock_sequence DESC, tx_index DESC, event_index DESC
           LIMIT 1
         `;
     if (pox4EventQuery.length > 0) {
       const pox4Event = parseDbPoxSyntheticEvent(pox4EventQuery[0]);
-      if (pox4Event.name !== SyntheticPoxEventName.HandleUnlock) {
+      if (pox4Event.name !== Pox4EventName.HandleUnlock) {
         lockTxId = pox4Event.tx_id;
-        locked = pox4Event.locked;
+        locked = BigInt(pox4Event.locked);
         burnchainUnlockHeight = Number(pox4Event.burnchain_unlock_height);
         lockHeight = pox4Event.block_height;
 

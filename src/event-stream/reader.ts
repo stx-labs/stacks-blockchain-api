@@ -4,10 +4,12 @@ import {
   ClarityTypeID,
   decodeClarityValue,
   decodeClarityValueList,
+  decodePoxSyntheticEvent,
   decodeStacksAddress,
   decodeTransaction,
   PostConditionAuthFlag,
   PostConditionModeID,
+  Pox4EventName,
   PrincipalTypeID,
   TransactionVersion,
   TxPayloadTypeID,
@@ -21,12 +23,10 @@ import type {
   ClarityValueUInt,
   DecodedTxResult,
   ClarityValueBuffer,
+  Pox4EventStackStx,
+  Pox4EventDelegateStx,
 } from '@stacks/codec';
-import {
-  DbMicroblockPartial,
-  DbPoxSyntheticDelegateStxEvent,
-  DbPoxSyntheticStackStxEvent,
-} from '../datastore/common.js';
+import { DbMicroblockPartial } from '../datastore/common.js';
 import { NotImplementedError } from '../errors.js';
 import {
   getEnumDescription,
@@ -52,8 +52,7 @@ import {
 } from '@stacks/transactions';
 import { poxAddressToTuple } from '@stacks/stacking';
 import { c32ToB58 } from 'c32check';
-import { decodePoxSyntheticPrintEvent } from './pox-event-parsing.js';
-import { PoxContractIdentifiers, SyntheticPoxEventName } from '../pox-helpers.js';
+import { PoxContractIdentifiers } from './pox-constants.js';
 import { bufferToHex, hexToBuffer, logger } from '@stacks/api-toolkit';
 import { hexToBytes } from '@stacks/common';
 import {
@@ -349,7 +348,7 @@ function createTransactionFromCoreBtcStxLockEvent(
   txResult: string,
   txId: string,
   /** also pox-3 compatible */
-  stxStacksPox2Event: DbPoxSyntheticStackStxEvent | undefined
+  stxStacksPox2Event: Pox4EventStackStx | undefined
 ): DecodedTxResult {
   const resultCv = decodeClarityValue<
     ClarityValueResponse<
@@ -522,7 +521,7 @@ function createTransactionFromCoreBtcStxLockEventPox4(
 function createTransactionFromCoreBtcDelegateStxEventPox4(
   chainId: ChainID,
   contractEvent: NewBlockContractEvent,
-  decodedEvent: DbPoxSyntheticDelegateStxEvent,
+  decodedEvent: Pox4EventDelegateStx,
   burnOpData: BurnchainOpDelegateStx,
   txResult: string,
   txId: string
@@ -608,7 +607,7 @@ function createTransactionFromCoreBtcDelegateStxEventPox4(
 function createTransactionFromCoreBtcDelegateStxEvent(
   chainId: ChainID,
   contractEvent: NewBlockContractEvent,
-  decodedEvent: DbPoxSyntheticDelegateStxEvent,
+  decodedEvent: Pox4EventDelegateStx,
   txResult: string,
   txId: string
 ): DecodedTxResult {
@@ -789,6 +788,8 @@ export function parseMessageTransaction(
     let rawTx: DecodedTxResult;
     let txSender: string;
     let sponsorAddress: string | undefined = undefined;
+
+    // BTC transactions
     if (coreTx.raw_tx === '0x00') {
       const events = allEvents.filter(event => event.txid === coreTx.txid);
       if (events.length === 0) {
@@ -819,7 +820,7 @@ export function parseMessageTransaction(
         )
         .map(e => {
           const network = getChainIDNetwork(chainId);
-          const decodedEvent = decodePoxSyntheticPrintEvent(e.contract_event.raw_value, network);
+          const decodedEvent = decodePoxSyntheticEvent(e.contract_event.raw_value, network);
           if (decodedEvent) {
             return {
               contractEvent: e,
@@ -856,7 +857,7 @@ export function parseMessageTransaction(
         txSender = burnOpData.sender.address;
       } else if (stxLockEvent) {
         const stxStacksPoxEvent =
-          poxEvent?.decodedEvent.name === SyntheticPoxEventName.StackStx
+          poxEvent?.decodedEvent.name === Pox4EventName.StackStx
             ? poxEvent.decodedEvent
             : undefined;
         rawTx = createTransactionFromCoreBtcStxLockEvent(
@@ -870,7 +871,7 @@ export function parseMessageTransaction(
         txSender = stxLockEvent.stx_lock_event.locked_address;
       } else if (
         poxEvent &&
-        poxEvent.decodedEvent.name === SyntheticPoxEventName.DelegateStx &&
+        poxEvent.decodedEvent.name === Pox4EventName.DelegateStx &&
         poxEvent.contractEvent.contract_event.contract_identifier?.split('.')?.[1] === 'pox-4' &&
         coreTx.burnchain_op &&
         'delegate_stx' in coreTx.burnchain_op
@@ -884,7 +885,7 @@ export function parseMessageTransaction(
           coreTx.txid
         );
         txSender = coreTx.burnchain_op.delegate_stx.sender.address;
-      } else if (poxEvent && poxEvent.decodedEvent.name === SyntheticPoxEventName.DelegateStx) {
+      } else if (poxEvent && poxEvent.decodedEvent.name === Pox4EventName.DelegateStx) {
         rawTx = createTransactionFromCoreBtcDelegateStxEvent(
           chainId,
           poxEvent.contractEvent,
