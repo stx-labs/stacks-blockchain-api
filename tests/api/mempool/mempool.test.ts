@@ -1465,6 +1465,7 @@ describe('mempool tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -1665,6 +1666,7 @@ describe('mempool tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });

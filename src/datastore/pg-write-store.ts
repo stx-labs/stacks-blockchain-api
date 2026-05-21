@@ -64,6 +64,7 @@ import {
   PoxCycleInsertValues,
   DbAssetEventTypeId,
   DbBurnBlockPoxTx,
+  Pox5SyntheticEventInsertValues,
 } from './common.js';
 import {
   BLOCK_COLUMNS,
@@ -367,6 +368,7 @@ export class PgWriteStore extends PgStore {
           q.enqueue(() => this.updatePox4SyntheticEvents(sql, 'pox2_events', newTxData));
           q.enqueue(() => this.updatePox4SyntheticEvents(sql, 'pox3_events', newTxData));
           q.enqueue(() => this.updatePox4SyntheticEvents(sql, 'pox4_events', newTxData));
+          q.enqueue(() => this.insertPox5SyntheticEvents(sql, newTxData));
           q.enqueue(() => this.updateStxLockEvents(sql, newTxData));
           q.enqueue(() => this.updateFtEvents(sql, newTxData));
           for (const entry of newTxData) {
@@ -499,6 +501,33 @@ export class PgWriteStore extends PgStore {
       return missingMicroblockHashes;
     }
     return new Set();
+  }
+
+  private async insertPox5SyntheticEvents(sql: PgSqlClient, txs: DataStoreTxEventData[]) {
+    const values: Pox5SyntheticEventInsertValues[] = [];
+    for (const tx of txs) {
+      if (tx.pox5Events.length === 0) continue;
+      values.push(
+        ...tx.pox5Events.map(e => ({
+          event_index: e.event_index,
+          tx_id: e.tx_id,
+          tx_index: e.tx_index,
+          block_height: e.block_height,
+          index_block_hash: tx.tx.index_block_hash,
+          parent_index_block_hash: tx.tx.parent_index_block_hash,
+          microblock_hash: tx.tx.microblock_hash,
+          microblock_sequence: tx.tx.microblock_sequence,
+          microblock_canonical: tx.tx.microblock_canonical,
+          canonical: e.canonical,
+          data: e.data,
+        }))
+      );
+    }
+    for (const batch of batchIterate(values, INSERT_BATCH_SIZE)) {
+      await sql`
+        INSERT INTO pox5_events ${sql(batch)}
+      `;
+    }
   }
 
   private async updatePoxStateUnlockHeight(sql: PgSqlClient, data: DataStoreBlockUpdateData) {

@@ -1,4 +1,4 @@
-import { Pox4Event } from '@stacks/codec';
+import { Pox4Event, Pox5Event } from '@stacks/codec';
 import { Block } from '../api/schemas/v1/entities/block.js';
 import { PgBytea, PgJsonb, PgNumeric } from '@stacks/api-toolkit';
 
@@ -392,6 +392,8 @@ export type Pox4SyntheticEventTable = 'pox2_events' | 'pox3_events' | 'pox4_even
 
 export type DbPox4SyntheticEvent = DbEventBase & Pox4Event;
 
+export type DbPox5SyntheticEvent = DbEventBase & Pox5Event;
+
 export interface DbPoxStacker {
   stacker: string;
   pox_addr?: string;
@@ -527,7 +529,7 @@ export interface DataStoreTxEventData {
   pox2Events: DbPox4SyntheticEvent[];
   pox3Events: DbPox4SyntheticEvent[];
   pox4Events: DbPox4SyntheticEvent[];
-  pox5Events: DbPox4SyntheticEvent[];
+  pox5Events: DbPox5SyntheticEvent[];
 }
 
 export interface DataStoreAttachmentData {
@@ -1375,6 +1377,10 @@ export interface Pox5SyntheticEventInsertValues {
   index_block_hash: PgBytea;
   parent_index_block_hash: PgBytea;
   microblock_hash: PgBytea;
+  microblock_sequence: number;
+  microblock_canonical: boolean;
+  canonical: boolean;
+  data: PgJsonb;
 }
 
 export interface NftEventInsertValues {

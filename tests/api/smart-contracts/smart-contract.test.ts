@@ -151,6 +151,7 @@ describe('smart contract tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
         {
           tx: tx2,
@@ -165,6 +166,7 @@ describe('smart contract tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -295,6 +297,7 @@ describe('smart contract tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -412,6 +415,7 @@ describe('smart contract tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -1605,6 +1609,7 @@ describe('smart contract tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
         {
           tx: tx2,
@@ -1619,6 +1624,7 @@ describe('smart contract tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });

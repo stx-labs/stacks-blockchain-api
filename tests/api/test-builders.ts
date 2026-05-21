@@ -280,6 +280,7 @@ function testTx(args?: TestTxArgs): DataStoreTxEventData {
     pox2Events: [],
     pox3Events: [],
     pox4Events: [],
+    pox5Events: [],
   };
   if (
     data.tx.type_id === DbTxTypeId.SmartContract ||
