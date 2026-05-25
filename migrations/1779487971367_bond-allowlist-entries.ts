@@ -1,18 +1,16 @@
-import type { MigrationBuilder } from 'node-pg-migrate';
+import { ColumnDefinitions, MigrationBuilder } from 'node-pg-migrate';
+
+export const shorthands: ColumnDefinitions | undefined = undefined;
 
 export const up = (pgm: MigrationBuilder) => {
-  pgm.createTable('pox5_events', {
+  pgm.createTable('pox5_bond_allowlist_entries', {
     id: {
       type: 'bigserial',
       primaryKey: true,
     },
-    event_index: {
-      type: 'integer',
-      notNull: true,
-    },
     tx_id: {
-      notNull: true,
       type: 'bytea',
+      notNull: true,
     },
     tx_index: {
       type: 'smallint',
@@ -46,18 +44,22 @@ export const up = (pgm: MigrationBuilder) => {
       type: 'boolean',
       notNull: true,
     },
-    name: {
-      type: 'text',
+    bond_index: {
+      type: 'integer',
       notNull: true,
     },
-    data: {
-      type: 'jsonb',
+    staker: {
+      type: 'string',
+      notNull: true,
+    },
+    max_sats: {
+      type: 'string',
       notNull: true,
     },
   });
 
   pgm.createIndex(
-    'pox5_events',
+    'pox5_bond_allowlist_entries',
     [
       { name: 'block_height', sort: 'DESC' },
       { name: 'microblock_sequence', sort: 'DESC' },
@@ -68,11 +70,14 @@ export const up = (pgm: MigrationBuilder) => {
       where: 'canonical = TRUE AND microblock_canonical = TRUE',
     }
   );
-  pgm.createIndex('pox5_events', 'tx_id');
-  pgm.createIndex('pox5_events', ['index_block_hash', 'canonical']);
-  pgm.createIndex('pox5_events', 'microblock_hash');
+  pgm.createIndex('pox5_bond_allowlist_entries', 'bond_index', {
+    where: 'canonical = TRUE AND microblock_canonical = TRUE',
+  });
+  pgm.createIndex('pox5_bond_allowlist_entries', 'staker', {
+    where: 'canonical = TRUE AND microblock_canonical = TRUE',
+  });
 };
 
 export const down = (pgm: MigrationBuilder) => {
-  pgm.dropTable('pox5_events');
+  pgm.dropTable('pox5_bond_allowlist_entries');
 };

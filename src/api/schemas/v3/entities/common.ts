@@ -51,6 +51,11 @@ export const BlockHeightOrHashSchema = Type.Union([
 ]);
 export type BlockHeightOrHash = Static<typeof BlockHeightOrHashSchema>;
 
+export const BondIndexSchema = Type.Integer({
+  description: 'The index of the bond in the PoX-5 bond list',
+});
+export type BondIndex = Static<typeof BondIndexSchema>;
+
 export const DecodedClarityValueSchema = Type.Object({
   hex: Type.String(),
   repr: Type.String(),
@@ -75,3 +80,33 @@ export const ExecutionCostSchema = Type.Object({
   }),
 });
 export type ExecutionCost = Static<typeof ExecutionCostSchema>;
+
+export const BlockPositionSchema = Type.Object({
+  height: Type.Integer({
+    description: 'Height of the block this transactions was associated with',
+  }),
+  hash: Type.String({
+    description: 'Hash of the blocked this transactions was associated with',
+  }),
+  index_hash: Type.String({
+    description: 'Hash of the index block this transactions was associated with',
+  }),
+  time: Type.Number({
+    description: 'Unix timestamp (in seconds) indicating when this block was mined.',
+  }),
+  tx_index: Type.Integer({
+    description:
+      'Index of the transaction, indicating the order. Starts at `0` and increases with each transaction',
+  }),
+});
+export type BlockPosition = Static<typeof BlockPositionSchema>;
+
+export const BitcoinBlockPositionSchema = Type.Object({
+  height: Type.Integer({
+    description: 'Height of the anchor burn block.',
+  }),
+  time: Type.Number({
+    description: 'Unix timestamp (in seconds) indicating when this block was mined.',
+  }),
+});
+export type BitcoinBlockPosition = Static<typeof BitcoinBlockPositionSchema>;
