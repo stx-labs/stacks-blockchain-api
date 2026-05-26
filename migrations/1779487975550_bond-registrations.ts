@@ -48,20 +48,36 @@ export const up = (pgm: MigrationBuilder) => {
       type: 'integer',
       notNull: true,
     },
-    pox_address: {
-      type: 'string',
+    signer: {
+      type: 'text',
       notNull: true,
     },
-    signer_manager: {
-      type: 'string',
+    staker: {
+      type: 'text',
       notNull: true,
     },
-    btc_lockup: {
-      type: 'jsonb',
+    amount_ustx: {
+      type: 'text',
       notNull: true,
     },
-    signer_calldata: {
-      type: 'string',
+    sats_total: {
+      type: 'text',
+      notNull: true,
+    },
+    first_reward_cycle: {
+      type: 'integer',
+      notNull: true,
+    },
+    unlock_burn_height: {
+      type: 'integer',
+      notNull: true,
+    },
+    unlock_cycle: {
+      type: 'integer',
+      notNull: true,
+    },
+    is_l1_lock: {
+      type: 'boolean',
       notNull: true,
     },
   });
