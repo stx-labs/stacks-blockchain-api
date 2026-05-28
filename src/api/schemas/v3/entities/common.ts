@@ -19,6 +19,15 @@ export type SmartContractId = Static<typeof SmartContractIdSchema>;
 export const PrincipalSchema = Type.Union([AddressSchema, SmartContractIdSchema]);
 export type Principal = Static<typeof PrincipalSchema>;
 
+export const AssetIdentifierSchema = Type.String({
+  pattern:
+    '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{28,41}\\.[a-zA-Z]([a-zA-Z0-9]|[-_]){0,39}::[a-zA-Z-]+$',
+  title: 'Asset Identifier',
+  description: 'Asset Identifier',
+  examples: ['SP000000000000000000002Q6VF78.pox-3::stx-token'],
+});
+export type AssetIdentifier = Static<typeof AssetIdentifierSchema>;
+
 export const TransactionIdSchema = Type.String({
   pattern: '^(0x)?[a-fA-F0-9]{64}$',
   title: 'Transaction ID',
@@ -61,6 +70,12 @@ export const DecodedClarityValueSchema = Type.Object({
   repr: Type.String(),
 });
 export type DecodedClarityValue = Static<typeof DecodedClarityValueSchema>;
+
+export const DecodedStxTransferMemoSchema = Type.Object({
+  hex: Type.String(),
+  repr: Type.String(),
+});
+export type DecodedStxTransferMemo = Static<typeof DecodedStxTransferMemoSchema>;
 
 export const ExecutionCostSchema = Type.Object({
   read_count: Type.Integer({
@@ -110,3 +125,11 @@ export const BitcoinBlockPositionSchema = Type.Object({
   }),
 });
 export type BitcoinBlockPosition = Static<typeof BitcoinBlockPositionSchema>;
+
+export const AmountSchema = Type.String({
+  pattern: '^[0-9]+$',
+  title: 'Amount',
+  description: 'Amount',
+  examples: ['1000000'],
+});
+export type Amount = Static<typeof AmountSchema>;
