@@ -69,6 +69,8 @@ import {
   DbTxLocation,
   DbBondRegistrationInsertValues,
   DbBondAllowlistEntryInsertValues,
+  DbPrincipalBondPositionInsertValues,
+  DbPrincipalBondPositionStatus,
 } from './common.js';
 import {
   BLOCK_COLUMNS,
@@ -105,9 +107,11 @@ import { ENV } from '../env.js';
 import {
   Pox4EventName,
   Pox5EventAddToAllowlist,
+  Pox5EventAnnounceL1EarlyExit,
   Pox5EventName,
   Pox5EventRegisterForBond,
   Pox5EventSetupBond,
+  Pox5EventUnstakeSbtc,
   Pox5EventUpdateBondRegistration,
 } from '@stacks/codec';
 
@@ -540,12 +544,20 @@ export class PgWriteStore extends PgStore {
           case Pox5EventName.SetupBond:
             await this.updateBond(sql, txLocation, poxEvent);
             break;
+          case Pox5EventName.AddToAllowlist:
+            await this.updateBondAllowlistEntry(sql, txLocation, poxEvent);
+            break;
           case Pox5EventName.RegisterForBond:
           case Pox5EventName.UpdateBondRegistration:
             await this.updateBondRegistration(sql, txLocation, poxEvent);
+            await this.updatePrincipalBondPosition(sql, txLocation, poxEvent);
             break;
-          case Pox5EventName.AddToAllowlist:
-            await this.updateBondAllowlistEntry(sql, txLocation, poxEvent);
+          case Pox5EventName.AnnounceL1EarlyExit:
+          case Pox5EventName.UnstakeSbtc:
+            await this.updatePrincipalBondPosition(sql, txLocation, poxEvent);
+            break;
+          default:
+            logger.warn(`Unhandled pox-5 event: ${poxEvent.name}`);
             break;
         }
       }
@@ -577,14 +589,20 @@ export class PgWriteStore extends PgStore {
     txLocation: DbTxLocation,
     event: Pox5EventRegisterForBond | Pox5EventUpdateBondRegistration
   ) {
+    const bondIndex = parseInt(event.data.bond_index);
+    const staker = event.data.staker;
+    const amountUstx = event.data.amount_ustx;
+    const satsTotal =
+      event.name === Pox5EventName.RegisterForBond ? event.data.sats_total : event.data.amount_sats;
+
     if (event.name === Pox5EventName.RegisterForBond) {
       const bondRegistration: DbBondRegistrationInsertValues = {
         ...txLocation,
-        bond_index: parseInt(event.data.bond_index),
+        bond_index: bondIndex,
         signer: event.data.signer,
-        staker: event.data.staker,
-        amount_ustx: event.data.amount_ustx,
-        sats_total: event.data.sats_total,
+        staker,
+        amount_ustx: amountUstx,
+        sats_total: satsTotal,
         first_reward_cycle: parseInt(event.data.first_reward_cycle),
         unlock_burn_height: parseInt(event.data.unlock_burn_height),
         unlock_cycle: parseInt(event.data.unlock_cycle),
@@ -597,10 +615,10 @@ export class PgWriteStore extends PgStore {
       const updateResult = await sql`
         UPDATE bond_registrations SET
           signer = ${event.data.signer},
-          sats_total = ${event.data.amount_sats},
-          amount_ustx = ${event.data.amount_ustx}
-        WHERE bond_index = ${parseInt(event.data.bond_index)}
-          AND staker = ${event.data.staker}
+          sats_total = ${satsTotal},
+          amount_ustx = ${amountUstx}
+        WHERE bond_index = ${bondIndex}
+          AND staker = ${staker}
           AND canonical = true
           AND microblock_canonical = true
       `;
@@ -609,6 +627,75 @@ export class PgWriteStore extends PgStore {
           `Bond registration not found for bond index ${event.data.bond_index} and staker ${event.data.staker}`
         );
       }
+    }
+  }
+
+  private async updatePrincipalBondPosition(
+    sql: PgSqlClient,
+    txLocation: DbTxLocation,
+    event:
+      | Pox5EventRegisterForBond
+      | Pox5EventUpdateBondRegistration
+      | Pox5EventAnnounceL1EarlyExit
+      | Pox5EventUnstakeSbtc
+  ) {
+    switch (event.name) {
+      case Pox5EventName.RegisterForBond:
+      case Pox5EventName.UpdateBondRegistration: {
+        const position: DbPrincipalBondPositionInsertValues = {
+          ...txLocation,
+          principal: event.data.staker,
+          bond_index: parseInt(event.data.bond_index),
+          status: DbPrincipalBondPositionStatus.Enrolled,
+          active: true,
+          btc_locked:
+            event.name === Pox5EventName.RegisterForBond
+              ? event.data.sats_total
+              : event.data.amount_sats,
+          stx_locked: event.data.amount_ustx,
+          btc_paid_out: '0',
+        };
+        await sql`
+          INSERT INTO principal_bond_positions ${sql(position)}
+          ON CONFLICT (principal, bond_index) DO UPDATE SET
+            tx_id = EXCLUDED.tx_id,
+            tx_index = EXCLUDED.tx_index,
+            block_height = EXCLUDED.block_height,
+            index_block_hash = EXCLUDED.index_block_hash,
+            parent_index_block_hash = EXCLUDED.parent_index_block_hash,
+            microblock_hash = EXCLUDED.microblock_hash,
+            microblock_sequence = EXCLUDED.microblock_sequence,
+            microblock_canonical = EXCLUDED.microblock_canonical,
+            canonical = EXCLUDED.canonical,
+            status = EXCLUDED.status,
+            active = EXCLUDED.active,
+            btc_locked = EXCLUDED.btc_locked,
+            stx_locked = EXCLUDED.stx_locked
+        `;
+        break;
+      }
+      case Pox5EventName.AnnounceL1EarlyExit:
+        await sql`
+          UPDATE principal_bond_positions SET
+            status = ${DbPrincipalBondPositionStatus.EarlyExit},
+            active = false
+          WHERE principal = ${event.data.staker}
+            AND bond_index = ${parseInt(event.data.bond_index)}
+            AND canonical = true
+            AND microblock_canonical = true
+          `;
+        return;
+      case Pox5EventName.UnstakeSbtc:
+        await sql`
+          UPDATE principal_bond_positions SET
+            ${event.data.new_amount_sats == '0' ? sql`status = ${DbPrincipalBondPositionStatus.EarlyExit}` : sql``}
+            btc_locked = ${event.data.new_amount_sats}
+          WHERE principal = ${event.data.staker}
+            AND bond_index = ${parseInt(event.data.bond_index)}
+            AND canonical = true
+            AND microblock_canonical = true
+          `;
+        return;
     }
   }
 

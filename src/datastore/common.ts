@@ -1664,3 +1664,20 @@ export interface DbBondAllowlistEntryInsertValues extends DbTxLocation {
   staker: string;
   max_sats: string;
 }
+
+export enum DbPrincipalBondPositionStatus {
+  Enrolled = 0,
+  Running = 1,
+  Unlocked = 2,
+  EarlyExit = 3,
+}
+
+export interface DbPrincipalBondPositionInsertValues extends DbTxLocation {
+  principal: string;
+  bond_index: number;
+  status: DbPrincipalBondPositionStatus;
+  active: boolean;
+  btc_locked: string;
+  stx_locked: string;
+  btc_paid_out: string;
+}

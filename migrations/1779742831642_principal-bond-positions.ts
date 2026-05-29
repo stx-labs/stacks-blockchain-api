@@ -73,6 +73,10 @@ export function up(pgm: MigrationBuilder): void {
       notNull: true,
     },
   });
+
+  pgm.createIndex('principal_bond_positions', ['principal', 'bond_index'], {
+    unique: true,
+  });
 }
 
 export function down(pgm: MigrationBuilder): void {
