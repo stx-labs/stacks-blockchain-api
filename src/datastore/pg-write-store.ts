@@ -71,6 +71,7 @@ import {
   DbBondAllowlistEntryInsertValues,
   DbPrincipalBondPositionInsertValues,
   DbPrincipalBondPositionStatus,
+  DbBondRewardDistributionInsertValues,
 } from './common.js';
 import {
   BLOCK_COLUMNS,
@@ -108,6 +109,7 @@ import {
   Pox4EventName,
   Pox5EventAddToAllowlist,
   Pox5EventAnnounceL1EarlyExit,
+  Pox5EventCalculateRewards,
   Pox5EventName,
   Pox5EventRegisterForBond,
   Pox5EventSetupBond,
@@ -556,8 +558,23 @@ export class PgWriteStore extends PgStore {
           case Pox5EventName.UnstakeSbtc:
             await this.updatePrincipalBondPosition(sql, txLocation, poxEvent);
             break;
-          default:
-            logger.warn(`Unhandled pox-5 event: ${poxEvent.name}`);
+          case Pox5EventName.CalculateRewards:
+            await this.updateBondRewardDistribution(sql, txLocation, poxEvent);
+            break;
+          case Pox5EventName.BondDistribution:
+            // TODO: Implement
+            break;
+          case Pox5EventName.ClaimRewards:
+            break;
+          case Pox5EventName.Stake:
+          case Pox5EventName.StakeUpdate:
+            // TODO: Implement
+            break;
+          case Pox5EventName.Unstake:
+            // TODO: Implement
+            break;
+          case Pox5EventName.RegisterSigner:
+            // TODO: Implement
             break;
         }
       }
@@ -696,6 +713,33 @@ export class PgWriteStore extends PgStore {
             AND microblock_canonical = true
           `;
         return;
+    }
+  }
+
+  private async updateBondRewardDistribution(
+    sql: PgSqlClient,
+    txLocation: DbTxLocation,
+    event: Pox5EventCalculateRewards
+  ) {
+    const rewardDistributions: DbBondRewardDistributionInsertValues[] = [];
+    for (const bondIndex of event.data.bond_periods) {
+      // TODO: Divide rewards by bond period
+      rewardDistributions.push({
+        ...txLocation,
+        bond_index: parseInt(bondIndex),
+        remaining_rewards: event.data.remaining_rewards,
+        accrued_rewards: event.data.accrued_rewards,
+        new_reserve: event.data.new_reserve,
+        stx_staker_rewards: event.data.stx_staker_rewards,
+        stx_cycle: parseInt(event.data.stx_cycle),
+        cycle_staked_ustx: event.data.cycle_staked_ustx,
+        next_rewards_per_ustx: event.data.next_rewards_per_ustx,
+      });
+    }
+    for (const batch of batchIterate(rewardDistributions, INSERT_BATCH_SIZE)) {
+      await sql`
+        INSERT INTO bond_reward_distributions ${sql(batch)}
+      `;
     }
   }
 

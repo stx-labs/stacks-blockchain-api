@@ -1681,3 +1681,14 @@ export interface DbPrincipalBondPositionInsertValues extends DbTxLocation {
   stx_locked: string;
   btc_paid_out: string;
 }
+
+export interface DbBondRewardDistributionInsertValues extends DbTxLocation {
+  bond_index: number;
+  remaining_rewards: string;
+  accrued_rewards: string;
+  new_reserve: string;
+  stx_staker_rewards: string;
+  stx_cycle: number;
+  cycle_staked_ustx: string;
+  next_rewards_per_ustx: string;
+}
