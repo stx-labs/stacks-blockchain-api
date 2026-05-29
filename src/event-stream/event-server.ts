@@ -26,6 +26,7 @@ import {
   DbTxStatus,
   DbPoxSetSigners,
   DbBurnBlockPoxTx,
+  DbPox5SyntheticEvent,
 } from '../datastore/common.js';
 import {
   getTxSenderAddress,
@@ -318,7 +319,8 @@ function parseDataStoreTxEventData(
     return dbTx;
   });
 
-  const poxEventLogs: Map<DbPox4SyntheticEvent, DbSmartContractEvent> = new Map();
+  const poxEventLogs: Map<DbPox4SyntheticEvent | DbPox5SyntheticEvent, DbSmartContractEvent> =
+    new Map();
 
   for (const event of events) {
     if (!event.committed) {
@@ -398,7 +400,12 @@ function parseDataStoreTxEventData(
                 break;
               }
               case 'pox5': {
-                // dbTx.pox5Events.push(dbPoxEvent);
+                const dbPoxEvent: DbPox5SyntheticEvent = {
+                  ...dbEvent,
+                  ...poxEvent,
+                };
+                dbTx.pox5Events.push(dbPoxEvent);
+                poxEventLogs.set(dbPoxEvent, entry);
                 break;
               }
             }
@@ -569,7 +576,7 @@ function parseDataStoreTxEventData(
     for (let i = 0; i < sortedEvents.length; i++) {
       sortedEvents[i].event_index = i;
     }
-    for (const poxEvent of [tx.pox2Events, tx.pox3Events, tx.pox4Events].flat()) {
+    for (const poxEvent of [tx.pox2Events, tx.pox3Events, tx.pox4Events, tx.pox5Events].flat()) {
       const associatedLogEvent = poxEventLogs.get(poxEvent);
       if (!associatedLogEvent) {
         throw new Error(`Missing associated contract log event for pox event ${poxEvent.tx_id}`);

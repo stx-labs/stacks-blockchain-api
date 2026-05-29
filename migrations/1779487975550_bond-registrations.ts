@@ -3,7 +3,7 @@ import { ColumnDefinitions, MigrationBuilder } from 'node-pg-migrate';
 export const shorthands: ColumnDefinitions | undefined = undefined;
 
 export const up = (pgm: MigrationBuilder) => {
-  pgm.createTable('pox5_bond_registrations', {
+  pgm.createTable('bond_registrations', {
     id: {
       type: 'bigserial',
       primaryKey: true,
@@ -82,29 +82,24 @@ export const up = (pgm: MigrationBuilder) => {
     },
   });
 
-  pgm.createIndex('pox5_bond_registrations', 'bond_index', {
-    where: 'canonical = TRUE AND microblock_canonical = TRUE',
-  });
-  pgm.createIndex('pox5_bond_registrations', 'pox_address', {
-    where: 'canonical = TRUE AND microblock_canonical = TRUE',
-  });
-  pgm.createIndex('pox5_bond_registrations', 'signer_manager', {
-    where: 'canonical = TRUE AND microblock_canonical = TRUE',
-  });
   pgm.createIndex(
-    'pox5_bond_registrations',
+    'bond_registrations',
     [
+      'bond_index',
       { name: 'block_height', sort: 'DESC' },
       { name: 'microblock_sequence', sort: 'DESC' },
       { name: 'tx_index', sort: 'DESC' },
-      { name: 'event_index', sort: 'DESC' },
+      { name: 'id', sort: 'DESC' },
     ],
     {
       where: 'canonical = TRUE AND microblock_canonical = TRUE',
     }
   );
+  pgm.createIndex('bond_registrations', ['bond_index', 'staker'], {
+    where: 'canonical = TRUE AND microblock_canonical = TRUE',
+  });
 };
 
 export const down = (pgm: MigrationBuilder) => {
-  pgm.dropTable('pox5_bond_registrations');
+  pgm.dropTable('bond_registrations');
 };

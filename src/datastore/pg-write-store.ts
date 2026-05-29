@@ -65,6 +65,10 @@ import {
   DbAssetEventTypeId,
   DbBurnBlockPoxTx,
   Pox5SyntheticEventInsertValues,
+  DbBondInsertValues,
+  DbTxLocation,
+  DbBondRegistrationInsertValues,
+  DbBondAllowlistEntryInsertValues,
 } from './common.js';
 import {
   BLOCK_COLUMNS,
@@ -98,7 +102,14 @@ import { PgServer, getConnectionArgs, getConnectionConfig } from './connection.j
 import { BigNumber } from 'bignumber.js';
 import { RedisNotifier } from './redis-notifier.js';
 import { ENV } from '../env.js';
-import { Pox4EventName } from '@stacks/codec';
+import {
+  Pox4EventName,
+  Pox5EventAddToAllowlist,
+  Pox5EventName,
+  Pox5EventRegisterForBond,
+  Pox5EventSetupBond,
+  Pox5EventUpdateBondRegistration,
+} from '@stacks/codec';
 
 const INSERT_BATCH_SIZE = 500;
 
@@ -504,30 +515,117 @@ export class PgWriteStore extends PgStore {
   }
 
   private async insertPox5SyntheticEvents(sql: PgSqlClient, txs: DataStoreTxEventData[]) {
-    const values: Pox5SyntheticEventInsertValues[] = [];
+    const poxValues: Pox5SyntheticEventInsertValues[] = [];
     for (const tx of txs) {
       if (tx.pox5Events.length === 0) continue;
-      values.push(
-        ...tx.pox5Events.map(e => ({
-          event_index: e.event_index,
-          tx_id: e.tx_id,
-          tx_index: e.tx_index,
-          block_height: e.block_height,
-          index_block_hash: tx.tx.index_block_hash,
-          parent_index_block_hash: tx.tx.parent_index_block_hash,
-          microblock_hash: tx.tx.microblock_hash,
-          microblock_sequence: tx.tx.microblock_sequence,
-          microblock_canonical: tx.tx.microblock_canonical,
-          canonical: e.canonical,
-          data: e.data,
-        }))
-      );
+      const txLocation: DbTxLocation = {
+        tx_id: tx.tx.tx_id,
+        tx_index: tx.tx.tx_index,
+        block_height: tx.tx.block_height,
+        index_block_hash: tx.tx.index_block_hash,
+        parent_index_block_hash: tx.tx.parent_index_block_hash,
+        microblock_hash: tx.tx.microblock_hash,
+        microblock_sequence: tx.tx.microblock_sequence,
+        microblock_canonical: tx.tx.microblock_canonical,
+        canonical: tx.tx.canonical,
+      };
+      for (const poxEvent of tx.pox5Events) {
+        poxValues.push({
+          ...txLocation,
+          event_index: poxEvent.event_index,
+          name: poxEvent.name,
+          data: poxEvent.data,
+        });
+        switch (poxEvent.name) {
+          case Pox5EventName.SetupBond:
+            await this.updateBond(sql, txLocation, poxEvent);
+            break;
+          case Pox5EventName.RegisterForBond:
+          case Pox5EventName.UpdateBondRegistration:
+            await this.updateBondRegistration(sql, txLocation, poxEvent);
+            break;
+          case Pox5EventName.AddToAllowlist:
+            await this.updateBondAllowlistEntry(sql, txLocation, poxEvent);
+            break;
+        }
+      }
     }
-    for (const batch of batchIterate(values, INSERT_BATCH_SIZE)) {
+    for (const batch of batchIterate(poxValues, INSERT_BATCH_SIZE)) {
       await sql`
         INSERT INTO pox5_events ${sql(batch)}
       `;
     }
+  }
+
+  private async updateBond(sql: PgSqlClient, txLocation: DbTxLocation, event: Pox5EventSetupBond) {
+    const bond: DbBondInsertValues = {
+      ...txLocation,
+      bond_index: parseInt(event.data.bond_index),
+      target_rate: parseInt(event.data.target_rate),
+      stx_value_ratio: parseInt(event.data.stx_value_ratio),
+      min_ustx_ratio: parseInt(event.data.min_ustx_ratio),
+      early_unlock_signers: event.data.early_unlock_signers,
+      early_unlock_admin: event.data.early_unlock_admin,
+    };
+    await sql`
+      INSERT INTO bonds ${sql(bond)}
+    `;
+  }
+
+  private async updateBondRegistration(
+    sql: PgSqlClient,
+    txLocation: DbTxLocation,
+    event: Pox5EventRegisterForBond | Pox5EventUpdateBondRegistration
+  ) {
+    if (event.name === Pox5EventName.RegisterForBond) {
+      const bondRegistration: DbBondRegistrationInsertValues = {
+        ...txLocation,
+        bond_index: parseInt(event.data.bond_index),
+        signer: event.data.signer,
+        staker: event.data.staker,
+        amount_ustx: event.data.amount_ustx,
+        sats_total: event.data.sats_total,
+        first_reward_cycle: parseInt(event.data.first_reward_cycle),
+        unlock_burn_height: parseInt(event.data.unlock_burn_height),
+        unlock_cycle: parseInt(event.data.unlock_cycle),
+        is_l1_lock: event.data.is_l1_lock,
+      };
+      await sql`
+        INSERT INTO bond_registrations ${sql(bondRegistration)}
+      `;
+    } else {
+      const updateResult = await sql`
+        UPDATE bond_registrations SET
+          signer = ${event.data.signer},
+          sats_total = ${event.data.amount_sats},
+          amount_ustx = ${event.data.amount_ustx}
+        WHERE bond_index = ${parseInt(event.data.bond_index)}
+          AND staker = ${event.data.staker}
+          AND canonical = true
+          AND microblock_canonical = true
+      `;
+      if (updateResult.count === 0) {
+        logger.warn(
+          `Bond registration not found for bond index ${event.data.bond_index} and staker ${event.data.staker}`
+        );
+      }
+    }
+  }
+
+  private async updateBondAllowlistEntry(
+    sql: PgSqlClient,
+    txLocation: DbTxLocation,
+    event: Pox5EventAddToAllowlist
+  ) {
+    const bondAllowlistEntry: DbBondAllowlistEntryInsertValues = {
+      ...txLocation,
+      bond_index: parseInt(event.data.bond_index),
+      staker: event.data.staker,
+      max_sats: event.data.max_sats,
+    };
+    await sql`
+      INSERT INTO bond_allowlist_entries ${sql(bondAllowlistEntry)}
+    `;
   }
 
   private async updatePoxStateUnlockHeight(sql: PgSqlClient, data: DataStoreBlockUpdateData) {

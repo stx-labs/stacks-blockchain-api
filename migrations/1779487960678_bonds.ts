@@ -3,7 +3,7 @@ import { ColumnDefinitions, MigrationBuilder } from 'node-pg-migrate';
 export const shorthands: ColumnDefinitions | undefined = undefined;
 
 export const up = (pgm: MigrationBuilder) => {
-  pgm.createTable('pox5_bonds', {
+  pgm.createTable('bonds', {
     id: {
       type: 'bigserial',
       primaryKey: true,
@@ -70,7 +70,7 @@ export const up = (pgm: MigrationBuilder) => {
     }
   });
   pgm.createIndex(
-    'pox5_bonds',
+    'bonds',
     [
       { name: 'block_height', sort: 'DESC' },
       { name: 'microblock_sequence', sort: 'DESC' },
@@ -81,11 +81,11 @@ export const up = (pgm: MigrationBuilder) => {
       where: 'canonical = TRUE AND microblock_canonical = TRUE',
     }
   );
-  pgm.createIndex('pox5_bonds', 'bond_index', {
+  pgm.createIndex('bonds', 'bond_index', {
     where: 'canonical = TRUE AND microblock_canonical = TRUE',
   });
 };
 
 export const down = (pgm: MigrationBuilder) => {
-  pgm.dropTable('pox5_bonds');
+  pgm.dropTable('bonds');
 };

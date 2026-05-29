@@ -1369,17 +1369,9 @@ export interface Pox4SyntheticEventInsertValues {
   start_cycle_id?: PgNumeric | null;
 }
 
-export interface Pox5SyntheticEventInsertValues {
+export interface Pox5SyntheticEventInsertValues extends DbTxLocation {
   event_index: number;
-  tx_id: PgBytea;
-  tx_index: number;
-  block_height: number;
-  index_block_hash: PgBytea;
-  parent_index_block_hash: PgBytea;
-  microblock_hash: PgBytea;
-  microblock_sequence: number;
-  microblock_canonical: boolean;
-  canonical: boolean;
+  name: string;
   data: PgJsonb;
 }
 
@@ -1632,4 +1624,43 @@ export interface DbSmartContractStatus {
   tx_id: string;
   status: DbTxStatus;
   block_height?: number;
+}
+
+export interface DbTxLocation {
+  tx_id: string;
+  tx_index: number;
+  block_height: number;
+  index_block_hash: string;
+  parent_index_block_hash: string;
+  microblock_hash: string;
+  microblock_sequence: number;
+  microblock_canonical: boolean;
+  canonical: boolean;
+}
+
+export interface DbBondInsertValues extends DbTxLocation {
+  bond_index: number;
+  target_rate: number;
+  stx_value_ratio: number;
+  min_ustx_ratio: number;
+  early_unlock_signers: string;
+  early_unlock_admin: string;
+}
+
+export interface DbBondRegistrationInsertValues extends DbTxLocation {
+  bond_index: number;
+  signer: string;
+  staker: string;
+  amount_ustx: string;
+  sats_total: string;
+  first_reward_cycle: number;
+  unlock_burn_height: number;
+  unlock_cycle: number;
+  is_l1_lock: boolean;
+}
+
+export interface DbBondAllowlistEntryInsertValues extends DbTxLocation {
+  bond_index: number;
+  staker: string;
+  max_sats: string;
 }

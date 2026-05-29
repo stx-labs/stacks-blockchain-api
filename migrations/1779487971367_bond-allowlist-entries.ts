@@ -3,7 +3,7 @@ import { ColumnDefinitions, MigrationBuilder } from 'node-pg-migrate';
 export const shorthands: ColumnDefinitions | undefined = undefined;
 
 export const up = (pgm: MigrationBuilder) => {
-  pgm.createTable('pox5_bond_allowlist_entries', {
+  pgm.createTable('bond_allowlist_entries', {
     id: {
       type: 'bigserial',
       primaryKey: true,
@@ -59,7 +59,7 @@ export const up = (pgm: MigrationBuilder) => {
   });
 
   pgm.createIndex(
-    'pox5_bond_allowlist_entries',
+    'bond_allowlist_entries',
     [
       { name: 'block_height', sort: 'DESC' },
       { name: 'microblock_sequence', sort: 'DESC' },
@@ -70,14 +70,14 @@ export const up = (pgm: MigrationBuilder) => {
       where: 'canonical = TRUE AND microblock_canonical = TRUE',
     }
   );
-  pgm.createIndex('pox5_bond_allowlist_entries', 'bond_index', {
+  pgm.createIndex('bond_allowlist_entries', 'bond_index', {
     where: 'canonical = TRUE AND microblock_canonical = TRUE',
   });
-  pgm.createIndex('pox5_bond_allowlist_entries', 'staker', {
+  pgm.createIndex('bond_allowlist_entries', 'staker', {
     where: 'canonical = TRUE AND microblock_canonical = TRUE',
   });
 };
 
 export const down = (pgm: MigrationBuilder) => {
-  pgm.dropTable('pox5_bond_allowlist_entries');
+  pgm.dropTable('bond_allowlist_entries');
 };
