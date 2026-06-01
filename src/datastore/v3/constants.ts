@@ -118,3 +118,11 @@ export const BOND_COLUMNS = [
   'early_unlock_bytes',
   'early_unlock_admin',
 ];
+
+export const BOND_ALLOWLIST_ENTRY_COLUMNS = [
+  'staker',
+  'max_sats',
+  'block_height',
+  'microblock_sequence',
+  'tx_index',
+];

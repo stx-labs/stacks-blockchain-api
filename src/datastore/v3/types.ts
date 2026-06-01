@@ -153,3 +153,8 @@ export interface DbBond extends DbBondSummary {
   early_unlock_bytes: string;
   early_unlock_admin: string;
 }
+
+export interface DbBondAllowlistEntry {
+  staker: string;
+  max_sats: string;
+}

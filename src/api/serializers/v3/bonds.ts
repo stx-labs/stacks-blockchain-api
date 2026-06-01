@@ -1,6 +1,7 @@
-import { DbBond, DbBondSummary } from '../../../datastore/v3/types.js';
+import { DbBond, DbBondAllowlistEntry, DbBondSummary } from '../../../datastore/v3/types.js';
 import { Bond, BondSummary } from '../../schemas/v3/entities/bonds.js';
 import { BondStatus } from '../../schemas/v3/entities/bonds.js';
+import { BondAllowlist } from '../../schemas/v3/entities/bond-allowlist-entries.js';
 
 function getBondStatus(summary: DbBondSummary, currentBurnBlockHeight: number): BondStatus {
   if (currentBurnBlockHeight < summary.bond_start_height) {
@@ -79,5 +80,12 @@ export function serializeDbBond(bond: DbBond, currentBurnBlockHeight: number): B
         time: bond.burn_block_time,
       },
     },
+  };
+}
+
+export function serializeDbBondAllowlistEntry(entry: DbBondAllowlistEntry): BondAllowlist {
+  return {
+    staker: entry.staker,
+    max_sats: entry.max_sats,
   };
 }

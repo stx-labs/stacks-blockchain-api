@@ -7,9 +7,15 @@ import {
   BondCursorSchema,
   CursorPaginatedResponse,
   CursorPaginationQuerystring,
+  TransactionCursorSchema,
 } from '../../schemas/v3/cursors.js';
 import { BondSchema, BondSummarySchema } from '../../schemas/v3/entities/bonds.js';
-import { serializeDbBond, serializeDbBondSummary } from '../../serializers/v3/bonds.js';
+import { BondAllowlistSchema } from '../../schemas/v3/entities/bond-allowlist-entries.js';
+import {
+  serializeDbBond,
+  serializeDbBondAllowlistEntry,
+  serializeDbBondSummary,
+} from '../../serializers/v3/bonds.js';
 import { NotFoundError } from '../../../errors.js';
 
 export const StakingBondsRoutes: FastifyPluginAsync<
@@ -79,15 +85,41 @@ export const StakingBondsRoutes: FastifyPluginAsync<
   fastify.get(
     '/staking/bonds/:bond_index/allowlist',
     {
+      preHandler: handleChainTipCache,
       schema: {
         operationId: 'get_bond_allowlist_entries',
         summary: 'Get bond allowlist entries',
         description: 'Get bond allowlist entries',
         tags: ['Staking'],
+        params: Type.Object({
+          bond_index: Type.Integer({ description: 'Bond index' }),
+        }),
+        querystring: CursorPaginationQuerystring(TransactionCursorSchema, ResourceType.Tx),
+        response: {
+          200: CursorPaginatedResponse(
+            BondAllowlistSchema,
+            TransactionCursorSchema,
+            ResourceType.Tx
+          ),
+        },
       },
     },
-    async (_req, reply) => {
-      await reply.send();
+    async (req, reply) => {
+      const results = await fastify.db.v3.getBondAllowlistEntries({
+        bondIndex: req.params.bond_index,
+        limit: req.query.limit ?? getPagingQueryLimit(ResourceType.Tx),
+        cursor: req.query.cursor,
+      });
+      await reply.send({
+        limit: results.limit,
+        total: results.total,
+        cursor: {
+          next: results.next_cursor,
+          previous: results.prev_cursor,
+          current: results.current_cursor,
+        },
+        results: results.results.map(r => serializeDbBondAllowlistEntry(r)),
+      });
     }
   );
 
