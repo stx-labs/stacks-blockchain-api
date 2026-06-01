@@ -652,6 +652,11 @@ export class PgStoreV3 extends BasePgStoreModule {
     });
   }
 
+  /**
+   * Gets the summaries for all bonds.
+   * @param args - The arguments for the query.
+   * @returns The summaries for all bonds.
+   */
   async getBondSummaries(args: {
     limit: number;
     cursor?: BondCursor;
@@ -714,6 +719,11 @@ export class PgStoreV3 extends BasePgStoreModule {
     });
   }
 
+  /**
+   * Gets a bond by index.
+   * @param args - The arguments for the query.
+   * @returns The bond by index.
+   */
   async getBond(args: {
     bondIndex: number;
   }): Promise<(DbBond & { burn_block_height: number }) | null> {
@@ -735,6 +745,11 @@ export class PgStoreV3 extends BasePgStoreModule {
     });
   }
 
+  /**
+   * Gets the allowlist entries for a bond.
+   * @param args - The arguments for the query.
+   * @returns The allowlist entries for a bond.
+   */
   async getBondAllowlistEntries(args: {
     bondIndex: number;
     limit: number;
@@ -828,6 +843,29 @@ export class PgStoreV3 extends BasePgStoreModule {
         total: totalQuery[0]?.total ?? 0,
         results,
       };
+    });
+  }
+
+  /**
+   * Gets an allowlist entry for a bond and principal.
+   * @param args - The arguments for the query.
+   * @returns The allowlist entry for a bond and principal.
+   */
+  async getBondAllowlistEntry(args: {
+    bondIndex: number;
+    principal: Principal;
+  }): Promise<DbBondAllowlistEntry | null> {
+    return await this.sqlTransaction(async sql => {
+      const result = await sql<DbBondAllowlistEntry[]>`
+        SELECT staker, max_sats
+        FROM bond_allowlist_entries
+        WHERE canonical = true
+          AND microblock_canonical = true
+          AND bond_index = ${args.bondIndex}
+          AND staker = ${args.principal}
+        LIMIT 1
+      `;
+      return result[0] ?? null;
     });
   }
 }

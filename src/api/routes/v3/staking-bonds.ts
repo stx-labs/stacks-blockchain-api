@@ -11,6 +11,7 @@ import {
 } from '../../schemas/v3/cursors.js';
 import { BondSchema, BondSummarySchema } from '../../schemas/v3/entities/bonds.js';
 import { BondAllowlistSchema } from '../../schemas/v3/entities/bond-allowlist-entries.js';
+import { PrincipalSchema } from '../../schemas/v3/entities/common.js';
 import {
   serializeDbBond,
   serializeDbBondAllowlistEntry,
@@ -126,15 +127,30 @@ export const StakingBondsRoutes: FastifyPluginAsync<
   fastify.get(
     '/staking/bonds/:bond_index/allowlist/:principal',
     {
+      preHandler: handleChainTipCache,
       schema: {
         operationId: 'get_bond_allowlist_entry',
         summary: 'Get bond allowlist entry',
         description: 'Get bond allowlist entry',
         tags: ['Staking'],
+        params: Type.Object({
+          bond_index: Type.Integer({ description: 'Bond index' }),
+          principal: PrincipalSchema,
+        }),
+        response: {
+          200: BondAllowlistSchema,
+        },
       },
     },
-    async (_req, reply) => {
-      await reply.send();
+    async (req, reply) => {
+      const entry = await fastify.db.v3.getBondAllowlistEntry({
+        bondIndex: req.params.bond_index,
+        principal: req.params.principal,
+      });
+      if (!entry) {
+        throw new NotFoundError('Bond allowlist entry not found');
+      }
+      await reply.send(serializeDbBondAllowlistEntry(entry));
     }
   );
 
