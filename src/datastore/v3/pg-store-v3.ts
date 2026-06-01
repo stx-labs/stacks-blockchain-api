@@ -653,7 +653,7 @@ export class PgStoreV3 extends BasePgStoreModule {
   async getBondSummaries(args: {
     limit: number;
     cursor?: BondCursor;
-  }): Promise<DbCursorPaginatedResult<DbBondSummary>> {
+  }): Promise<DbCursorPaginatedResult<DbBondSummary> & { burn_block_height: number }> {
     return await this.sqlTransaction(async sql => {
       const limit = args.limit;
       const cursorFilter = args.cursor
@@ -697,6 +697,9 @@ export class PgStoreV3 extends BasePgStoreModule {
             : null;
       }
 
+      const chainTip = await sql<{ burn_block_height: number }[]>`
+        SELECT burn_block_height FROM chain_tip LIMIT 1
+      `;
       return {
         limit,
         next_cursor: extraResult ? extraResult.bond_index.toString() : null,
@@ -704,19 +707,29 @@ export class PgStoreV3 extends BasePgStoreModule {
         current_cursor: firstResult ? firstResult.bond_index.toString() : null,
         total: totalQuery[0]?.total ?? 0,
         results,
+        burn_block_height: chainTip[0]?.burn_block_height ?? 0,
       };
     });
   }
 
-  async getBond(args: { bondIndex: number }): Promise<DbBond | null> {
-    const result = await this.sql<DbBond[]>`
-      SELECT ${this.sql(BOND_COLUMNS)}
-      FROM bonds
-      WHERE canonical = true
-        AND microblock_canonical = true
-        AND bond_index = ${args.bondIndex}
-      LIMIT 1
-    `;
-    return result[0] ?? null;
+  async getBond(args: {
+    bondIndex: number;
+  }): Promise<(DbBond & { burn_block_height: number }) | null> {
+    return await this.sqlTransaction(async sql => {
+      const chainTip = await sql<{ burn_block_height: number }[]>`
+        SELECT burn_block_height FROM chain_tip LIMIT 1
+      `;
+      const result = await sql<DbBond[]>`
+        SELECT ${this.sql(BOND_COLUMNS)}
+        FROM bonds
+        WHERE canonical = true
+          AND microblock_canonical = true
+          AND bond_index = ${args.bondIndex}
+        LIMIT 1
+      `;
+      return result[0]
+        ? { ...result[0], burn_block_height: chainTip[0]?.burn_block_height ?? 0 }
+        : null;
+    });
   }
 }

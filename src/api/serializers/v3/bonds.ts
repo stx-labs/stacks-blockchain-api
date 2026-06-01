@@ -1,16 +1,30 @@
 import { DbBond, DbBondSummary } from '../../../datastore/v3/types.js';
 import { Bond, BondSummary } from '../../schemas/v3/entities/bonds.js';
+import { BondStatus } from '../../schemas/v3/entities/bonds.js';
+
+function getBondStatus(summary: DbBondSummary, currentBurnBlockHeight: number): BondStatus {
+  if (currentBurnBlockHeight < summary.bond_start_height) {
+    return 'upcoming';
+  }
+  if (currentBurnBlockHeight < summary.unlock_burn_height) {
+    return 'active';
+  }
+  return 'unlocked';
+}
 
 /**
  * Serializes a database bond summary to a API bond summary.
  * @param summary - The database bond summary to serialize.
  * @returns The API bond summary.
  */
-export function serializeDbBondSummary(summary: DbBondSummary): BondSummary {
+export function serializeDbBondSummary(
+  summary: DbBondSummary,
+  currentBurnBlockHeight: number
+): BondSummary {
   return {
     index: summary.bond_index,
     pox_version: 'pox5',
-    status: 'upcoming', // TODO: Implement actual status logic
+    status: getBondStatus(summary, currentBurnBlockHeight),
     parameters: {
       target_rate_bps: summary.target_rate,
       stx_value_ratio: summary.stx_value_ratio,
@@ -48,9 +62,9 @@ export function serializeDbBondSummary(summary: DbBondSummary): BondSummary {
  * @param bond - The database bond to serialize.
  * @returns The API bond.
  */
-export function serializeDbBond(bond: DbBond): Bond {
+export function serializeDbBond(bond: DbBond, currentBurnBlockHeight: number): Bond {
   return {
-    ...serializeDbBondSummary(bond),
+    ...serializeDbBondSummary(bond, currentBurnBlockHeight),
     transaction: {
       tx_id: bond.tx_id,
       block: {
