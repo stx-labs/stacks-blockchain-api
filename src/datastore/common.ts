@@ -1617,6 +1617,7 @@ export interface DbChainTip {
   tx_count: number;
   tx_count_unanchored: number;
   mempool_tx_count: number;
+  bond_count: number;
 }
 
 export interface DbSmartContractStatus {

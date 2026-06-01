@@ -416,6 +416,12 @@ export class PgWriteStore extends PgStore {
         await sql`
           WITH new_tx_count AS (
             SELECT tx_count + ${data.txs.length} AS tx_count FROM chain_tip
+          ),
+          new_bond_count AS (
+            SELECT COUNT(*)::int AS bond_count
+            FROM bonds
+            WHERE canonical = true
+              AND microblock_canonical = true
           )
           UPDATE chain_tip SET
             block_height = ${data.block.block_height},
@@ -426,7 +432,8 @@ export class PgWriteStore extends PgStore {
             microblock_sequence = NULL,
             block_count = ${data.block.block_height},
             tx_count = (SELECT tx_count FROM new_tx_count),
-            tx_count_unanchored = (SELECT tx_count FROM new_tx_count)
+            tx_count_unanchored = (SELECT tx_count FROM new_tx_count),
+            bond_count = (SELECT bond_count FROM new_bond_count)
         `;
         if (this.metrics) {
           this.metrics.blockHeight.set(data.block.block_height);
@@ -1101,7 +1108,13 @@ export class PgWriteStore extends PgStore {
               currentMicroblockTip.microblock_sequence === 0
                 ? sql`tx_count + ${data.txs.length}`
                 : sql`tx_count_unanchored + ${data.txs.length}`
-            }
+            },
+            bond_count = (
+              SELECT COUNT(*)::int
+              FROM bonds
+              WHERE canonical = true
+                AND microblock_canonical = true
+            )
         `;
     });
 
@@ -4260,7 +4273,13 @@ export class PgWriteStore extends PgStore {
       await sql`
         UPDATE chain_tip SET
           tx_count = tx_count + ${txCountDelta},
-          tx_count_unanchored = tx_count_unanchored + ${txCountDelta}
+          tx_count_unanchored = tx_count_unanchored + ${txCountDelta},
+          bond_count = (
+            SELECT COUNT(*)::int
+            FROM bonds
+            WHERE canonical = true
+              AND microblock_canonical = true
+          )
       `;
     }
     return updatedEntities;

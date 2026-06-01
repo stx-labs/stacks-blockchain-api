@@ -67,7 +67,17 @@ export const up = (pgm: MigrationBuilder) => {
     early_unlock_admin: {
       type: 'text',
       notNull: true,
-    }
+    },
+    allowed_count: {
+      type: 'integer',
+      notNull: true,
+      default: 0,
+    },
+    registered_count: {
+      type: 'integer',
+      notNull: true,
+      default: 0,
+    },
   });
   pgm.createIndex(
     'bonds',
@@ -84,8 +94,17 @@ export const up = (pgm: MigrationBuilder) => {
   pgm.createIndex('bonds', 'bond_index', {
     where: 'canonical = TRUE AND microblock_canonical = TRUE',
   });
+
+  pgm.addColumn('chain_tip', {
+    bond_count: {
+      type: 'integer',
+      notNull: true,
+      default: 0,
+    },
+  });
 };
 
 export const down = (pgm: MigrationBuilder) => {
   pgm.dropTable('bonds');
+  pgm.dropColumn('chain_tip', 'bond_count');
 };

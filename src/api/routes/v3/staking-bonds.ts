@@ -1,6 +1,15 @@
 import { FastifyPluginAsync } from 'fastify';
 import { Server } from 'node:http';
 import { Type, TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
+import { handleChainTipCache } from '../../controllers/cache-controller.js';
+import { getPagingQueryLimit, ResourceType } from '../../pagination.js';
+import {
+  BondCursorSchema,
+  CursorPaginatedResponse,
+  CursorPaginationQuerystring,
+} from '../../schemas/v3/cursors.js';
+import { BondSummarySchema } from '../../schemas/v3/entities/bonds.js';
+import { serializeDbBondSummary } from '../../serializers/v3/bonds.js';
 
 export const StakingBondsRoutes: FastifyPluginAsync<
   Record<never, never>,
@@ -10,15 +19,33 @@ export const StakingBondsRoutes: FastifyPluginAsync<
   fastify.get(
     '/staking/bonds',
     {
+      preHandler: handleChainTipCache,
       schema: {
         operationId: 'get_bonds',
         summary: 'Get bonds',
         description: 'Get bonds',
         tags: ['Staking'],
+        querystring: CursorPaginationQuerystring(BondCursorSchema, ResourceType.Tx),
+        response: {
+          200: CursorPaginatedResponse(BondSummarySchema, BondCursorSchema, ResourceType.Tx),
+        },
       },
     },
-    async (_req, reply) => {
-      await reply.send();
+    async (req, reply) => {
+      const results = await fastify.db.v3.getBondSummaries({
+        limit: req.query.limit ?? getPagingQueryLimit(ResourceType.Tx),
+        cursor: req.query.cursor,
+      });
+      await reply.send({
+        limit: results.limit,
+        total: results.total,
+        cursor: {
+          next: results.next_cursor,
+          previous: results.prev_cursor,
+          current: results.current_cursor,
+        },
+        results: results.results.map(r => serializeDbBondSummary(r)),
+      });
     }
   );
 

@@ -123,3 +123,12 @@ export interface DbTransactionEvent {
   memo: string | null;
   unlock_height: number | null;
 }
+
+export interface DbBondSummary {
+  bond_index: number;
+  target_rate: number;
+  stx_value_ratio: number;
+  min_ustx_ratio: number;
+  allowed_count: number;
+  registered_count: number;
+}

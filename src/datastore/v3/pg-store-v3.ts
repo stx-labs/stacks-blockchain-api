@@ -1,5 +1,6 @@
 import { BasePgStoreModule } from '@stacks/api-toolkit';
 import {
+  DbBondSummary,
   DbCursorPaginatedResult,
   DbMempoolTransaction,
   DbMempoolTransactionSummary,
@@ -9,6 +10,7 @@ import {
   DbTransactionSummary,
 } from './types.js';
 import {
+  BOND_SUMMARY_COLUMNS,
   MEMPOOL_TX_COLUMNS,
   MEMPOOL_TX_SUMMARY_COLUMNS,
   TX_COLUMNS,
@@ -20,7 +22,11 @@ import { normalizeHashString } from '../../helpers.js';
 import { BlockIdParam } from '../../api/routes/v2/schemas.js';
 import { InvalidRequestError, InvalidRequestErrorType } from '../../errors.js';
 import { TransactionIncludeField } from '../../api/schemas/v3/entities/transactions.js';
-import type { TransactionCursor, TransactionEventCursor } from '../../api/schemas/v3/cursors.js';
+import type {
+  BondCursor,
+  TransactionCursor,
+  TransactionEventCursor,
+} from '../../api/schemas/v3/cursors.js';
 import { encodeTransactionCursor, resolveTransactionCursor } from './helpers.js';
 import { DbEventTypeId } from '../common.js';
 
@@ -637,6 +643,64 @@ export class PgStoreV3 extends BasePgStoreModule {
         next_cursor: extraResult ? extraResult.event_index.toString() : null,
         prev_cursor: prevCursor,
         current_cursor: firstResult ? firstResult.event_index.toString() : null,
+        results,
+      };
+    });
+  }
+
+  async getBondSummaries(args: {
+    limit: number;
+    cursor?: BondCursor;
+  }): Promise<DbCursorPaginatedResult<DbBondSummary>> {
+    return await this.sqlTransaction(async sql => {
+      const limit = args.limit;
+      const cursorFilter = args.cursor
+        ? sql`AND bond_index <= ${parseInt(args.cursor, 10)}`
+        : sql``;
+
+      const totalQuery = await sql<{ total: number }[]>`
+        SELECT bond_count AS total
+        FROM chain_tip
+      `;
+
+      const resultQuery = await sql<DbBondSummary[]>`
+        SELECT ${sql(BOND_SUMMARY_COLUMNS)}
+        FROM bonds
+        WHERE canonical = true
+          AND microblock_canonical = true
+          ${cursorFilter}
+        ORDER BY bond_index DESC
+        LIMIT ${limit + 1}
+      `;
+
+      const hasNextPage = resultQuery.count > limit;
+      const results = hasNextPage ? resultQuery.slice(0, limit) : resultQuery;
+      const firstResult = results[0];
+      const extraResult = hasNextPage ? resultQuery[limit] : null;
+
+      let prevCursor: string | null = null;
+      if (firstResult) {
+        const prevPageQuery = await sql<Pick<DbBondSummary, 'bond_index'>[]>`
+          SELECT bond_index
+          FROM bonds
+          WHERE canonical = true
+            AND microblock_canonical = true
+            AND bond_index > ${firstResult.bond_index}
+          ORDER BY bond_index ASC
+          LIMIT ${limit}
+        `;
+        prevCursor =
+          prevPageQuery.length > 0
+            ? prevPageQuery[prevPageQuery.length - 1].bond_index.toString()
+            : null;
+      }
+
+      return {
+        limit,
+        next_cursor: extraResult ? extraResult.bond_index.toString() : null,
+        prev_cursor: prevCursor,
+        current_cursor: firstResult ? firstResult.bond_index.toString() : null,
+        total: totalQuery[0]?.total ?? 0,
         results,
       };
     });

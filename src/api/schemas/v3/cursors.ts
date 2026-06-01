@@ -71,3 +71,9 @@ export const TransactionEventCursorSchema = Type.String({
   description: 'Cursor for paginating transaction events. Format: event_index',
 });
 export type TransactionEventCursor = Static<typeof TransactionEventCursorSchema>;
+
+export const BondCursorSchema = Type.String({
+  pattern: '^\\d+$',
+  description: 'Cursor for paginating bonds. Format: bond_index',
+});
+export type BondCursor = Static<typeof BondCursorSchema>;

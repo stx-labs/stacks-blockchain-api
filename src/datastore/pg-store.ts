@@ -213,6 +213,7 @@ export class PgStore extends BasePgStore {
       tx_count: tip?.tx_count ?? 0,
       tx_count_unanchored: tip?.tx_count_unanchored ?? 0,
       mempool_tx_count: tip?.mempool_tx_count ?? 0,
+      bond_count: tip?.bond_count ?? 0,
     };
   }
 

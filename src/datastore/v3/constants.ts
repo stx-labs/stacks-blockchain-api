@@ -87,3 +87,12 @@ export const MEMPOOL_TX_COLUMNS = [
   'tenure_change_previous_tenure_blocks',
   'tenure_change_pubkey_hash',
 ];
+
+export const BOND_SUMMARY_COLUMNS = [
+  'bond_index',
+  'target_rate',
+  'stx_value_ratio',
+  'min_ustx_ratio',
+  'allowed_count',
+  'registered_count',
+];
