@@ -2,17 +2,20 @@ import { BasePgStoreModule } from '@stacks/api-toolkit';
 import {
   DbBond,
   DbBondAllowlistEntry,
+  DbBondRegistration,
   DbBondSummary,
   DbCursorPaginatedResult,
   DbMempoolTransaction,
   DbMempoolTransactionSummary,
   DbPrincipalTransactionSummary,
   DbTransaction,
+  DbTransactionCursor,
   DbTransactionEvent,
   DbTransactionSummary,
 } from './types.js';
 import {
   BOND_ALLOWLIST_ENTRY_COLUMNS,
+  BOND_REGISTRATION_COLUMNS,
   BOND_COLUMNS,
   BOND_SUMMARY_COLUMNS,
   MEMPOOL_TX_COLUMNS,
@@ -788,13 +791,7 @@ export class PgStoreV3 extends BasePgStoreModule {
         LIMIT 1
       `;
 
-      const resultQuery = await sql<
-        (DbBondAllowlistEntry & {
-          block_height: number;
-          microblock_sequence: number;
-          tx_index: number;
-        })[]
-      >`
+      const resultQuery = await sql<(DbBondAllowlistEntry & DbTransactionCursor)[]>`
         SELECT ${sql(BOND_ALLOWLIST_ENTRY_COLUMNS)}
         FROM bond_allowlist_entries
         WHERE canonical = true
@@ -812,9 +809,7 @@ export class PgStoreV3 extends BasePgStoreModule {
 
       let prevCursor: string | null = null;
       if (firstResult) {
-        const prevPageQuery = await sql<
-          { block_height: number; microblock_sequence: number; tx_index: number }[]
-        >`
+        const prevPageQuery = await sql<DbTransactionCursor[]>`
           SELECT block_height, microblock_sequence, tx_index
           FROM bond_allowlist_entries
           WHERE canonical = true
@@ -859,6 +854,122 @@ export class PgStoreV3 extends BasePgStoreModule {
       const result = await sql<DbBondAllowlistEntry[]>`
         SELECT staker, max_sats
         FROM bond_allowlist_entries
+        WHERE canonical = true
+          AND microblock_canonical = true
+          AND bond_index = ${args.bondIndex}
+          AND staker = ${args.principal}
+        LIMIT 1
+      `;
+      return result[0] ?? null;
+    });
+  }
+
+  /**
+   * Gets the registrations for a bond.
+   * @param args - The arguments for the query.
+   * @returns The registrations for a bond.
+   */
+  async getBondRegistrations(args: {
+    bondIndex: number;
+    limit: number;
+    cursor?: TransactionCursor;
+  }): Promise<DbCursorPaginatedResult<DbBondRegistration>> {
+    return await this.sqlTransaction(async sql => {
+      const limit = args.limit;
+      let cursorFilter = sql``;
+      if (args.cursor) {
+        const cursor = await resolveTransactionCursor(args.cursor, async cursor => {
+          const exactCursorQuery = await sql<{ exists: boolean }[]>`
+            SELECT EXISTS (
+              SELECT 1
+              FROM bond_registrations
+              WHERE canonical = true
+                AND microblock_canonical = true
+                AND bond_index = ${args.bondIndex}
+                AND (block_height, microblock_sequence, tx_index)
+                    = (${cursor.block_height}, ${cursor.microblock_sequence}, ${cursor.tx_index})
+            ) AS exists
+          `;
+          return exactCursorQuery[0]?.exists ?? false;
+        });
+        cursorFilter = sql`
+          AND (block_height, microblock_sequence, tx_index)
+              <= (${cursor.block_height}, ${cursor.microblock_sequence}, ${cursor.tx_index})
+        `;
+      }
+
+      const totalQuery = await sql<{ total: number }[]>`
+        SELECT registered_count AS total
+        FROM bonds
+        WHERE canonical = true
+          AND microblock_canonical = true
+          AND bond_index = ${args.bondIndex}
+        LIMIT 1
+      `;
+
+      const resultQuery = await sql<(DbBondRegistration & DbTransactionCursor)[]>`
+        SELECT ${sql(BOND_REGISTRATION_COLUMNS)}
+        FROM bond_registrations
+        WHERE canonical = true
+          AND microblock_canonical = true
+          AND bond_index = ${args.bondIndex}
+          ${cursorFilter}
+        ORDER BY block_height DESC, microblock_sequence DESC, tx_index DESC
+        LIMIT ${limit + 1}
+      `;
+
+      const hasNextPage = resultQuery.count > limit;
+      const results = hasNextPage ? resultQuery.slice(0, limit) : resultQuery;
+      const firstResult = results[0];
+      const extraResult = hasNextPage ? resultQuery[limit] : null;
+
+      let prevCursor: string | null = null;
+      if (firstResult) {
+        const prevPageQuery = await sql<DbTransactionCursor[]>`
+          SELECT block_height, microblock_sequence, tx_index
+          FROM bond_registrations
+          WHERE canonical = true
+            AND microblock_canonical = true
+            AND bond_index = ${args.bondIndex}
+            AND (block_height, microblock_sequence, tx_index)
+                > (
+                  ${firstResult.block_height},
+                  ${firstResult.microblock_sequence},
+                  ${firstResult.tx_index}
+                )
+          ORDER BY block_height ASC, microblock_sequence ASC, tx_index ASC
+          LIMIT ${limit}
+        `;
+        prevCursor =
+          prevPageQuery.length > 0
+            ? encodeTransactionCursor(prevPageQuery[prevPageQuery.length - 1])
+            : null;
+      }
+
+      return {
+        limit,
+        next_cursor: extraResult ? encodeTransactionCursor(extraResult) : null,
+        prev_cursor: prevCursor,
+        current_cursor: firstResult ? encodeTransactionCursor(firstResult) : null,
+        total: totalQuery[0]?.total ?? 0,
+        results,
+      };
+    });
+  }
+
+  /**
+   * Gets a registration for a bond and principal.
+   * @param args - The arguments for the query.
+   * @returns The latest registration for a bond and principal.
+   */
+  async getBondRegistration(args: {
+    bondIndex: number;
+    principal: Principal;
+  }): Promise<DbBondRegistration | null> {
+    return await this.sqlTransaction(async sql => {
+      const result = await sql<DbBondRegistration[]>`
+        SELECT ${sql(BOND_REGISTRATION_COLUMNS)}
+        FROM bond_registrations
         WHERE canonical = true
           AND microblock_canonical = true
           AND bond_index = ${args.bondIndex}

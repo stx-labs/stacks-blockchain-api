@@ -1,7 +1,13 @@
-import { DbBond, DbBondAllowlistEntry, DbBondSummary } from '../../../datastore/v3/types.js';
+import {
+  DbBond,
+  DbBondAllowlistEntry,
+  DbBondRegistration,
+  DbBondSummary,
+} from '../../../datastore/v3/types.js';
 import { Bond, BondSummary } from '../../schemas/v3/entities/bonds.js';
 import { BondStatus } from '../../schemas/v3/entities/bonds.js';
 import { BondAllowlist } from '../../schemas/v3/entities/bond-allowlist-entries.js';
+import { BondRegistration } from '../../schemas/v3/entities/bond-registrations.js';
 
 function getBondStatus(summary: DbBondSummary, currentBurnBlockHeight: number): BondStatus {
   if (currentBurnBlockHeight < summary.bond_start_height) {
@@ -87,5 +93,19 @@ export function serializeDbBondAllowlistEntry(entry: DbBondAllowlistEntry): Bond
   return {
     staker: entry.staker,
     max_sats: entry.max_sats,
+  };
+}
+
+export function serializeDbBondRegistration(entry: DbBondRegistration): BondRegistration {
+  return {
+    bond_index: entry.bond_index,
+    signer: entry.signer,
+    staker: entry.staker,
+    amount_ustx: entry.amount_ustx,
+    sats_total: entry.sats_total,
+    first_reward_cycle: entry.first_reward_cycle,
+    unlock_burn_height: entry.unlock_burn_height,
+    unlock_cycle: entry.unlock_cycle,
+    is_l1_lock: entry.is_l1_lock,
   };
 }

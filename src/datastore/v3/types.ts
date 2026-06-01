@@ -158,3 +158,21 @@ export interface DbBondAllowlistEntry {
   staker: string;
   max_sats: string;
 }
+
+export interface DbBondRegistration {
+  bond_index: number;
+  signer: string;
+  staker: string;
+  amount_ustx: string;
+  sats_total: string;
+  first_reward_cycle: number;
+  unlock_burn_height: number;
+  unlock_cycle: number;
+  is_l1_lock: boolean;
+}
+
+export interface DbTransactionCursor {
+  block_height: number;
+  microblock_sequence: number;
+  tx_index: number;
+}

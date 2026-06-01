@@ -126,3 +126,18 @@ export const BOND_ALLOWLIST_ENTRY_COLUMNS = [
   'microblock_sequence',
   'tx_index',
 ];
+
+export const BOND_REGISTRATION_COLUMNS = [
+  'bond_index',
+  'signer',
+  'staker',
+  'amount_ustx',
+  'sats_total',
+  'first_reward_cycle',
+  'unlock_burn_height',
+  'unlock_cycle',
+  'is_l1_lock',
+  'block_height',
+  'microblock_sequence',
+  'tx_index',
+];

@@ -1,29 +1,14 @@
 import { Static, Type } from '@sinclair/typebox';
 
-export const Pox5BondRegistrationSchema = Type.Object({
+export const BondRegistrationSchema = Type.Object({
   bond_index: Type.Integer(),
-  pox_address: Type.Optional(
-    Type.String({
-      description:
-        'Where they want to receive BTC rewards. If this is none, rewards are received as sBTC.',
-    })
-  ),
-  signer_manager: Type.String(),
-  btc_lockup: Type.Union([
-    Type.Object({
-      type: Type.Literal('outputs'),
-      outputs: Type.Object({
-        amount: Type.String(),
-        tx_id: Type.String(),
-        output_index: Type.Integer(),
-      }),
-      unlock_bytes: Type.String(),
-    }),
-    Type.Object({
-      type: Type.Literal('sbtc'),
-      amount: Type.String(),
-    }),
-  ]),
-  signer_calldata: Type.Optional(Type.String()),
+  signer: Type.String(),
+  staker: Type.String(),
+  amount_ustx: Type.String(),
+  sats_total: Type.String(),
+  first_reward_cycle: Type.Integer(),
+  unlock_burn_height: Type.Integer(),
+  unlock_cycle: Type.Integer(),
+  is_l1_lock: Type.Boolean(),
 });
-export type Pox5BondRegistration = Static<typeof Pox5BondRegistrationSchema>;
+export type BondRegistration = Static<typeof BondRegistrationSchema>;

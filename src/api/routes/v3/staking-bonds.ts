@@ -11,10 +11,12 @@ import {
 } from '../../schemas/v3/cursors.js';
 import { BondSchema, BondSummarySchema } from '../../schemas/v3/entities/bonds.js';
 import { BondAllowlistSchema } from '../../schemas/v3/entities/bond-allowlist-entries.js';
-import { PrincipalSchema } from '../../schemas/v3/entities/common.js';
+import { BondRegistrationSchema } from '../../schemas/v3/entities/bond-registrations.js';
+import { BondIndexSchema, PrincipalSchema } from '../../schemas/v3/entities/common.js';
 import {
   serializeDbBond,
   serializeDbBondAllowlistEntry,
+  serializeDbBondRegistration,
   serializeDbBondSummary,
 } from '../../serializers/v3/bonds.js';
 import { NotFoundError } from '../../../errors.js';
@@ -67,7 +69,7 @@ export const StakingBondsRoutes: FastifyPluginAsync<
         description: 'Get bond',
         tags: ['Staking'],
         params: Type.Object({
-          bond_index: Type.Integer({ description: 'Bond index' }),
+          bond_index: BondIndexSchema,
         }),
         response: {
           200: BondSchema,
@@ -93,7 +95,7 @@ export const StakingBondsRoutes: FastifyPluginAsync<
         description: 'Get bond allowlist entries',
         tags: ['Staking'],
         params: Type.Object({
-          bond_index: Type.Integer({ description: 'Bond index' }),
+          bond_index: BondIndexSchema,
         }),
         querystring: CursorPaginationQuerystring(TransactionCursorSchema, ResourceType.Tx),
         response: {
@@ -134,7 +136,7 @@ export const StakingBondsRoutes: FastifyPluginAsync<
         description: 'Get bond allowlist entry',
         tags: ['Staking'],
         params: Type.Object({
-          bond_index: Type.Integer({ description: 'Bond index' }),
+          bond_index: BondIndexSchema,
           principal: PrincipalSchema,
         }),
         response: {
@@ -157,30 +159,71 @@ export const StakingBondsRoutes: FastifyPluginAsync<
   fastify.get(
     '/staking/bonds/:bond_index/registrations',
     {
+      preHandler: handleChainTipCache,
       schema: {
-        operationId: 'get_pox5_bond_allowlist_entries',
-        summary: 'Get PoX-5 bond allowlist entries',
-        description: 'Get PoX-5 bond allowlist entries',
-        tags: ['PoX-5'],
+        operationId: 'get_bond_registrations',
+        summary: 'Get bond registrations',
+        description: 'Get bond registrations',
+        tags: ['Staking'],
+        params: Type.Object({
+          bond_index: BondIndexSchema,
+        }),
+        querystring: CursorPaginationQuerystring(TransactionCursorSchema, ResourceType.Tx),
+        response: {
+          200: CursorPaginatedResponse(
+            BondRegistrationSchema,
+            TransactionCursorSchema,
+            ResourceType.Tx
+          ),
+        },
       },
     },
-    async (_req, reply) => {
-      await reply.send();
+    async (req, reply) => {
+      const results = await fastify.db.v3.getBondRegistrations({
+        bondIndex: req.params.bond_index,
+        limit: req.query.limit ?? getPagingQueryLimit(ResourceType.Tx),
+        cursor: req.query.cursor,
+      });
+      await reply.send({
+        limit: results.limit,
+        total: results.total,
+        cursor: {
+          next: results.next_cursor,
+          previous: results.prev_cursor,
+          current: results.current_cursor,
+        },
+        results: results.results.map(r => serializeDbBondRegistration(r)),
+      });
     }
   );
 
   fastify.get(
     '/staking/bonds/:bond_index/registrations/:principal',
     {
+      preHandler: handleChainTipCache,
       schema: {
         operationId: 'get_bond_registration',
         summary: 'Get bond registration',
         description: 'Get bond registration',
         tags: ['Staking'],
+        params: Type.Object({
+          bond_index: BondIndexSchema,
+          principal: PrincipalSchema,
+        }),
+        response: {
+          200: BondRegistrationSchema,
+        },
       },
     },
-    async (_req, reply) => {
-      await reply.send();
+    async (req, reply) => {
+      const registration = await fastify.db.v3.getBondRegistration({
+        bondIndex: req.params.bond_index,
+        principal: req.params.principal,
+      });
+      if (!registration) {
+        throw new NotFoundError('Bond registration not found');
+      }
+      await reply.send(serializeDbBondRegistration(registration));
     }
   );
 
