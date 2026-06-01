@@ -93,6 +93,25 @@ export const BOND_SUMMARY_COLUMNS = [
   'target_rate',
   'stx_value_ratio',
   'min_ustx_ratio',
+  'first_reward_cycle',
+  'bond_start_height',
+  'unlock_cycle',
+  'unlock_burn_height',
+  'btc_capacity',
   'allowed_count',
   'registered_count',
+];
+
+export const BOND_COLUMNS = [
+  ...BOND_SUMMARY_COLUMNS,
+  'tx_id',
+  'block_height',
+  'block_hash',
+  'index_block_hash',
+  'block_time',
+  'tx_index',
+  'burn_block_height',
+  'burn_block_time',
+  'early_unlock_bytes',
+  'early_unlock_admin',
 ];

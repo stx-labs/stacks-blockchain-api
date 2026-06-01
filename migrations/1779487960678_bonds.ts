@@ -60,12 +60,32 @@ export const up = (pgm: MigrationBuilder) => {
       type: 'integer',
       notNull: true,
     },
-    early_unlock_signers: {
+    early_unlock_bytes: {
       type: 'text',
       notNull: true,
     },
     early_unlock_admin: {
       type: 'text',
+      notNull: true,
+    },
+    first_reward_cycle: {
+      type: 'integer',
+      notNull: true,
+    },
+    bond_start_height: {
+      type: 'integer',
+      notNull: true,
+    },
+    unlock_cycle: {
+      type: 'integer',
+      notNull: true,
+    },
+    unlock_burn_height: {
+      type: 'integer',
+      notNull: true,
+    },
+    btc_capacity: {
+      type: 'numeric',
       notNull: true,
     },
     allowed_count: {

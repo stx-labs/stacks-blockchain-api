@@ -1,5 +1,5 @@
-import { DbBondSummary } from '../../../datastore/v3/types.js';
-import { BondSummary } from '../../schemas/v3/entities/bonds.js';
+import { DbBond, DbBondSummary } from '../../../datastore/v3/types.js';
+import { Bond, BondSummary } from '../../schemas/v3/entities/bonds.js';
 
 /**
  * Serializes a database bond summary to a API bond summary.
@@ -38,6 +38,31 @@ export function serializeDbBondSummary(summary: DbBondSummary): BondSummary {
       },
       paid_out: {
         btc: '0',
+      },
+    },
+  };
+}
+
+/**
+ * Serializes a database bond to a API bond.
+ * @param bond - The database bond to serialize.
+ * @returns The API bond.
+ */
+export function serializeDbBond(bond: DbBond): Bond {
+  return {
+    ...serializeDbBondSummary(bond),
+    transaction: {
+      tx_id: bond.tx_id,
+      block: {
+        height: bond.block_height,
+        hash: bond.block_hash,
+        index_hash: bond.index_block_hash,
+        time: bond.block_time,
+        tx_index: bond.tx_index,
+      },
+      bitcoin_block: {
+        height: bond.burn_block_height,
+        time: bond.burn_block_time,
       },
     },
   };

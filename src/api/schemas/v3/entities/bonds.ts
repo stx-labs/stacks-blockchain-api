@@ -81,7 +81,6 @@ export const BondSchema = Type.Composite([
       block: BlockPositionSchema,
       bitcoin_block: BitcoinBlockPositionSchema,
     }),
-    early_unlock_signers: Type.String(),
   }),
 ]);
 export type Bond = Static<typeof BondSchema>;

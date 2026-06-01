@@ -1644,7 +1644,11 @@ export interface DbBondInsertValues extends DbTxLocation {
   target_rate: number;
   stx_value_ratio: number;
   min_ustx_ratio: number;
-  early_unlock_signers: string;
+  first_reward_cycle: number;
+  bond_start_height: number;
+  unlock_cycle: number;
+  unlock_burn_height: number;
+  early_unlock_bytes: string;
   early_unlock_admin: string;
 }
 

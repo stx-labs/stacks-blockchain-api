@@ -600,8 +600,12 @@ export class PgWriteStore extends PgStore {
       target_rate: parseInt(event.data.target_rate),
       stx_value_ratio: parseInt(event.data.stx_value_ratio),
       min_ustx_ratio: parseInt(event.data.min_ustx_ratio),
-      early_unlock_signers: event.data.early_unlock_signers,
+      early_unlock_bytes: event.data.early_unlock_bytes,
       early_unlock_admin: event.data.early_unlock_admin,
+      first_reward_cycle: parseInt(event.data.first_reward_cycle),
+      bond_start_height: parseInt(event.data.bond_start_height),
+      unlock_cycle: parseInt(event.data.unlock_cycle),
+      unlock_burn_height: parseInt(event.data.unlock_burn_height),
     };
     await sql`
       INSERT INTO bonds ${sql(bond)}
@@ -736,7 +740,7 @@ export class PgWriteStore extends PgStore {
         bond_index: parseInt(bondIndex),
         remaining_rewards: event.data.remaining_rewards,
         accrued_rewards: event.data.accrued_rewards,
-        new_reserve: event.data.new_reserve,
+        new_reserve: event.data.new_reserve ?? '0',
         stx_staker_rewards: event.data.stx_staker_rewards,
         stx_cycle: parseInt(event.data.stx_cycle),
         cycle_staked_ustx: event.data.cycle_staked_ustx,

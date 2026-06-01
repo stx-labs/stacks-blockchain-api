@@ -8,8 +8,9 @@ import {
   CursorPaginatedResponse,
   CursorPaginationQuerystring,
 } from '../../schemas/v3/cursors.js';
-import { BondSummarySchema } from '../../schemas/v3/entities/bonds.js';
-import { serializeDbBondSummary } from '../../serializers/v3/bonds.js';
+import { BondSchema, BondSummarySchema } from '../../schemas/v3/entities/bonds.js';
+import { serializeDbBond, serializeDbBondSummary } from '../../serializers/v3/bonds.js';
+import { NotFoundError } from '../../../errors.js';
 
 export const StakingBondsRoutes: FastifyPluginAsync<
   Record<never, never>,
@@ -52,6 +53,7 @@ export const StakingBondsRoutes: FastifyPluginAsync<
   fastify.get(
     '/staking/bonds/:bond_index',
     {
+      preHandler: handleChainTipCache,
       schema: {
         operationId: 'get_bond',
         summary: 'Get bond',
@@ -60,10 +62,17 @@ export const StakingBondsRoutes: FastifyPluginAsync<
         params: Type.Object({
           bond_index: Type.Integer({ description: 'Bond index' }),
         }),
+        response: {
+          200: BondSchema,
+        },
       },
     },
-    async (_req, reply) => {
-      await reply.send();
+    async (req, reply) => {
+      const bond = await fastify.db.v3.getBond({ bondIndex: req.params.bond_index });
+      if (!bond) {
+        throw new NotFoundError('Bond not found');
+      }
+      await reply.send(serializeDbBond(bond));
     }
   );
 

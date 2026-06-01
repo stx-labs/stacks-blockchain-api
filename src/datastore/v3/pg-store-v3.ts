@@ -1,5 +1,6 @@
 import { BasePgStoreModule } from '@stacks/api-toolkit';
 import {
+  DbBond,
   DbBondSummary,
   DbCursorPaginatedResult,
   DbMempoolTransaction,
@@ -10,6 +11,7 @@ import {
   DbTransactionSummary,
 } from './types.js';
 import {
+  BOND_COLUMNS,
   BOND_SUMMARY_COLUMNS,
   MEMPOOL_TX_COLUMNS,
   MEMPOOL_TX_SUMMARY_COLUMNS,
@@ -704,5 +706,17 @@ export class PgStoreV3 extends BasePgStoreModule {
         results,
       };
     });
+  }
+
+  async getBond(args: { bondIndex: number }): Promise<DbBond | null> {
+    const result = await this.sql<DbBond[]>`
+      SELECT ${this.sql(BOND_COLUMNS)}
+      FROM bonds
+      WHERE canonical = true
+        AND microblock_canonical = true
+        AND bond_index = ${args.bondIndex}
+      LIMIT 1
+    `;
+    return result[0] ?? null;
   }
 }
