@@ -88,6 +88,21 @@ export const up = (pgm: MigrationBuilder) => {
       type: 'numeric',
       notNull: true,
     },
+    btc_locked: {
+      type: 'numeric',
+      notNull: true,
+      default: 0,
+    },
+    stx_locked: {
+      type: 'numeric',
+      notNull: true,
+      default: 0,
+    },
+    btc_paid_out: {
+      type: 'numeric',
+      notNull: true,
+      default: 0,
+    },
     allowed_count: {
       type: 'integer',
       notNull: true,

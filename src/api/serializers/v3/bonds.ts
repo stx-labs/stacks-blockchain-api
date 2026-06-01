@@ -10,12 +10,12 @@ export function serializeDbBondSummary(summary: DbBondSummary): BondSummary {
   return {
     index: summary.bond_index,
     pox_version: 'pox5',
-    status: 'upcoming',
+    status: 'upcoming', // TODO: Implement actual status logic
     parameters: {
       target_rate_bps: summary.target_rate,
       stx_value_ratio: summary.stx_value_ratio,
       minimum_stx_ratio: summary.min_ustx_ratio,
-      btc_capacity: '0',
+      btc_capacity: summary.btc_capacity,
     },
     registrations: {
       allowed_count: summary.allowed_count,
@@ -23,21 +23,21 @@ export function serializeDbBondSummary(summary: DbBondSummary): BondSummary {
     },
     schedule: {
       activation: {
-        bitcoin_height: 0,
-        pox_cycle: 0,
+        bitcoin_height: summary.bond_start_height,
+        pox_cycle: summary.first_reward_cycle,
       },
       unlock: {
-        bitcoin_height: 0,
-        pox_cycle: 0,
+        bitcoin_height: summary.unlock_burn_height,
+        pox_cycle: summary.unlock_cycle,
       },
     },
     balances: {
       locked: {
-        btc: '0',
-        stx: '0',
+        btc: summary.btc_locked,
+        stx: summary.stx_locked,
       },
       paid_out: {
-        btc: '0',
+        btc: summary.btc_paid_out,
       },
     },
   };

@@ -670,10 +670,11 @@ export class PgWriteStore extends PgStore {
     switch (event.name) {
       case Pox5EventName.RegisterForBond:
       case Pox5EventName.UpdateBondRegistration: {
+        const bondIndex = parseInt(event.data.bond_index);
         const position: DbPrincipalBondPositionInsertValues = {
           ...txLocation,
           principal: event.data.staker,
-          bond_index: parseInt(event.data.bond_index),
+          bond_index: bondIndex,
           status: DbPrincipalBondPositionStatus.Enrolled,
           active: true,
           btc_locked:
@@ -684,45 +685,129 @@ export class PgWriteStore extends PgStore {
           btc_paid_out: '0',
         };
         await sql`
-          INSERT INTO principal_bond_positions ${sql(position)}
-          ON CONFLICT (principal, bond_index) DO UPDATE SET
-            tx_id = EXCLUDED.tx_id,
-            tx_index = EXCLUDED.tx_index,
-            block_height = EXCLUDED.block_height,
-            index_block_hash = EXCLUDED.index_block_hash,
-            parent_index_block_hash = EXCLUDED.parent_index_block_hash,
-            microblock_hash = EXCLUDED.microblock_hash,
-            microblock_sequence = EXCLUDED.microblock_sequence,
-            microblock_canonical = EXCLUDED.microblock_canonical,
-            canonical = EXCLUDED.canonical,
-            status = EXCLUDED.status,
-            active = EXCLUDED.active,
-            btc_locked = EXCLUDED.btc_locked,
-            stx_locked = EXCLUDED.stx_locked
+          WITH existing_position AS (
+            SELECT btc_locked, stx_locked
+            FROM principal_bond_positions
+            WHERE principal = ${position.principal}
+              AND bond_index = ${bondIndex}
+              AND canonical = true
+              AND microblock_canonical = true
+          ),
+          upserted_position AS (
+            INSERT INTO principal_bond_positions ${sql(position)}
+            ON CONFLICT (principal, bond_index) DO UPDATE SET
+              tx_id = EXCLUDED.tx_id,
+              tx_index = EXCLUDED.tx_index,
+              block_height = EXCLUDED.block_height,
+              index_block_hash = EXCLUDED.index_block_hash,
+              parent_index_block_hash = EXCLUDED.parent_index_block_hash,
+              microblock_hash = EXCLUDED.microblock_hash,
+              microblock_sequence = EXCLUDED.microblock_sequence,
+              microblock_canonical = EXCLUDED.microblock_canonical,
+              canonical = EXCLUDED.canonical,
+              status = EXCLUDED.status,
+              active = EXCLUDED.active,
+              btc_locked = EXCLUDED.btc_locked,
+              stx_locked = EXCLUDED.stx_locked
+            RETURNING btc_locked, stx_locked
+          ),
+          delta AS (
+            SELECT
+              upserted_position.btc_locked::numeric
+                - COALESCE(existing_position.btc_locked::numeric, 0) AS btc_delta,
+              upserted_position.stx_locked::numeric
+                - COALESCE(existing_position.stx_locked::numeric, 0) AS stx_delta
+            FROM upserted_position
+            LEFT JOIN existing_position ON true
+          )
+          UPDATE bonds
+          SET
+            btc_locked = bonds.btc_locked + delta.btc_delta,
+            stx_locked = bonds.stx_locked + delta.stx_delta
+          FROM delta
+          WHERE bonds.bond_index = ${bondIndex}
+            AND bonds.canonical = true
+            AND bonds.microblock_canonical = true
         `;
         break;
       }
       case Pox5EventName.AnnounceL1EarlyExit:
         await sql`
-          UPDATE principal_bond_positions SET
-            status = ${DbPrincipalBondPositionStatus.EarlyExit},
-            active = false
-          WHERE principal = ${event.data.staker}
-            AND bond_index = ${parseInt(event.data.bond_index)}
-            AND canonical = true
-            AND microblock_canonical = true
-          `;
+          WITH updated_position AS (
+            UPDATE principal_bond_positions
+            SET
+              status = ${DbPrincipalBondPositionStatus.EarlyExit},
+              active = false
+            WHERE principal = ${event.data.staker}
+              AND bond_index = ${parseInt(event.data.bond_index)}
+              AND canonical = true
+              AND microblock_canonical = true
+            RETURNING
+              bond_index,
+              btc_locked::numeric AS previous_btc_locked,
+              stx_locked::numeric AS previous_stx_locked,
+              btc_locked::numeric AS new_btc_locked,
+              stx_locked::numeric AS new_stx_locked
+          ),
+          delta AS (
+            SELECT
+              SUM(new_btc_locked - previous_btc_locked) AS btc_delta,
+              SUM(new_stx_locked - previous_stx_locked) AS stx_delta,
+              bond_index
+            FROM updated_position
+            GROUP BY bond_index
+          )
+          UPDATE bonds
+          SET
+            btc_locked = bonds.btc_locked + delta.btc_delta,
+            stx_locked = bonds.stx_locked + delta.stx_delta
+          FROM delta
+          WHERE bonds.bond_index = delta.bond_index
+            AND bonds.canonical = true
+            AND bonds.microblock_canonical = true
+        `;
         return;
       case Pox5EventName.UnstakeSbtc:
         await sql`
-          UPDATE principal_bond_positions SET
-            ${event.data.new_amount_sats == '0' ? sql`status = ${DbPrincipalBondPositionStatus.EarlyExit}` : sql``}
-            btc_locked = ${event.data.new_amount_sats}
-          WHERE principal = ${event.data.staker}
-            AND bond_index = ${parseInt(event.data.bond_index)}
-            AND canonical = true
-            AND microblock_canonical = true
-          `;
+          WITH existing_position AS (
+            SELECT bond_index, btc_locked::numeric AS btc_locked, stx_locked::numeric AS stx_locked
+            FROM principal_bond_positions
+            WHERE principal = ${event.data.staker}
+              AND bond_index = ${parseInt(event.data.bond_index)}
+              AND canonical = true
+              AND microblock_canonical = true
+          ),
+          updated_position AS (
+            UPDATE principal_bond_positions
+            SET
+              ${event.data.new_amount_sats == '0' ? sql`status = ${DbPrincipalBondPositionStatus.EarlyExit},` : sql``}
+              btc_locked = ${event.data.new_amount_sats}
+            WHERE principal = ${event.data.staker}
+              AND bond_index = ${parseInt(event.data.bond_index)}
+              AND canonical = true
+              AND microblock_canonical = true
+            RETURNING
+              bond_index,
+              btc_locked::numeric AS new_btc_locked,
+              stx_locked::numeric AS new_stx_locked
+          ),
+          delta AS (
+            SELECT
+              updated_position.new_btc_locked - existing_position.btc_locked AS btc_delta,
+              updated_position.new_stx_locked - existing_position.stx_locked AS stx_delta,
+              updated_position.bond_index
+            FROM updated_position
+            INNER JOIN existing_position USING (bond_index)
+          )
+          UPDATE bonds
+          SET
+            btc_locked = bonds.btc_locked + delta.btc_delta,
+            stx_locked = bonds.stx_locked + delta.stx_delta
+          FROM delta
+          WHERE bonds.bond_index = delta.bond_index
+            AND bonds.canonical = true
+            AND bonds.microblock_canonical = true
+        `;
         return;
     }
   }
@@ -759,14 +844,25 @@ export class PgWriteStore extends PgStore {
     txLocation: DbTxLocation,
     event: Pox5EventAddToAllowlist
   ) {
+    const bondIndex = parseInt(event.data.bond_index);
+    const maxSats = event.data.max_sats;
     const bondAllowlistEntry: DbBondAllowlistEntryInsertValues = {
       ...txLocation,
-      bond_index: parseInt(event.data.bond_index),
+      bond_index: bondIndex,
       staker: event.data.staker,
-      max_sats: event.data.max_sats,
+      max_sats: maxSats,
     };
     await sql`
-      INSERT INTO bond_allowlist_entries ${sql(bondAllowlistEntry)}
+      WITH inserted AS (
+        INSERT INTO bond_allowlist_entries ${sql(bondAllowlistEntry)}
+        RETURNING bond_index, max_sats
+      )
+      UPDATE bonds AS b
+      SET btc_capacity = b.btc_capacity + i.max_sats::numeric
+      FROM inserted AS i
+      WHERE b.bond_index = i.bond_index
+        AND b.canonical = true
+        AND b.microblock_canonical = true
     `;
   }
 

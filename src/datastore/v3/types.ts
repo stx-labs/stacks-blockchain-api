@@ -134,6 +134,9 @@ export interface DbBondSummary {
   unlock_cycle: number;
   unlock_burn_height: number;
   btc_capacity: string;
+  btc_locked: string;
+  stx_locked: string;
+  btc_paid_out: string;
   allowed_count: number;
   registered_count: number;
 }

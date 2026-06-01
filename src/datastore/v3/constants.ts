@@ -98,6 +98,9 @@ export const BOND_SUMMARY_COLUMNS = [
   'unlock_cycle',
   'unlock_burn_height',
   'btc_capacity',
+  'btc_locked',
+  'stx_locked',
+  'btc_paid_out',
   'allowed_count',
   'registered_count',
 ];
