@@ -1194,7 +1194,9 @@ export function parseNewBlockMessage(
     }
     poxSetSigners = {
       cycle_number: msg.cycle_number,
-      pox_ustx_threshold: BigInt(msg.reward_set.pox_ustx_threshold),
+      pox_ustx_threshold: msg.reward_set.pox_ustx_threshold
+        ? BigInt(msg.reward_set.pox_ustx_threshold)
+        : 50_000n * 1_000_000n, // 50,000 STX
       signers,
       rewarded_addresses: rewardedAddresses,
     };
