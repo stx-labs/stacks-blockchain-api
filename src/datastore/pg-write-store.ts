@@ -891,6 +891,14 @@ export class PgWriteStore extends PgStore {
         WHERE pox_v3_unlock_height != ${data.pox_v3_unlock_height}
       `;
     }
+    if (data.pox_v4_unlock_height !== undefined) {
+      // update the pox_state.pox_v4_unlock_height singleton
+      await sql`
+        UPDATE pox_state
+        SET pox_v4_unlock_height = ${data.pox_v4_unlock_height}
+        WHERE pox_v4_unlock_height != ${data.pox_v4_unlock_height}
+      `;
+    }
   }
 
   async updateMinerRewards(sql: PgSqlClient, minerRewards: DbMinerReward[]): Promise<void> {

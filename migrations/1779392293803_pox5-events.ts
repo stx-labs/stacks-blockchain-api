@@ -71,8 +71,18 @@ export const up = (pgm: MigrationBuilder) => {
   pgm.createIndex('pox5_events', 'tx_id');
   pgm.createIndex('pox5_events', ['index_block_hash', 'canonical']);
   pgm.createIndex('pox5_events', 'microblock_hash');
+
+  // Add pox_v5_unlock_height to pox_state table to track the unlock height for pox v5
+  pgm.addColumn('pox_state', {
+    pox_v4_unlock_height: {
+      type: 'bigint',
+      notNull: true,
+      default: 0,
+    },
+  });
 };
 
 export const down = (pgm: MigrationBuilder) => {
   pgm.dropTable('pox5_events');
+  pgm.dropColumn('pox_state', 'pox_v4_unlock_height');
 };

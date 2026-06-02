@@ -1208,6 +1208,8 @@ export function parseNewBlockMessage(
     pox_v1_unlock_height: msg.pox_v1_unlock_height,
     pox_v2_unlock_height: msg.pox_v2_unlock_height,
     pox_v3_unlock_height: msg.pox_v3_unlock_height,
+    pox_v4_unlock_height: (msg as NewBlockMessage & { pox_v4_unlock_height?: number })
+      .pox_v4_unlock_height,
     poxSetSigners: poxSetSigners,
   };
 

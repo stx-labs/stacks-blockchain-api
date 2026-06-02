@@ -508,6 +508,7 @@ export interface DataStoreBlockUpdateData {
   pox_v1_unlock_height?: number;
   pox_v2_unlock_height?: number;
   pox_v3_unlock_height?: number;
+  pox_v4_unlock_height?: number;
   poxSetSigners?: DbPoxSetSigners;
 }
 

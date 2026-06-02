@@ -120,7 +120,6 @@ export const up = (pgm: MigrationBuilder) => {
       { name: 'block_height', sort: 'DESC' },
       { name: 'microblock_sequence', sort: 'DESC' },
       { name: 'tx_index', sort: 'DESC' },
-      { name: 'event_index', sort: 'DESC' },
     ],
     {
       where: 'canonical = TRUE AND microblock_canonical = TRUE',
@@ -130,6 +129,7 @@ export const up = (pgm: MigrationBuilder) => {
     where: 'canonical = TRUE AND microblock_canonical = TRUE',
   });
 
+  // Add bond count to chain tip table to track the number of bonds in the chain
   pgm.addColumn('chain_tip', {
     bond_count: {
       type: 'integer',
