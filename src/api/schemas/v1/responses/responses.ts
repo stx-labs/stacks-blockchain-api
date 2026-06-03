@@ -33,9 +33,6 @@ export const ServerStatusResponseSchema = Type.Object(
     status: Type.String({
       description: 'the current server status',
     }),
-    pox_v1_unlock_height: OptionalNullable(Type.Integer()),
-    pox_v2_unlock_height: OptionalNullable(Type.Integer()),
-    pox_v3_unlock_height: OptionalNullable(Type.Integer()),
     chain_tip: OptionalNullable(
       Type.Object({
         block_height: Type.Integer({

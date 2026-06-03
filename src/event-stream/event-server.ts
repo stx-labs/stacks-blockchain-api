@@ -22,10 +22,11 @@ import {
   DataStoreTxEventData,
   DbMicroblock,
   DataStoreAttachmentData,
-  DbPoxSyntheticEvent,
+  DbPox4SyntheticEvent,
   DbTxStatus,
   DbPoxSetSigners,
   DbBurnBlockPoxTx,
+  DbPox5SyntheticEvent,
 } from '../datastore/common.js';
 import {
   getTxSenderAddress,
@@ -36,7 +37,12 @@ import {
   isPoxPrintEvent,
   newCoreNoreBlockEventCounts,
 } from './reader.js';
-import { decodeClarityValue, decodeTransaction, TxPayloadTypeID } from '@stacks/codec';
+import {
+  decodeClarityValue,
+  decodePoxSyntheticEvent,
+  decodeTransaction,
+  TxPayloadTypeID,
+} from '@stacks/codec';
 import type { ClarityValueBuffer, ClarityValueStringAscii, ClarityValueTuple } from '@stacks/codec';
 import { BnsContractIdentifier } from './bns/bns-constants.js';
 import {
@@ -51,10 +57,9 @@ import {
   getTxDbStatus,
 } from '../datastore/helpers.js';
 import { handleBnsImport } from '../import-v1/index.js';
-import { decodePoxSyntheticPrintEvent } from './pox-event-parsing.js';
 import { hexToBuffer, isProdEnv, logger, PINO_LOGGER_CONFIG, stopwatch } from '@stacks/api-toolkit';
 import { ENV } from '../env.js';
-import { POX_2_CONTRACT_NAME, POX_3_CONTRACT_NAME, POX_4_CONTRACT_NAME } from '../pox-helpers.js';
+import { POX_2_CONTRACT_NAME, POX_3_CONTRACT_NAME, POX_4_CONTRACT_NAME } from './pox-constants.js';
 import {
   DropMempoolTxMessage,
   NewBlockEvent,
@@ -277,6 +282,7 @@ function parseDataStoreTxEventData(
       pox2Events: [],
       pox3Events: [],
       pox4Events: [],
+      pox5Events: [],
     };
     switch (tx.parsed_tx.payload.type_id) {
       case TxPayloadTypeID.VersionedSmartContract:
@@ -313,7 +319,8 @@ function parseDataStoreTxEventData(
     return dbTx;
   });
 
-  const poxEventLogs: Map<DbPoxSyntheticEvent, DbSmartContractEvent> = new Map();
+  const poxEventLogs: Map<DbPox4SyntheticEvent | DbPox5SyntheticEvent, DbSmartContractEvent> =
+    new Map();
 
   for (const event of events) {
     if (!event.committed) {
@@ -364,39 +371,42 @@ function parseDataStoreTxEventData(
         dbTx.contractLogEvents.push(entry);
 
         if (isPoxPrintEvent(event)) {
-          const network = getChainIDNetwork(chainId) === 'mainnet' ? 'mainnet' : 'testnet';
+          const network = getChainIDNetwork(chainId);
           const [, contractName] = event.contract_event.contract_identifier.split('.');
-          // pox-1 is handled in custom node events
-          const processSyntheticEvent = [
-            POX_2_CONTRACT_NAME,
-            POX_3_CONTRACT_NAME,
-            POX_4_CONTRACT_NAME,
-          ].includes(contractName);
-          if (processSyntheticEvent) {
-            const poxEventData = decodePoxSyntheticPrintEvent(
-              event.contract_event.raw_value,
-              network
-            );
-            if (poxEventData !== null) {
-              logger.debug(`Synthetic pox event data for ${contractName}:`, poxEventData);
-              const dbPoxEvent: DbPoxSyntheticEvent = {
-                ...dbEvent,
-                ...poxEventData,
-              };
-              poxEventLogs.set(dbPoxEvent, entry);
-              switch (contractName) {
-                case POX_2_CONTRACT_NAME: {
-                  dbTx.pox2Events.push(dbPoxEvent);
-                  break;
+          const poxEvent = decodePoxSyntheticEvent(event.contract_event.raw_value, network);
+          if (poxEvent) {
+            logger.debug(`Decoded pox event for ${contractName}:`, poxEvent);
+            switch (poxEvent.pox_version) {
+              case 'pox4': {
+                const dbPoxEvent: DbPox4SyntheticEvent = {
+                  ...dbEvent,
+                  ...poxEvent,
+                };
+                poxEventLogs.set(dbPoxEvent, entry);
+                switch (contractName) {
+                  case POX_2_CONTRACT_NAME: {
+                    dbTx.pox2Events.push(dbPoxEvent);
+                    break;
+                  }
+                  case POX_3_CONTRACT_NAME: {
+                    dbTx.pox3Events.push(dbPoxEvent);
+                    break;
+                  }
+                  case POX_4_CONTRACT_NAME: {
+                    dbTx.pox4Events.push(dbPoxEvent);
+                    break;
+                  }
                 }
-                case POX_3_CONTRACT_NAME: {
-                  dbTx.pox3Events.push(dbPoxEvent);
-                  break;
-                }
-                case POX_4_CONTRACT_NAME: {
-                  dbTx.pox4Events.push(dbPoxEvent);
-                  break;
-                }
+                break;
+              }
+              case 'pox5': {
+                const dbPoxEvent: DbPox5SyntheticEvent = {
+                  ...dbEvent,
+                  ...poxEvent,
+                };
+                dbTx.pox5Events.push(dbPoxEvent);
+                poxEventLogs.set(dbPoxEvent, entry);
+                break;
               }
             }
           }
@@ -566,7 +576,7 @@ function parseDataStoreTxEventData(
     for (let i = 0; i < sortedEvents.length; i++) {
       sortedEvents[i].event_index = i;
     }
-    for (const poxEvent of [tx.pox2Events, tx.pox3Events, tx.pox4Events].flat()) {
+    for (const poxEvent of [tx.pox2Events, tx.pox3Events, tx.pox4Events, tx.pox5Events].flat()) {
       const associatedLogEvent = poxEventLogs.get(poxEvent);
       if (!associatedLogEvent) {
         throw new Error(`Missing associated contract log event for pox event ${poxEvent.tx_id}`);
@@ -1184,7 +1194,9 @@ export function parseNewBlockMessage(
     }
     poxSetSigners = {
       cycle_number: msg.cycle_number,
-      pox_ustx_threshold: BigInt(msg.reward_set.pox_ustx_threshold),
+      pox_ustx_threshold: msg.reward_set.pox_ustx_threshold
+        ? BigInt(msg.reward_set.pox_ustx_threshold)
+        : 50_000n * 1_000_000n, // 50,000 STX
       signers,
       rewarded_addresses: rewardedAddresses,
     };
@@ -1198,6 +1210,7 @@ export function parseNewBlockMessage(
     pox_v1_unlock_height: msg.pox_v1_unlock_height,
     pox_v2_unlock_height: msg.pox_v2_unlock_height,
     pox_v3_unlock_height: msg.pox_v3_unlock_height,
+    pox_v4_unlock_height: msg.pox_v4_unlock_height,
     poxSetSigners: poxSetSigners,
   };
 

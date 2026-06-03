@@ -12,7 +12,7 @@ import { BootContractAddress } from '../../../src/helpers.ts';
 import * as btc from 'bitcoinjs-lib';
 import { b58ToC32, c32ToB58 } from 'c32check';
 import supertest from 'supertest';
-import { PoxContractIdentifier } from '../../../src/pox-helpers.ts';
+import { PoxContractIdentifier } from '../../../src/event-stream/pox-constants.ts';
 import { decodeClarityValue } from '@stacks/codec';
 import type { ClarityValueUInt } from '@stacks/codec';
 import { decodeBtcAddress, poxAddressToBtcAddress } from '@stacks/stacking';
@@ -428,7 +428,7 @@ describe('PoX-4 - Stack using Bitcoin-chain delegate ops', () => {
     assert.ok(res !== undefined);
     assert.equal(res.results.length, 1);
     assert.equal(res.results[0].name, 'delegate-stack-stx');
-    assert.equal(res.results[0].pox_addr, poxAddrPayoutAccount.btcTestnetAddr);
+    assert.equal(res.results[0].pox_addr, poxAddrPayoutAccount.btcAddr);
     assert.equal(res.results[0].stacker, account.stxAddr);
     assert.equal(res.results[0].balance, BigInt(coreBalanceInfo.balance).toString());
     assert.equal(res.results[0].locked, testStackAmount.toString());

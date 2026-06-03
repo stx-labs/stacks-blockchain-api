@@ -17,7 +17,7 @@ import { beforeEach, afterEach, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { assertMatchesObject } from '../test-helpers.ts';
 import { STACKS_TESTNET } from '@stacks/network';
-import { SyntheticPoxEventName } from '../../../src/pox-helpers.ts';
+import { Pox4EventName } from '@stacks/codec';
 
 describe('cache-control tests', () => {
   let db: PgWriteStore;
@@ -123,6 +123,7 @@ describe('cache-control tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -296,6 +297,7 @@ describe('cache-control tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -1138,17 +1140,18 @@ describe('cache-control tests', () => {
       block_height: 2,
       canonical: true,
       stacker: stacker,
-      locked: 1000n,
-      balance: 5000n,
-      burnchain_unlock_height: 200n,
+      locked: '1000',
+      balance: '5000',
+      burnchain_unlock_height: '200',
       pox_addr: null,
       pox_addr_raw: null,
-      name: SyntheticPoxEventName.StackStx,
+      pox_version: 'pox4',
+      name: Pox4EventName.StackStx,
       data: {
-        lock_amount: 1000n,
-        lock_period: 1n,
-        start_burn_height: 100n,
-        unlock_burn_height: 200n,
+        lock_amount: '1000',
+        lock_period: '1',
+        start_burn_height: '100',
+        unlock_burn_height: '200',
         signer_key: '0x0011223344',
         end_cycle_id: null,
         start_cycle_id: null,

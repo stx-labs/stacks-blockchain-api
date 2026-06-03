@@ -1,5 +1,5 @@
 import { getPagingQueryLimit, parsePagingQueryInput, ResourceType } from '../../pagination.js';
-import { parsePoxSyntheticEvent } from '../../controllers/db-controller.js';
+import { parsePox4SyntheticEvent } from '../../controllers/db-controller.js';
 import { getBlockParams, validatePrincipal, validateRequestHexInput } from '../../query-helpers.js';
 import { handleChainTipCache } from '../../controllers/cache-controller.js';
 import { FastifyPluginAsync } from 'fastify';
@@ -69,7 +69,7 @@ export const PoxRoutes: FastifyPluginAsync<
         limit,
         poxTable,
       });
-      const parsedResult = queryResults.map(r => parsePoxSyntheticEvent(r));
+      const parsedResult = queryResults.map(r => parsePox4SyntheticEvent(r));
       const response = {
         limit,
         offset,
@@ -105,7 +105,7 @@ export const PoxRoutes: FastifyPluginAsync<
       if (!queryResults.found) {
         throw new NotFoundError(`could not find transaction by ID`);
       }
-      const parsedResult = queryResults.result.map(r => parsePoxSyntheticEvent(r));
+      const parsedResult = queryResults.result.map(r => parsePox4SyntheticEvent(r));
       const response = {
         results: parsedResult,
       };
@@ -139,7 +139,7 @@ export const PoxRoutes: FastifyPluginAsync<
       if (!queryResults.found) {
         throw new NotFoundError(`could not find principal`);
       }
-      const parsedResult = queryResults.result.map(r => parsePoxSyntheticEvent(r));
+      const parsedResult = queryResults.result.map(r => parsePox4SyntheticEvent(r));
       const response = {
         results: parsedResult,
       };

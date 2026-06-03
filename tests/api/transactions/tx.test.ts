@@ -277,6 +277,7 @@ describe('tx tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
         {
           tx: dbTx2,
@@ -291,6 +292,7 @@ describe('tx tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
         {
           tx: dbTx3,
@@ -305,6 +307,7 @@ describe('tx tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -453,6 +456,7 @@ describe('tx tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -678,6 +682,7 @@ describe('tx tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -831,6 +836,7 @@ describe('tx tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -1019,6 +1025,7 @@ describe('tx tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -1406,6 +1413,7 @@ describe('tx tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -1651,6 +1659,7 @@ describe('tx tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -1862,6 +1871,7 @@ describe('tx tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -2020,6 +2030,7 @@ describe('tx tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -2815,6 +2826,7 @@ describe('tx tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -2940,6 +2952,7 @@ describe('tx tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -3596,6 +3609,7 @@ describe('tx tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -3871,6 +3885,7 @@ describe('tx tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
         {
           tx: tx2,
@@ -3885,6 +3900,7 @@ describe('tx tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     };
@@ -4192,6 +4208,7 @@ describe('tx tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });

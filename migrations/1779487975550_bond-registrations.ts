@@ -1,0 +1,105 @@
+import type { ColumnDefinitions, MigrationBuilder } from 'node-pg-migrate';
+
+export const shorthands: ColumnDefinitions | undefined = undefined;
+
+export const up = (pgm: MigrationBuilder) => {
+  pgm.createTable('bond_registrations', {
+    id: {
+      type: 'bigserial',
+      primaryKey: true,
+    },
+    tx_id: {
+      type: 'bytea',
+      notNull: true,
+    },
+    tx_index: {
+      type: 'smallint',
+      notNull: true,
+    },
+    block_height: {
+      type: 'integer',
+      notNull: true,
+    },
+    index_block_hash: {
+      type: 'bytea',
+      notNull: true,
+    },
+    parent_index_block_hash: {
+      type: 'bytea',
+      notNull: true,
+    },
+    microblock_hash: {
+      type: 'bytea',
+      notNull: true,
+    },
+    microblock_sequence: {
+      type: 'integer',
+      notNull: true,
+    },
+    microblock_canonical: {
+      type: 'boolean',
+      notNull: true,
+    },
+    canonical: {
+      type: 'boolean',
+      notNull: true,
+    },
+    bond_index: {
+      type: 'integer',
+      notNull: true,
+    },
+    signer: {
+      type: 'text',
+      notNull: true,
+    },
+    staker: {
+      type: 'text',
+      notNull: true,
+    },
+    amount_ustx: {
+      type: 'text',
+      notNull: true,
+    },
+    sats_total: {
+      type: 'text',
+      notNull: true,
+    },
+    first_reward_cycle: {
+      type: 'integer',
+      notNull: true,
+    },
+    unlock_burn_height: {
+      type: 'integer',
+      notNull: true,
+    },
+    unlock_cycle: {
+      type: 'integer',
+      notNull: true,
+    },
+    is_l1_lock: {
+      type: 'boolean',
+      notNull: true,
+    },
+  });
+
+  pgm.createIndex(
+    'bond_registrations',
+    [
+      'bond_index',
+      { name: 'block_height', sort: 'DESC' },
+      { name: 'microblock_sequence', sort: 'DESC' },
+      { name: 'tx_index', sort: 'DESC' },
+      { name: 'id', sort: 'DESC' },
+    ],
+    {
+      where: 'canonical = TRUE AND microblock_canonical = TRUE',
+    }
+  );
+  pgm.createIndex('bond_registrations', ['bond_index', 'staker'], {
+    where: 'canonical = TRUE AND microblock_canonical = TRUE',
+  });
+};
+
+export const down = (pgm: MigrationBuilder) => {
+  pgm.dropTable('bond_registrations');
+};

@@ -15,19 +15,7 @@ import {
   DbMempoolTxRaw,
   DbMicroblock,
   DbNftEvent,
-  DbPoxSyntheticBaseEventData,
-  DbPoxSyntheticDelegateStackExtendEvent,
-  DbPoxSyntheticDelegateStackIncreaseEvent,
-  DbPoxSyntheticDelegateStackStxEvent,
-  DbPoxSyntheticDelegateStxEvent,
-  DbPoxSyntheticEvent,
-  DbPoxSyntheticHandleUnlockEvent,
-  DbPoxSyntheticStackAggregationCommitEvent,
-  DbPoxSyntheticStackAggregationCommitIndexedEvent,
-  DbPoxSyntheticStackAggregationIncreaseEvent,
-  DbPoxSyntheticStackExtendEvent,
-  DbPoxSyntheticStackIncreaseEvent,
-  DbPoxSyntheticStackStxEvent,
+  DbPox4SyntheticEvent,
   DbSmartContract,
   DbSmartContractEvent,
   DbStxEvent,
@@ -42,7 +30,6 @@ import {
   MicroblockQueryResult,
   PoxSyntheticEventQueryResult,
   TxQueryResult,
-  DbPoxSyntheticRevokeDelegateStxEvent,
   ReOrgUpdatedEntities,
   AddressTransfersTxQueryResult,
   DbTxWithAddressTransfers,
@@ -51,16 +38,31 @@ import { CoreNodeParsedTxMessage } from '../event-stream/core-node-message.js';
 import {
   decodeClarityValueToRepr,
   PostConditionAuthFlag,
+  Pox4EventName,
   PrincipalTypeID,
   TxPayloadTypeID,
 } from '@stacks/codec';
-import type { DecodedTxResult } from '@stacks/codec';
+import type {
+  DecodedTxResult,
+  Pox4EventBase,
+  Pox4EventDelegateStackExtend,
+  Pox4EventDelegateStackIncrease,
+  Pox4EventDelegateStackStx,
+  Pox4EventDelegateStx,
+  Pox4EventHandleUnlock,
+  Pox4EventRevokeDelegateStx,
+  Pox4EventStackAggregationCommit,
+  Pox4EventStackAggregationCommitIndexed,
+  Pox4EventStackAggregationIncrease,
+  Pox4EventStackExtend,
+  Pox4EventStackIncrease,
+  Pox4EventStackStx,
+} from '@stacks/codec';
 import { getTxSenderAddress } from '../event-stream/reader.js';
 import postgres from 'postgres';
 import * as prom from 'prom-client';
 import { getAssetEventTypeString } from '../api/controllers/db-controller.js';
 import { PgStoreEventEmitter } from './pg-store-event-emitter.js';
-import { SyntheticPoxEventName } from '../pox-helpers.js';
 import { logger, PgSqlClient } from '@stacks/api-toolkit';
 import PQueue from 'p-queue';
 import { DropMempoolTxReasonType, NewBlockTransactionStatus } from '@stacks/node-publisher-client';
@@ -646,7 +648,7 @@ export function parseDbEvents(
   return events;
 }
 
-export function parseDbPoxSyntheticEvent(row: PoxSyntheticEventQueryResult): DbPoxSyntheticEvent {
+export function parseDbPoxSyntheticEvent(row: PoxSyntheticEventQueryResult): DbPox4SyntheticEvent {
   const baseEvent: DbEventBase = {
     event_index: row.event_index,
     tx_id: row.tx_id,
@@ -654,23 +656,24 @@ export function parseDbPoxSyntheticEvent(row: PoxSyntheticEventQueryResult): DbP
     block_height: row.block_height,
     canonical: row.canonical,
   };
-  const basePoxEvent: DbPoxSyntheticBaseEventData = {
+  const basePoxEvent: Pox4EventBase = {
+    pox_version: 'pox4',
     stacker: row.stacker,
-    locked: BigInt(row.locked ?? 0),
-    balance: BigInt(row.balance),
-    burnchain_unlock_height: BigInt(row.burnchain_unlock_height),
+    locked: row.locked ?? 0,
+    balance: row.balance,
+    burnchain_unlock_height: row.burnchain_unlock_height,
     pox_addr: row.pox_addr ?? null,
     pox_addr_raw: row.pox_addr_raw ?? null,
   };
-  const rowName = row.name as SyntheticPoxEventName;
+  const rowName = row.name as Pox4EventName;
   switch (rowName) {
-    case SyntheticPoxEventName.HandleUnlock: {
-      const eventData: DbPoxSyntheticHandleUnlockEvent = {
+    case Pox4EventName.HandleUnlock: {
+      const eventData: Pox4EventHandleUnlock = {
         ...basePoxEvent,
         name: rowName,
         data: {
-          first_cycle_locked: BigInt(unwrapOptionalProp(row, 'first_unlocked_cycle')),
-          first_unlocked_cycle: BigInt(unwrapOptionalProp(row, 'first_unlocked_cycle')),
+          first_cycle_locked: unwrapOptionalProp(row, 'first_unlocked_cycle'),
+          first_unlocked_cycle: unwrapOptionalProp(row, 'first_unlocked_cycle'),
         },
       };
       return {
@@ -678,18 +681,18 @@ export function parseDbPoxSyntheticEvent(row: PoxSyntheticEventQueryResult): DbP
         ...eventData,
       };
     }
-    case SyntheticPoxEventName.StackStx: {
-      const eventData: DbPoxSyntheticStackStxEvent = {
+    case Pox4EventName.StackStx: {
+      const eventData: Pox4EventStackStx = {
         ...basePoxEvent,
         name: rowName,
         data: {
-          lock_amount: BigInt(unwrapOptionalProp(row, 'lock_amount')),
-          lock_period: BigInt(unwrapOptionalProp(row, 'lock_period')),
-          start_burn_height: BigInt(unwrapOptionalProp(row, 'start_burn_height')),
-          unlock_burn_height: BigInt(unwrapOptionalProp(row, 'unlock_burn_height')),
+          lock_amount: unwrapOptionalProp(row, 'lock_amount'),
+          lock_period: unwrapOptionalProp(row, 'lock_period'),
+          start_burn_height: unwrapOptionalProp(row, 'start_burn_height'),
+          unlock_burn_height: unwrapOptionalProp(row, 'unlock_burn_height'),
           signer_key: row.signer_key ?? null,
-          end_cycle_id: row.end_cycle_id ? BigInt(row.end_cycle_id) : null,
-          start_cycle_id: row.start_cycle_id ? BigInt(row.start_cycle_id) : null,
+          end_cycle_id: row.end_cycle_id ? row.end_cycle_id : null,
+          start_cycle_id: row.start_cycle_id ? row.start_cycle_id : null,
         },
       };
       return {
@@ -697,16 +700,16 @@ export function parseDbPoxSyntheticEvent(row: PoxSyntheticEventQueryResult): DbP
         ...eventData,
       };
     }
-    case SyntheticPoxEventName.StackIncrease: {
-      const eventData: DbPoxSyntheticStackIncreaseEvent = {
+    case Pox4EventName.StackIncrease: {
+      const eventData: Pox4EventStackIncrease = {
         ...basePoxEvent,
         name: rowName,
         data: {
-          increase_by: BigInt(unwrapOptionalProp(row, 'increase_by')),
-          total_locked: BigInt(unwrapOptionalProp(row, 'total_locked')),
+          increase_by: unwrapOptionalProp(row, 'increase_by'),
+          total_locked: unwrapOptionalProp(row, 'total_locked'),
           signer_key: row.signer_key ?? null,
-          end_cycle_id: row.end_cycle_id ? BigInt(row.end_cycle_id) : null,
-          start_cycle_id: row.start_cycle_id ? BigInt(row.start_cycle_id) : null,
+          end_cycle_id: row.end_cycle_id ? row.end_cycle_id : null,
+          start_cycle_id: row.start_cycle_id ? row.start_cycle_id : null,
         },
       };
       return {
@@ -714,16 +717,16 @@ export function parseDbPoxSyntheticEvent(row: PoxSyntheticEventQueryResult): DbP
         ...eventData,
       };
     }
-    case SyntheticPoxEventName.StackExtend: {
-      const eventData: DbPoxSyntheticStackExtendEvent = {
+    case Pox4EventName.StackExtend: {
+      const eventData: Pox4EventStackExtend = {
         ...basePoxEvent,
         name: rowName,
         data: {
-          extend_count: BigInt(unwrapOptionalProp(row, 'extend_count')),
-          unlock_burn_height: BigInt(unwrapOptionalProp(row, 'unlock_burn_height')),
+          extend_count: unwrapOptionalProp(row, 'extend_count'),
+          unlock_burn_height: unwrapOptionalProp(row, 'unlock_burn_height'),
           signer_key: row.signer_key ?? null,
-          end_cycle_id: row.end_cycle_id ? BigInt(row.end_cycle_id) : null,
-          start_cycle_id: row.start_cycle_id ? BigInt(row.start_cycle_id) : null,
+          end_cycle_id: row.end_cycle_id ? row.end_cycle_id : null,
+          start_cycle_id: row.start_cycle_id ? row.start_cycle_id : null,
         },
       };
       return {
@@ -731,18 +734,18 @@ export function parseDbPoxSyntheticEvent(row: PoxSyntheticEventQueryResult): DbP
         ...eventData,
       };
     }
-    case SyntheticPoxEventName.DelegateStx: {
-      const eventData: DbPoxSyntheticDelegateStxEvent = {
+    case Pox4EventName.DelegateStx: {
+      const eventData: Pox4EventDelegateStx = {
         ...basePoxEvent,
         name: rowName,
         data: {
-          amount_ustx: BigInt(unwrapOptionalProp(row, 'amount_ustx')),
+          amount_ustx: unwrapOptionalProp(row, 'amount_ustx'),
           delegate_to: unwrapOptionalProp(row, 'delegate_to'),
           unlock_burn_height: row.unlock_burn_height
-            ? BigInt(unwrapOptionalProp(row, 'unlock_burn_height'))
+            ? unwrapOptionalProp(row, 'unlock_burn_height')
             : null,
-          end_cycle_id: row.end_cycle_id ? BigInt(row.end_cycle_id) : null,
-          start_cycle_id: row.start_cycle_id ? BigInt(row.start_cycle_id) : null,
+          end_cycle_id: row.end_cycle_id ? row.end_cycle_id : null,
+          start_cycle_id: row.start_cycle_id ? row.start_cycle_id : null,
         },
       };
       return {
@@ -750,18 +753,18 @@ export function parseDbPoxSyntheticEvent(row: PoxSyntheticEventQueryResult): DbP
         ...eventData,
       };
     }
-    case SyntheticPoxEventName.DelegateStackStx: {
-      const eventData: DbPoxSyntheticDelegateStackStxEvent = {
+    case Pox4EventName.DelegateStackStx: {
+      const eventData: Pox4EventDelegateStackStx = {
         ...basePoxEvent,
         name: rowName,
         data: {
-          lock_amount: BigInt(unwrapOptionalProp(row, 'lock_amount')),
-          unlock_burn_height: BigInt(unwrapOptionalProp(row, 'unlock_burn_height')),
-          start_burn_height: BigInt(unwrapOptionalProp(row, 'start_burn_height')),
-          lock_period: BigInt(unwrapOptionalProp(row, 'lock_period')),
+          lock_amount: unwrapOptionalProp(row, 'lock_amount'),
+          unlock_burn_height: unwrapOptionalProp(row, 'unlock_burn_height'),
+          start_burn_height: unwrapOptionalProp(row, 'start_burn_height'),
+          lock_period: unwrapOptionalProp(row, 'lock_period'),
           delegator: unwrapOptionalProp(row, 'delegator'),
-          end_cycle_id: row.end_cycle_id ? BigInt(row.end_cycle_id) : null,
-          start_cycle_id: row.start_cycle_id ? BigInt(row.start_cycle_id) : null,
+          end_cycle_id: row.end_cycle_id ? row.end_cycle_id : null,
+          start_cycle_id: row.start_cycle_id ? row.start_cycle_id : null,
         },
       };
       return {
@@ -769,16 +772,16 @@ export function parseDbPoxSyntheticEvent(row: PoxSyntheticEventQueryResult): DbP
         ...eventData,
       };
     }
-    case SyntheticPoxEventName.DelegateStackIncrease: {
-      const eventData: DbPoxSyntheticDelegateStackIncreaseEvent = {
+    case Pox4EventName.DelegateStackIncrease: {
+      const eventData: Pox4EventDelegateStackIncrease = {
         ...basePoxEvent,
         name: rowName,
         data: {
-          increase_by: BigInt(unwrapOptionalProp(row, 'increase_by')),
-          total_locked: BigInt(unwrapOptionalProp(row, 'total_locked')),
+          increase_by: unwrapOptionalProp(row, 'increase_by'),
+          total_locked: unwrapOptionalProp(row, 'total_locked'),
           delegator: unwrapOptionalProp(row, 'delegator'),
-          end_cycle_id: row.end_cycle_id ? BigInt(row.end_cycle_id) : null,
-          start_cycle_id: row.start_cycle_id ? BigInt(row.start_cycle_id) : null,
+          end_cycle_id: row.end_cycle_id ? row.end_cycle_id : null,
+          start_cycle_id: row.start_cycle_id ? row.start_cycle_id : null,
         },
       };
       return {
@@ -786,16 +789,16 @@ export function parseDbPoxSyntheticEvent(row: PoxSyntheticEventQueryResult): DbP
         ...eventData,
       };
     }
-    case SyntheticPoxEventName.DelegateStackExtend: {
-      const eventData: DbPoxSyntheticDelegateStackExtendEvent = {
+    case Pox4EventName.DelegateStackExtend: {
+      const eventData: Pox4EventDelegateStackExtend = {
         ...basePoxEvent,
         name: rowName,
         data: {
-          unlock_burn_height: BigInt(unwrapOptionalProp(row, 'unlock_burn_height')),
-          extend_count: BigInt(unwrapOptionalProp(row, 'extend_count')),
+          unlock_burn_height: unwrapOptionalProp(row, 'unlock_burn_height'),
+          extend_count: unwrapOptionalProp(row, 'extend_count'),
           delegator: unwrapOptionalProp(row, 'delegator'),
-          end_cycle_id: row.end_cycle_id ? BigInt(row.end_cycle_id) : null,
-          start_cycle_id: row.start_cycle_id ? BigInt(row.start_cycle_id) : null,
+          end_cycle_id: row.end_cycle_id ? row.end_cycle_id : null,
+          start_cycle_id: row.start_cycle_id ? row.start_cycle_id : null,
         },
       };
       return {
@@ -803,16 +806,16 @@ export function parseDbPoxSyntheticEvent(row: PoxSyntheticEventQueryResult): DbP
         ...eventData,
       };
     }
-    case SyntheticPoxEventName.StackAggregationCommit: {
-      const eventData: DbPoxSyntheticStackAggregationCommitEvent = {
+    case Pox4EventName.StackAggregationCommit: {
+      const eventData: Pox4EventStackAggregationCommit = {
         ...basePoxEvent,
         name: rowName,
         data: {
-          reward_cycle: BigInt(unwrapOptionalProp(row, 'reward_cycle')),
-          amount_ustx: BigInt(unwrapOptionalProp(row, 'amount_ustx')),
+          reward_cycle: unwrapOptionalProp(row, 'reward_cycle'),
+          amount_ustx: unwrapOptionalProp(row, 'amount_ustx'),
           signer_key: row.signer_key ?? null,
-          end_cycle_id: row.end_cycle_id ? BigInt(row.end_cycle_id) : null,
-          start_cycle_id: row.start_cycle_id ? BigInt(row.start_cycle_id) : null,
+          end_cycle_id: row.end_cycle_id ? row.end_cycle_id : null,
+          start_cycle_id: row.start_cycle_id ? row.start_cycle_id : null,
         },
       };
       return {
@@ -820,16 +823,16 @@ export function parseDbPoxSyntheticEvent(row: PoxSyntheticEventQueryResult): DbP
         ...eventData,
       };
     }
-    case SyntheticPoxEventName.StackAggregationCommitIndexed: {
-      const eventData: DbPoxSyntheticStackAggregationCommitIndexedEvent = {
+    case Pox4EventName.StackAggregationCommitIndexed: {
+      const eventData: Pox4EventStackAggregationCommitIndexed = {
         ...basePoxEvent,
         name: rowName,
         data: {
-          reward_cycle: BigInt(unwrapOptionalProp(row, 'reward_cycle')),
-          amount_ustx: BigInt(unwrapOptionalProp(row, 'amount_ustx')),
+          reward_cycle: unwrapOptionalProp(row, 'reward_cycle'),
+          amount_ustx: unwrapOptionalProp(row, 'amount_ustx'),
           signer_key: row.signer_key ?? null,
-          end_cycle_id: row.end_cycle_id ? BigInt(row.end_cycle_id) : null,
-          start_cycle_id: row.start_cycle_id ? BigInt(row.start_cycle_id) : null,
+          end_cycle_id: row.end_cycle_id ? row.end_cycle_id : null,
+          start_cycle_id: row.start_cycle_id ? row.start_cycle_id : null,
         },
       };
       return {
@@ -837,15 +840,15 @@ export function parseDbPoxSyntheticEvent(row: PoxSyntheticEventQueryResult): DbP
         ...eventData,
       };
     }
-    case SyntheticPoxEventName.StackAggregationIncrease: {
-      const eventData: DbPoxSyntheticStackAggregationIncreaseEvent = {
+    case Pox4EventName.StackAggregationIncrease: {
+      const eventData: Pox4EventStackAggregationIncrease = {
         ...basePoxEvent,
         name: rowName,
         data: {
-          reward_cycle: BigInt(unwrapOptionalProp(row, 'reward_cycle')),
-          amount_ustx: BigInt(unwrapOptionalProp(row, 'amount_ustx')),
-          end_cycle_id: row.end_cycle_id ? BigInt(row.end_cycle_id) : null,
-          start_cycle_id: row.start_cycle_id ? BigInt(row.start_cycle_id) : null,
+          reward_cycle: unwrapOptionalProp(row, 'reward_cycle'),
+          amount_ustx: unwrapOptionalProp(row, 'amount_ustx'),
+          end_cycle_id: row.end_cycle_id ? row.end_cycle_id : null,
+          start_cycle_id: row.start_cycle_id ? row.start_cycle_id : null,
         },
       };
       return {
@@ -853,14 +856,14 @@ export function parseDbPoxSyntheticEvent(row: PoxSyntheticEventQueryResult): DbP
         ...eventData,
       };
     }
-    case SyntheticPoxEventName.RevokeDelegateStx: {
-      const eventData: DbPoxSyntheticRevokeDelegateStxEvent = {
+    case Pox4EventName.RevokeDelegateStx: {
+      const eventData: Pox4EventRevokeDelegateStx = {
         ...basePoxEvent,
         name: rowName,
         data: {
           delegate_to: unwrapOptionalProp(row, 'delegate_to'),
-          end_cycle_id: row.end_cycle_id ? BigInt(row.end_cycle_id) : null,
-          start_cycle_id: row.start_cycle_id ? BigInt(row.start_cycle_id) : null,
+          end_cycle_id: row.end_cycle_id ? row.end_cycle_id : null,
+          start_cycle_id: row.start_cycle_id ? row.start_cycle_id : null,
         },
       };
       return {
@@ -1305,6 +1308,7 @@ export function markBlockUpdateDataAsNonCanonical(data: DataStoreBlockUpdateData
     pox2Events: tx.pox2Events.map(e => ({ ...e, canonical: false })),
     pox3Events: tx.pox3Events.map(e => ({ ...e, canonical: false })),
     pox4Events: tx.pox4Events.map(e => ({ ...e, canonical: false })),
+    pox5Events: tx.pox5Events.map(e => ({ ...e, canonical: false })),
   }));
   data.minerRewards = data.minerRewards.map(mr => ({ ...mr, canonical: false }));
 }

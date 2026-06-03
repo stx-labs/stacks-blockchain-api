@@ -387,6 +387,7 @@ describe('microblock tests', () => {
               pox2Events: [],
               pox3Events: [],
               pox4Events: [],
+              pox5Events: [],
             },
           ],
         });
@@ -544,6 +545,7 @@ describe('microblock tests', () => {
               pox2Events: [],
               pox3Events: [],
               pox4Events: [],
+              pox5Events: [],
             },
             {
               tx: mbTx2,
@@ -558,6 +560,7 @@ describe('microblock tests', () => {
               pox2Events: [],
               pox3Events: [],
               pox4Events: [],
+              pox5Events: [],
             },
           ],
         });

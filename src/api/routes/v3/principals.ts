@@ -56,5 +56,20 @@ export const PrincipalsRoutes: FastifyPluginAsync<
     }
   );
 
+  fastify.get(
+    '/principals/:principal/balances/staking',
+    {
+      schema: {
+        operationId: 'get_principal_staking_balances',
+        summary: 'Get principal staking balances',
+        description: 'Get principal staking balances',
+        tags: ['Staking'],
+      },
+    },
+    async (_req, reply) => {
+      await reply.send();
+    }
+  );
+
   await Promise.resolve();
 };

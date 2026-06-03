@@ -242,6 +242,7 @@ describe('address tests', () => {
         pox2Events: [],
         pox3Events: [],
         pox4Events: [],
+        pox5Events: [],
       })),
     });
 
@@ -1535,6 +1536,7 @@ describe('address tests', () => {
         pox2Events: [],
         pox3Events: [],
         pox4Events: [],
+        pox5Events: [],
       } as DataStoreTxEventData;
     });
     dataStoreTxs.push({
@@ -1550,6 +1552,7 @@ describe('address tests', () => {
       pox2Events: [],
       pox3Events: [],
       pox4Events: [],
+      pox5Events: [],
     });
     dataStoreTxs.push({
       tx: { ...contractCall, raw_tx: '0x' },
@@ -1577,6 +1580,7 @@ describe('address tests', () => {
       pox2Events: [],
       pox3Events: [],
       pox4Events: [],
+      pox5Events: [],
     });
     await db.update({
       block: block,
@@ -2651,6 +2655,7 @@ describe('address tests', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -2898,6 +2903,7 @@ describe('address tests', () => {
         pox2Events: [],
         pox3Events: [],
         pox4Events: [],
+        pox5Events: [],
       });
     }
     await db.updateMicroblocks(mbData);

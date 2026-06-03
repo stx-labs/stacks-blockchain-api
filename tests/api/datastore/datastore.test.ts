@@ -392,6 +392,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -578,6 +579,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -820,6 +822,7 @@ describe('postgres datastore', () => {
         pox2Events: [],
         pox3Events: [],
         pox4Events: [],
+        pox5Events: [],
       })),
     });
 
@@ -1024,6 +1027,7 @@ describe('postgres datastore', () => {
         pox2Events: [],
         pox3Events: [],
         pox4Events: [],
+        pox5Events: [],
       })),
     });
 
@@ -1317,6 +1321,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
         {
           tx: tx2,
@@ -1331,6 +1336,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
         {
           tx: tx3,
@@ -1345,6 +1351,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -2109,6 +2116,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -2208,6 +2216,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -2315,6 +2324,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -2424,6 +2434,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -2564,6 +2575,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -2662,6 +2674,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -2759,6 +2772,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -3023,6 +3037,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
         {
           tx: { ...tx2, raw_tx: '0x' },
@@ -3037,6 +3052,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -3561,6 +3577,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -3625,6 +3642,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -4146,6 +4164,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -4213,6 +4232,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -4430,6 +4450,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -4471,6 +4492,7 @@ describe('postgres datastore', () => {
       index_block_hash: '0xcc',
       burn_block_height: 123,
       block_count: 3,
+      bond_count: 0,
       mempool_tx_count: 0,
       microblock_count: 0,
       microblock_hash: undefined,
@@ -4544,6 +4566,7 @@ describe('postgres datastore', () => {
       index_block_hash: '0xcc',
       burn_block_height: 123,
       block_count: 3,
+      bond_count: 0,
       microblock_count: 0,
       microblock_hash: undefined,
       microblock_sequence: undefined,
@@ -4599,6 +4622,7 @@ describe('postgres datastore', () => {
       block_hash: '0x44bb',
       block_height: 4,
       burn_block_height: 123,
+      bond_count: 0,
       index_block_hash: '0xddbb',
       microblock_count: 0,
       microblock_hash: undefined,
@@ -5144,6 +5168,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -5166,6 +5191,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
         {
           tx: tx3,
@@ -5180,6 +5206,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -5239,6 +5266,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -5387,6 +5415,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -5478,6 +5507,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });
@@ -5623,6 +5653,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
         {
           tx: tx2,
@@ -5637,6 +5668,7 @@ describe('postgres datastore', () => {
           pox2Events: [],
           pox3Events: [],
           pox4Events: [],
+          pox5Events: [],
         },
       ],
     });

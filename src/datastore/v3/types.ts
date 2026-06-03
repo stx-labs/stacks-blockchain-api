@@ -1,4 +1,4 @@
-import { DbTxStatus, DbTxTypeId } from '../common.js';
+import { DbAssetEventTypeId, DbEventTypeId, DbTxStatus, DbTxTypeId } from '../common.js';
 
 export type DbCursorPaginatedResult<T> = {
   limit: number;
@@ -107,4 +107,72 @@ export interface DbMempoolTransaction extends DbMempoolTransactionSummary {
   tenure_change_previous_tenure_end: string | null;
   tenure_change_previous_tenure_blocks: number | null;
   tenure_change_pubkey_hash: string | null;
+}
+
+export interface DbTransactionEvent {
+  event_index: number;
+  amount: string;
+  event_type_id: DbEventTypeId;
+  asset_event_type_id: DbAssetEventTypeId;
+  sender: string | null;
+  recipient: string | null;
+  asset_identifier: string | null;
+  contract_identifier: string | null;
+  topic: string | null;
+  value: string | null;
+  memo: string | null;
+  unlock_height: number | null;
+}
+
+export interface DbBondSummary {
+  bond_index: number;
+  target_rate: number;
+  stx_value_ratio: number;
+  min_ustx_ratio: number;
+  first_reward_cycle: number;
+  bond_start_height: number;
+  unlock_cycle: number;
+  unlock_burn_height: number;
+  btc_capacity: string;
+  btc_locked: string;
+  stx_locked: string;
+  btc_paid_out: string;
+  allowed_count: number;
+  registered_count: number;
+}
+
+export interface DbBond extends DbBondSummary {
+  tx_id: string;
+  block_height: number;
+  block_hash: string;
+  index_block_hash: string;
+  block_time: number;
+  tx_index: number;
+  burn_block_height: number;
+  burn_block_time: number;
+  early_unlock_bytes: string;
+  early_unlock_admin: string;
+}
+
+export interface DbBondAllowlistEntry {
+  staker: string;
+  max_sats: string;
+}
+
+export interface DbBondRegistration {
+  bond_index: number;
+  signer: string;
+  staker: string;
+  amount_ustx: string;
+  sats_total: string;
+  first_reward_cycle: number;
+  unlock_burn_height: number;
+  unlock_cycle: number;
+  is_l1_lock: boolean;
+}
+
+export interface DbTransactionCursor {
+  block_height: number;
+  microblock_sequence: number;
+  tx_index: number;
 }

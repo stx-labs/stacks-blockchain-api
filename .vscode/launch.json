@@ -14,7 +14,7 @@
       "outputCapture": "std",
       "internalConsoleOptions": "openOnSessionStart",
       "env": {
-        "NODE_ENV": "development"
+        "NODE_ENV": "production"
       }
     },
     {

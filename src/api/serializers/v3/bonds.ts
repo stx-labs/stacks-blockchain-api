@@ -1,0 +1,111 @@
+import {
+  DbBond,
+  DbBondAllowlistEntry,
+  DbBondRegistration,
+  DbBondSummary,
+} from '../../../datastore/v3/types.js';
+import { Bond, BondSummary } from '../../schemas/v3/entities/bonds.js';
+import { BondStatus } from '../../schemas/v3/entities/bonds.js';
+import { BondAllowlist } from '../../schemas/v3/entities/bond-allowlist-entries.js';
+import { BondRegistration } from '../../schemas/v3/entities/bond-registrations.js';
+
+function getBondStatus(summary: DbBondSummary, currentBurnBlockHeight: number): BondStatus {
+  if (currentBurnBlockHeight < summary.bond_start_height) {
+    return 'upcoming';
+  }
+  if (currentBurnBlockHeight < summary.unlock_burn_height) {
+    return 'active';
+  }
+  return 'unlocked';
+}
+
+/**
+ * Serializes a database bond summary to a API bond summary.
+ * @param summary - The database bond summary to serialize.
+ * @returns The API bond summary.
+ */
+export function serializeDbBondSummary(
+  summary: DbBondSummary,
+  currentBurnBlockHeight: number
+): BondSummary {
+  return {
+    index: summary.bond_index,
+    pox_version: 'pox5',
+    status: getBondStatus(summary, currentBurnBlockHeight),
+    parameters: {
+      target_rate_bps: summary.target_rate,
+      stx_value_ratio: summary.stx_value_ratio,
+      minimum_stx_ratio: summary.min_ustx_ratio,
+      btc_capacity: summary.btc_capacity,
+    },
+    registrations: {
+      allowed_count: summary.allowed_count,
+      registered_count: summary.registered_count,
+    },
+    schedule: {
+      activation: {
+        bitcoin_height: summary.bond_start_height,
+        pox_cycle: summary.first_reward_cycle,
+      },
+      unlock: {
+        bitcoin_height: summary.unlock_burn_height,
+        pox_cycle: summary.unlock_cycle,
+      },
+    },
+    balances: {
+      locked: {
+        btc: summary.btc_locked,
+        stx: summary.stx_locked,
+      },
+      paid_out: {
+        btc: summary.btc_paid_out,
+      },
+    },
+  };
+}
+
+/**
+ * Serializes a database bond to a API bond.
+ * @param bond - The database bond to serialize.
+ * @returns The API bond.
+ */
+export function serializeDbBond(bond: DbBond, currentBurnBlockHeight: number): Bond {
+  return {
+    ...serializeDbBondSummary(bond, currentBurnBlockHeight),
+    transaction: {
+      tx_id: bond.tx_id,
+      block: {
+        height: bond.block_height,
+        hash: bond.block_hash,
+        index_hash: bond.index_block_hash,
+        time: bond.block_time,
+        tx_index: bond.tx_index,
+      },
+      bitcoin_block: {
+        height: bond.burn_block_height,
+        time: bond.burn_block_time,
+      },
+    },
+  };
+}
+
+export function serializeDbBondAllowlistEntry(entry: DbBondAllowlistEntry): BondAllowlist {
+  return {
+    staker: entry.staker,
+    max_sats: entry.max_sats,
+  };
+}
+
+export function serializeDbBondRegistration(entry: DbBondRegistration): BondRegistration {
+  return {
+    bond_index: entry.bond_index,
+    signer: entry.signer,
+    staker: entry.staker,
+    amount_ustx: entry.amount_ustx,
+    sats_total: entry.sats_total,
+    first_reward_cycle: entry.first_reward_cycle,
+    unlock_burn_height: entry.unlock_burn_height,
+    unlock_cycle: entry.unlock_cycle,
+    is_l1_lock: entry.is_l1_lock,
+  };
+}

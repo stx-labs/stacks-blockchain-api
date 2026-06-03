@@ -87,3 +87,57 @@ export const MEMPOOL_TX_COLUMNS = [
   'tenure_change_previous_tenure_blocks',
   'tenure_change_pubkey_hash',
 ];
+
+export const BOND_SUMMARY_COLUMNS = [
+  'bond_index',
+  'target_rate',
+  'stx_value_ratio',
+  'min_ustx_ratio',
+  'first_reward_cycle',
+  'bond_start_height',
+  'unlock_cycle',
+  'unlock_burn_height',
+  'btc_capacity',
+  'btc_locked',
+  'stx_locked',
+  'btc_paid_out',
+  'allowed_count',
+  'registered_count',
+];
+
+export const BOND_COLUMNS = [
+  ...BOND_SUMMARY_COLUMNS,
+  'tx_id',
+  'block_height',
+  'block_hash',
+  'index_block_hash',
+  'block_time',
+  'tx_index',
+  'burn_block_height',
+  'burn_block_time',
+  'early_unlock_bytes',
+  'early_unlock_admin',
+];
+
+export const BOND_ALLOWLIST_ENTRY_COLUMNS = [
+  'staker',
+  'max_sats',
+  'block_height',
+  'microblock_sequence',
+  'tx_index',
+];
+
+export const BOND_REGISTRATION_COLUMNS = [
+  'bond_index',
+  'signer',
+  'staker',
+  'amount_ustx',
+  'sats_total',
+  'first_reward_cycle',
+  'unlock_burn_height',
+  'unlock_cycle',
+  'is_l1_lock',
+  'block_height',
+  'microblock_sequence',
+  'tx_index',
+];

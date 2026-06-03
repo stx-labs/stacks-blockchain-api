@@ -51,19 +51,27 @@ import {
   DataStoreAttachmentData,
   DataStoreAttachmentSubdomainData,
   DataStoreBnsBlockData,
-  PoxSyntheticEventInsertValues,
+  Pox4SyntheticEventInsertValues,
   DbTxRaw,
   DbMempoolTxRaw,
   DbChainTip,
   NftCustodyInsertValues,
   DataStoreBnsBlockTxData,
-  DbPoxSyntheticEvent,
-  PoxSyntheticEventTable,
+  DbPox4SyntheticEvent,
+  Pox4SyntheticEventTable,
   DbPoxSetSigners,
   PoxSetSignerValues,
   PoxCycleInsertValues,
   DbAssetEventTypeId,
   DbBurnBlockPoxTx,
+  Pox5SyntheticEventInsertValues,
+  DbBondInsertValues,
+  DbTxLocation,
+  DbBondRegistrationInsertValues,
+  DbBondAllowlistEntryInsertValues,
+  DbPrincipalBondPositionInsertValues,
+  DbPrincipalBondPositionStatus,
+  DbBondRewardDistributionInsertValues,
 } from './common.js';
 import {
   BLOCK_COLUMNS,
@@ -84,7 +92,6 @@ import { PgNotifier } from './pg-notifier.js';
 import { MIGRATIONS_DIR, PgStore } from './pg-store.js';
 import * as zoneFileParser from 'zone-file';
 import { parseResolver, parseZoneFileTxt } from '../event-stream/bns/bns-helpers.js';
-import { SyntheticPoxEventName } from '../pox-helpers.js';
 import {
   PgSqlClient,
   batchIterate,
@@ -98,6 +105,17 @@ import { PgServer, getConnectionArgs, getConnectionConfig } from './connection.j
 import { BigNumber } from 'bignumber.js';
 import { RedisNotifier } from './redis-notifier.js';
 import { ENV } from '../env.js';
+import {
+  Pox4EventName,
+  Pox5EventAddToAllowlist,
+  Pox5EventAnnounceL1EarlyExit,
+  Pox5EventCalculateRewards,
+  Pox5EventName,
+  Pox5EventRegisterForBond,
+  Pox5EventSetupBond,
+  Pox5EventUnstakeSbtc,
+  Pox5EventUpdateBondRegistration,
+} from '@stacks/codec';
 
 const INSERT_BATCH_SIZE = 500;
 
@@ -364,9 +382,10 @@ export class PgWriteStore extends PgStore {
           q.enqueue(() => this.updateStxEvents(sql, newTxData));
           q.enqueue(() => this.updatePrincipalTxs(sql, newTxData));
           q.enqueue(() => this.updateSmartContractEvents(sql, newTxData));
-          q.enqueue(() => this.updatePoxSyntheticEvents(sql, 'pox2_events', newTxData));
-          q.enqueue(() => this.updatePoxSyntheticEvents(sql, 'pox3_events', newTxData));
-          q.enqueue(() => this.updatePoxSyntheticEvents(sql, 'pox4_events', newTxData));
+          q.enqueue(() => this.updatePox4SyntheticEvents(sql, 'pox2_events', newTxData));
+          q.enqueue(() => this.updatePox4SyntheticEvents(sql, 'pox3_events', newTxData));
+          q.enqueue(() => this.updatePox4SyntheticEvents(sql, 'pox4_events', newTxData));
+          q.enqueue(() => this.insertPox5SyntheticEvents(sql, newTxData));
           q.enqueue(() => this.updateStxLockEvents(sql, newTxData));
           q.enqueue(() => this.updateFtEvents(sql, newTxData));
           for (const entry of newTxData) {
@@ -397,6 +416,12 @@ export class PgWriteStore extends PgStore {
         await sql`
           WITH new_tx_count AS (
             SELECT tx_count + ${data.txs.length} AS tx_count FROM chain_tip
+          ),
+          new_bond_count AS (
+            SELECT COUNT(*)::int AS bond_count
+            FROM bonds
+            WHERE canonical = true
+              AND microblock_canonical = true
           )
           UPDATE chain_tip SET
             block_height = ${data.block.block_height},
@@ -407,7 +432,8 @@ export class PgWriteStore extends PgStore {
             microblock_sequence = NULL,
             block_count = ${data.block.block_height},
             tx_count = (SELECT tx_count FROM new_tx_count),
-            tx_count_unanchored = (SELECT tx_count FROM new_tx_count)
+            tx_count_unanchored = (SELECT tx_count FROM new_tx_count),
+            bond_count = (SELECT bond_count FROM new_bond_count)
         `;
         if (this.metrics) {
           this.metrics.blockHeight.set(data.block.block_height);
@@ -501,6 +527,345 @@ export class PgWriteStore extends PgStore {
     return new Set();
   }
 
+  private async insertPox5SyntheticEvents(sql: PgSqlClient, txs: DataStoreTxEventData[]) {
+    const poxValues: Pox5SyntheticEventInsertValues[] = [];
+    for (const tx of txs) {
+      if (tx.pox5Events.length === 0) continue;
+      const txLocation: DbTxLocation = {
+        tx_id: tx.tx.tx_id,
+        tx_index: tx.tx.tx_index,
+        block_height: tx.tx.block_height,
+        index_block_hash: tx.tx.index_block_hash,
+        parent_index_block_hash: tx.tx.parent_index_block_hash,
+        microblock_hash: tx.tx.microblock_hash,
+        microblock_sequence: tx.tx.microblock_sequence,
+        microblock_canonical: tx.tx.microblock_canonical,
+        canonical: tx.tx.canonical,
+      };
+      for (const poxEvent of tx.pox5Events) {
+        poxValues.push({
+          ...txLocation,
+          event_index: poxEvent.event_index,
+          name: poxEvent.name,
+          data: poxEvent.data,
+        });
+        switch (poxEvent.name) {
+          case Pox5EventName.SetupBond:
+            await this.updateBond(sql, txLocation, poxEvent);
+            break;
+          case Pox5EventName.AddToAllowlist:
+            await this.updateBondAllowlistEntry(sql, txLocation, poxEvent);
+            break;
+          case Pox5EventName.RegisterForBond:
+          case Pox5EventName.UpdateBondRegistration:
+            await this.updateBondRegistration(sql, txLocation, poxEvent);
+            await this.updatePrincipalBondPosition(sql, txLocation, poxEvent);
+            break;
+          case Pox5EventName.AnnounceL1EarlyExit:
+          case Pox5EventName.UnstakeSbtc:
+            await this.updatePrincipalBondPosition(sql, txLocation, poxEvent);
+            break;
+          case Pox5EventName.CalculateRewards:
+            await this.updateBondRewardDistribution(sql, txLocation, poxEvent);
+            break;
+          case Pox5EventName.BondDistribution:
+            // TODO: Implement
+            break;
+          case Pox5EventName.ClaimRewards:
+            break;
+          case Pox5EventName.Stake:
+          case Pox5EventName.StakeUpdate:
+            // TODO: Implement
+            break;
+          case Pox5EventName.Unstake:
+            // TODO: Implement
+            break;
+          case Pox5EventName.RegisterSigner:
+            // TODO: Implement
+            break;
+        }
+      }
+    }
+    for (const batch of batchIterate(poxValues, INSERT_BATCH_SIZE)) {
+      await sql`
+        INSERT INTO pox5_events ${sql(batch)}
+      `;
+    }
+  }
+
+  private async updateBond(sql: PgSqlClient, txLocation: DbTxLocation, event: Pox5EventSetupBond) {
+    const bond: DbBondInsertValues = {
+      ...txLocation,
+      bond_index: parseInt(event.data.bond_index),
+      target_rate: parseInt(event.data.target_rate),
+      stx_value_ratio: parseInt(event.data.stx_value_ratio),
+      min_ustx_ratio: parseInt(event.data.min_ustx_ratio),
+      early_unlock_bytes: event.data.early_unlock_bytes,
+      early_unlock_admin: event.data.early_unlock_admin,
+      first_reward_cycle: parseInt(event.data.first_reward_cycle),
+      bond_start_height: parseInt(event.data.bond_start_height),
+      unlock_cycle: parseInt(event.data.unlock_cycle),
+      unlock_burn_height: parseInt(event.data.unlock_burn_height),
+    };
+    await sql`
+      INSERT INTO bonds ${sql(bond)}
+    `;
+  }
+
+  private async updateBondRegistration(
+    sql: PgSqlClient,
+    txLocation: DbTxLocation,
+    event: Pox5EventRegisterForBond | Pox5EventUpdateBondRegistration
+  ) {
+    const bondIndex = parseInt(event.data.bond_index);
+    const staker = event.data.staker;
+    const amountUstx = event.data.amount_ustx;
+    const satsTotal =
+      event.name === Pox5EventName.RegisterForBond ? event.data.sats_total : event.data.amount_sats;
+
+    if (event.name === Pox5EventName.RegisterForBond) {
+      const bondRegistration: DbBondRegistrationInsertValues = {
+        ...txLocation,
+        bond_index: bondIndex,
+        signer: event.data.signer,
+        staker,
+        amount_ustx: amountUstx,
+        sats_total: satsTotal,
+        first_reward_cycle: parseInt(event.data.first_reward_cycle),
+        unlock_burn_height: parseInt(event.data.unlock_burn_height),
+        unlock_cycle: parseInt(event.data.unlock_cycle),
+        is_l1_lock: event.data.is_l1_lock,
+      };
+      await sql`
+        INSERT INTO bond_registrations ${sql(bondRegistration)}
+      `;
+    } else {
+      const updateResult = await sql`
+        UPDATE bond_registrations SET
+          signer = ${event.data.signer},
+          sats_total = ${satsTotal},
+          amount_ustx = ${amountUstx}
+        WHERE bond_index = ${bondIndex}
+          AND staker = ${staker}
+          AND canonical = true
+          AND microblock_canonical = true
+      `;
+      if (updateResult.count === 0) {
+        logger.warn(
+          `Bond registration not found for bond index ${event.data.bond_index} and staker ${event.data.staker}`
+        );
+      }
+    }
+  }
+
+  private async updatePrincipalBondPosition(
+    sql: PgSqlClient,
+    txLocation: DbTxLocation,
+    event:
+      | Pox5EventRegisterForBond
+      | Pox5EventUpdateBondRegistration
+      | Pox5EventAnnounceL1EarlyExit
+      | Pox5EventUnstakeSbtc
+  ) {
+    switch (event.name) {
+      case Pox5EventName.RegisterForBond:
+      case Pox5EventName.UpdateBondRegistration: {
+        const bondIndex = parseInt(event.data.bond_index);
+        const position: DbPrincipalBondPositionInsertValues = {
+          ...txLocation,
+          principal: event.data.staker,
+          bond_index: bondIndex,
+          status: DbPrincipalBondPositionStatus.Enrolled,
+          active: true,
+          btc_locked:
+            event.name === Pox5EventName.RegisterForBond
+              ? event.data.sats_total
+              : event.data.amount_sats,
+          stx_locked: event.data.amount_ustx,
+          btc_paid_out: '0',
+        };
+        await sql`
+          WITH existing_position AS (
+            SELECT btc_locked, stx_locked
+            FROM principal_bond_positions
+            WHERE principal = ${position.principal}
+              AND bond_index = ${bondIndex}
+              AND canonical = true
+              AND microblock_canonical = true
+          ),
+          upserted_position AS (
+            INSERT INTO principal_bond_positions ${sql(position)}
+            ON CONFLICT (principal, bond_index) DO UPDATE SET
+              tx_id = EXCLUDED.tx_id,
+              tx_index = EXCLUDED.tx_index,
+              block_height = EXCLUDED.block_height,
+              index_block_hash = EXCLUDED.index_block_hash,
+              parent_index_block_hash = EXCLUDED.parent_index_block_hash,
+              microblock_hash = EXCLUDED.microblock_hash,
+              microblock_sequence = EXCLUDED.microblock_sequence,
+              microblock_canonical = EXCLUDED.microblock_canonical,
+              canonical = EXCLUDED.canonical,
+              status = EXCLUDED.status,
+              active = EXCLUDED.active,
+              btc_locked = EXCLUDED.btc_locked,
+              stx_locked = EXCLUDED.stx_locked
+            RETURNING btc_locked, stx_locked
+          ),
+          delta AS (
+            SELECT
+              upserted_position.btc_locked::numeric
+                - COALESCE(existing_position.btc_locked::numeric, 0) AS btc_delta,
+              upserted_position.stx_locked::numeric
+                - COALESCE(existing_position.stx_locked::numeric, 0) AS stx_delta
+            FROM upserted_position
+            LEFT JOIN existing_position ON true
+          )
+          UPDATE bonds
+          SET
+            btc_locked = bonds.btc_locked + delta.btc_delta,
+            stx_locked = bonds.stx_locked + delta.stx_delta
+          FROM delta
+          WHERE bonds.bond_index = ${bondIndex}
+            AND bonds.canonical = true
+            AND bonds.microblock_canonical = true
+        `;
+        break;
+      }
+      case Pox5EventName.AnnounceL1EarlyExit:
+        await sql`
+          WITH updated_position AS (
+            UPDATE principal_bond_positions
+            SET
+              status = ${DbPrincipalBondPositionStatus.EarlyExit},
+              active = false
+            WHERE principal = ${event.data.staker}
+              AND bond_index = ${parseInt(event.data.bond_index)}
+              AND canonical = true
+              AND microblock_canonical = true
+            RETURNING
+              bond_index,
+              btc_locked::numeric AS previous_btc_locked,
+              stx_locked::numeric AS previous_stx_locked,
+              btc_locked::numeric AS new_btc_locked,
+              stx_locked::numeric AS new_stx_locked
+          ),
+          delta AS (
+            SELECT
+              SUM(new_btc_locked - previous_btc_locked) AS btc_delta,
+              SUM(new_stx_locked - previous_stx_locked) AS stx_delta,
+              bond_index
+            FROM updated_position
+            GROUP BY bond_index
+          )
+          UPDATE bonds
+          SET
+            btc_locked = bonds.btc_locked + delta.btc_delta,
+            stx_locked = bonds.stx_locked + delta.stx_delta
+          FROM delta
+          WHERE bonds.bond_index = delta.bond_index
+            AND bonds.canonical = true
+            AND bonds.microblock_canonical = true
+        `;
+        return;
+      case Pox5EventName.UnstakeSbtc:
+        await sql`
+          WITH existing_position AS (
+            SELECT bond_index, btc_locked::numeric AS btc_locked, stx_locked::numeric AS stx_locked
+            FROM principal_bond_positions
+            WHERE principal = ${event.data.staker}
+              AND bond_index = ${parseInt(event.data.bond_index)}
+              AND canonical = true
+              AND microblock_canonical = true
+          ),
+          updated_position AS (
+            UPDATE principal_bond_positions
+            SET
+              ${event.data.new_amount_sats == '0' ? sql`status = ${DbPrincipalBondPositionStatus.EarlyExit},` : sql``}
+              btc_locked = ${event.data.new_amount_sats}
+            WHERE principal = ${event.data.staker}
+              AND bond_index = ${parseInt(event.data.bond_index)}
+              AND canonical = true
+              AND microblock_canonical = true
+            RETURNING
+              bond_index,
+              btc_locked::numeric AS new_btc_locked,
+              stx_locked::numeric AS new_stx_locked
+          ),
+          delta AS (
+            SELECT
+              updated_position.new_btc_locked - existing_position.btc_locked AS btc_delta,
+              updated_position.new_stx_locked - existing_position.stx_locked AS stx_delta,
+              updated_position.bond_index
+            FROM updated_position
+            INNER JOIN existing_position USING (bond_index)
+          )
+          UPDATE bonds
+          SET
+            btc_locked = bonds.btc_locked + delta.btc_delta,
+            stx_locked = bonds.stx_locked + delta.stx_delta
+          FROM delta
+          WHERE bonds.bond_index = delta.bond_index
+            AND bonds.canonical = true
+            AND bonds.microblock_canonical = true
+        `;
+        return;
+    }
+  }
+
+  private async updateBondRewardDistribution(
+    sql: PgSqlClient,
+    txLocation: DbTxLocation,
+    event: Pox5EventCalculateRewards
+  ) {
+    const rewardDistributions: DbBondRewardDistributionInsertValues[] = [];
+    for (const bondIndex of event.data.bond_periods) {
+      // TODO: Divide rewards by bond period
+      rewardDistributions.push({
+        ...txLocation,
+        bond_index: parseInt(bondIndex),
+        remaining_rewards: event.data.remaining_rewards,
+        accrued_rewards: event.data.accrued_rewards,
+        new_reserve: event.data.new_reserve ?? '0',
+        stx_staker_rewards: event.data.stx_staker_rewards,
+        stx_cycle: parseInt(event.data.stx_cycle),
+        cycle_staked_ustx: event.data.cycle_staked_ustx,
+        next_rewards_per_ustx: event.data.next_rewards_per_ustx,
+      });
+    }
+    for (const batch of batchIterate(rewardDistributions, INSERT_BATCH_SIZE)) {
+      await sql`
+        INSERT INTO bond_reward_distributions ${sql(batch)}
+      `;
+    }
+  }
+
+  private async updateBondAllowlistEntry(
+    sql: PgSqlClient,
+    txLocation: DbTxLocation,
+    event: Pox5EventAddToAllowlist
+  ) {
+    const bondIndex = parseInt(event.data.bond_index);
+    const maxSats = event.data.max_sats;
+    const bondAllowlistEntry: DbBondAllowlistEntryInsertValues = {
+      ...txLocation,
+      bond_index: bondIndex,
+      staker: event.data.staker,
+      max_sats: maxSats,
+    };
+    await sql`
+      WITH inserted AS (
+        INSERT INTO bond_allowlist_entries ${sql(bondAllowlistEntry)}
+        RETURNING bond_index, max_sats
+      )
+      UPDATE bonds AS b
+      SET btc_capacity = b.btc_capacity + i.max_sats::numeric
+      FROM inserted AS i
+      WHERE b.bond_index = i.bond_index
+        AND b.canonical = true
+        AND b.microblock_canonical = true
+    `;
+  }
+
   private async updatePoxStateUnlockHeight(sql: PgSqlClient, data: DataStoreBlockUpdateData) {
     if (data.pox_v1_unlock_height !== undefined) {
       // update the pox_state.pox_v1_unlock_height singleton
@@ -524,6 +889,14 @@ export class PgWriteStore extends PgStore {
         UPDATE pox_state
         SET pox_v3_unlock_height = ${data.pox_v3_unlock_height}
         WHERE pox_v3_unlock_height != ${data.pox_v3_unlock_height}
+      `;
+    }
+    if (data.pox_v4_unlock_height !== undefined) {
+      // update the pox_state.pox_v4_unlock_height singleton
+      await sql`
+        UPDATE pox_state
+        SET pox_v4_unlock_height = ${data.pox_v4_unlock_height}
+        WHERE pox_v4_unlock_height != ${data.pox_v4_unlock_height}
       `;
     }
   }
@@ -763,6 +1136,7 @@ export class PgWriteStore extends PgStore {
           pox2Events: entry.pox2Events.map(e => ({ ...e, block_height: blockHeight })),
           pox3Events: entry.pox3Events.map(e => ({ ...e, block_height: blockHeight })),
           pox4Events: entry.pox4Events.map(e => ({ ...e, block_height: blockHeight })),
+          pox5Events: entry.pox5Events.map(e => ({ ...e, block_height: blockHeight })),
         });
         deployedSmartContracts.push(...entry.smartContracts);
         contractLogEvents.push(...entry.contractLogEvents);
@@ -842,7 +1216,13 @@ export class PgWriteStore extends PgStore {
               currentMicroblockTip.microblock_sequence === 0
                 ? sql`tx_count + ${data.txs.length}`
                 : sql`tx_count_unanchored + ${data.txs.length}`
-            }
+            },
+            bond_count = (
+              SELECT COUNT(*)::int
+              FROM bonds
+              WHERE canonical = true
+                AND microblock_canonical = true
+            )
         `;
     });
 
@@ -908,20 +1288,20 @@ export class PgWriteStore extends PgStore {
     logger.info('Updated block zero boot data', tablesUpdates);
   }
 
-  async updatePoxSyntheticEvents<
-    T extends PoxSyntheticEventTable,
+  async updatePox4SyntheticEvents<
+    T extends Pox4SyntheticEventTable,
     Entry extends { tx: DbTx } & ('pox2_events' extends T
-      ? { pox2Events: DbPoxSyntheticEvent[] }
+      ? { pox2Events: DbPox4SyntheticEvent[] }
       : 'pox3_events' extends T
-        ? { pox3Events: DbPoxSyntheticEvent[] }
+        ? { pox3Events: DbPox4SyntheticEvent[] }
         : 'pox4_events' extends T
-          ? { pox4Events: DbPoxSyntheticEvent[] }
+          ? { pox4Events: DbPox4SyntheticEvent[] }
           : never),
   >(sql: PgSqlClient, poxTable: T, entries: Entry[]) {
-    const values: PoxSyntheticEventInsertValues[] = [];
+    const values: Pox4SyntheticEventInsertValues[] = [];
     for (const entry of entries) {
       // eslint-disable-next-line no-useless-assignment
-      let events: DbPoxSyntheticEvent[] | null = null;
+      let events: DbPox4SyntheticEvent[] | null = null;
       switch (poxTable) {
         case 'pox2_events':
           assert('pox2Events' in entry);
@@ -940,7 +1320,8 @@ export class PgWriteStore extends PgStore {
       }
       const tx = entry.tx;
       for (const event of events ?? []) {
-        const value: PoxSyntheticEventInsertValues = {
+        assert(event.pox_version === 'pox4', 'only pox4 events are supported');
+        const value: Pox4SyntheticEventInsertValues = {
           event_index: event.event_index,
           tx_id: event.tx_id,
           tx_index: event.tx_index,
@@ -980,12 +1361,12 @@ export class PgWriteStore extends PgStore {
 
         // Set event-specific columns
         switch (event.name) {
-          case SyntheticPoxEventName.HandleUnlock: {
+          case Pox4EventName.HandleUnlock: {
             value.first_cycle_locked = event.data.first_cycle_locked.toString();
             value.first_unlocked_cycle = event.data.first_unlocked_cycle.toString();
             break;
           }
-          case SyntheticPoxEventName.StackStx: {
+          case Pox4EventName.StackStx: {
             value.lock_period = event.data.lock_period.toString();
             value.lock_amount = event.data.lock_amount.toString();
             value.start_burn_height = event.data.start_burn_height.toString();
@@ -997,7 +1378,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.StackIncrease: {
+          case Pox4EventName.StackIncrease: {
             value.increase_by = event.data.increase_by.toString();
             value.total_locked = event.data.total_locked.toString();
             if (poxTable === 'pox4_events') {
@@ -1007,7 +1388,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.StackExtend: {
+          case Pox4EventName.StackExtend: {
             value.extend_count = event.data.extend_count.toString();
             value.unlock_burn_height = event.data.unlock_burn_height.toString();
             if (poxTable === 'pox4_events') {
@@ -1017,7 +1398,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.DelegateStx: {
+          case Pox4EventName.DelegateStx: {
             value.amount_ustx = event.data.amount_ustx.toString();
             value.delegate_to = event.data.delegate_to;
             value.unlock_burn_height = event.data.unlock_burn_height?.toString() ?? null;
@@ -1027,7 +1408,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.DelegateStackStx: {
+          case Pox4EventName.DelegateStackStx: {
             value.lock_period = event.data.lock_period.toString();
             value.lock_amount = event.data.lock_amount.toString();
             value.start_burn_height = event.data.start_burn_height.toString();
@@ -1039,7 +1420,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.DelegateStackIncrease: {
+          case Pox4EventName.DelegateStackIncrease: {
             value.increase_by = event.data.increase_by.toString();
             value.total_locked = event.data.total_locked.toString();
             value.delegator = event.data.delegator;
@@ -1049,7 +1430,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.DelegateStackExtend: {
+          case Pox4EventName.DelegateStackExtend: {
             value.extend_count = event.data.extend_count.toString();
             value.unlock_burn_height = event.data.unlock_burn_height.toString();
             value.delegator = event.data.delegator;
@@ -1059,7 +1440,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.StackAggregationCommit: {
+          case Pox4EventName.StackAggregationCommit: {
             value.reward_cycle = event.data.reward_cycle.toString();
             value.amount_ustx = event.data.amount_ustx.toString();
             if (poxTable === 'pox4_events') {
@@ -1069,7 +1450,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.StackAggregationCommitIndexed: {
+          case Pox4EventName.StackAggregationCommitIndexed: {
             value.reward_cycle = event.data.reward_cycle.toString();
             value.amount_ustx = event.data.amount_ustx.toString();
             if (poxTable === 'pox4_events') {
@@ -1079,7 +1460,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.StackAggregationIncrease: {
+          case Pox4EventName.StackAggregationIncrease: {
             value.reward_cycle = event.data.reward_cycle.toString();
             value.amount_ustx = event.data.amount_ustx.toString();
             if (poxTable === 'pox4_events') {
@@ -1088,7 +1469,7 @@ export class PgWriteStore extends PgStore {
             }
             break;
           }
-          case SyntheticPoxEventName.RevokeDelegateStx: {
+          case Pox4EventName.RevokeDelegateStx: {
             value.delegate_to = event.data.delegate_to;
             if (poxTable === 'pox4_events') {
               value.end_cycle_id = event.data.end_cycle_id?.toString() ?? null;
@@ -1098,7 +1479,7 @@ export class PgWriteStore extends PgStore {
           }
           default: {
             throw new Error(
-              `Unexpected Pox synthetic event name: ${(event as DbPoxSyntheticEvent).name}`
+              `Unexpected Pox synthetic event name: ${(event as DbPox4SyntheticEvent).name}`
             );
           }
         }
@@ -2923,9 +3304,9 @@ export class PgWriteStore extends PgStore {
       q.enqueue(() => this.updateStxEvents(sql, txs));
       q.enqueue(() => this.updatePrincipalTxs(sql, txs));
       q.enqueue(() => this.updateSmartContractEvents(sql, txs));
-      q.enqueue(() => this.updatePoxSyntheticEvents(sql, 'pox2_events', txs));
-      q.enqueue(() => this.updatePoxSyntheticEvents(sql, 'pox3_events', txs));
-      q.enqueue(() => this.updatePoxSyntheticEvents(sql, 'pox4_events', txs));
+      q.enqueue(() => this.updatePox4SyntheticEvents(sql, 'pox2_events', txs));
+      q.enqueue(() => this.updatePox4SyntheticEvents(sql, 'pox3_events', txs));
+      q.enqueue(() => this.updatePox4SyntheticEvents(sql, 'pox4_events', txs));
       q.enqueue(() => this.updateStxLockEvents(sql, txs));
       q.enqueue(() => this.updateFtEvents(sql, txs));
       for (const entry of txs) {
@@ -4000,7 +4381,13 @@ export class PgWriteStore extends PgStore {
       await sql`
         UPDATE chain_tip SET
           tx_count = tx_count + ${txCountDelta},
-          tx_count_unanchored = tx_count_unanchored + ${txCountDelta}
+          tx_count_unanchored = tx_count_unanchored + ${txCountDelta},
+          bond_count = (
+            SELECT COUNT(*)::int
+            FROM bonds
+            WHERE canonical = true
+              AND microblock_canonical = true
+          )
       `;
     }
     return updatedEntities;

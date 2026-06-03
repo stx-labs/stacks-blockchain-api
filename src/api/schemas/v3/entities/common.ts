@@ -19,6 +19,15 @@ export type SmartContractId = Static<typeof SmartContractIdSchema>;
 export const PrincipalSchema = Type.Union([AddressSchema, SmartContractIdSchema]);
 export type Principal = Static<typeof PrincipalSchema>;
 
+export const AssetIdentifierSchema = Type.String({
+  pattern:
+    '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{28,41}\\.[a-zA-Z]([a-zA-Z0-9]|[-_]){0,39}::[a-zA-Z-]+$',
+  title: 'Asset Identifier',
+  description: 'Asset Identifier',
+  examples: ['SP000000000000000000002Q6VF78.pox-3::stx-token'],
+});
+export type AssetIdentifier = Static<typeof AssetIdentifierSchema>;
+
 export const TransactionIdSchema = Type.String({
   pattern: '^(0x)?[a-fA-F0-9]{64}$',
   title: 'Transaction ID',
@@ -51,11 +60,22 @@ export const BlockHeightOrHashSchema = Type.Union([
 ]);
 export type BlockHeightOrHash = Static<typeof BlockHeightOrHashSchema>;
 
+export const BondIndexSchema = Type.Integer({
+  description: 'The index of the bond in the PoX-5 bond list',
+});
+export type BondIndex = Static<typeof BondIndexSchema>;
+
 export const DecodedClarityValueSchema = Type.Object({
   hex: Type.String(),
   repr: Type.String(),
 });
 export type DecodedClarityValue = Static<typeof DecodedClarityValueSchema>;
+
+export const DecodedStxTransferMemoSchema = Type.Object({
+  hex: Type.String(),
+  repr: Type.String(),
+});
+export type DecodedStxTransferMemo = Static<typeof DecodedStxTransferMemoSchema>;
 
 export const ExecutionCostSchema = Type.Object({
   read_count: Type.Integer({
@@ -75,3 +95,41 @@ export const ExecutionCostSchema = Type.Object({
   }),
 });
 export type ExecutionCost = Static<typeof ExecutionCostSchema>;
+
+export const BlockPositionSchema = Type.Object({
+  height: Type.Integer({
+    description: 'Height of the block this transactions was associated with',
+  }),
+  hash: Type.String({
+    description: 'Hash of the blocked this transactions was associated with',
+  }),
+  index_hash: Type.String({
+    description: 'Hash of the index block this transactions was associated with',
+  }),
+  time: Type.Number({
+    description: 'Unix timestamp (in seconds) indicating when this block was mined.',
+  }),
+  tx_index: Type.Integer({
+    description:
+      'Index of the transaction, indicating the order. Starts at `0` and increases with each transaction',
+  }),
+});
+export type BlockPosition = Static<typeof BlockPositionSchema>;
+
+export const BitcoinBlockPositionSchema = Type.Object({
+  height: Type.Integer({
+    description: 'Height of the anchor burn block.',
+  }),
+  time: Type.Number({
+    description: 'Unix timestamp (in seconds) indicating when this block was mined.',
+  }),
+});
+export type BitcoinBlockPosition = Static<typeof BitcoinBlockPositionSchema>;
+
+export const AmountSchema = Type.String({
+  pattern: '^[0-9]+$',
+  title: 'Amount',
+  description: 'Amount',
+  examples: ['1000000'],
+});
+export type Amount = Static<typeof AmountSchema>;

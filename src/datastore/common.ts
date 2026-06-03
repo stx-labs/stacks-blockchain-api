@@ -1,5 +1,5 @@
+import { Pox4Event, Pox5Event } from '@stacks/codec';
 import { Block } from '../api/schemas/v1/entities/block.js';
-import { SyntheticPoxEventName } from '../pox-helpers.js';
 import { PgBytea, PgJsonb, PgNumeric } from '@stacks/api-toolkit';
 
 export interface DbBlock {
@@ -388,163 +388,11 @@ export interface DbEventBase {
   canonical: boolean;
 }
 
-export type PoxSyntheticEventTable = 'pox2_events' | 'pox3_events' | 'pox4_events';
+export type Pox4SyntheticEventTable = 'pox2_events' | 'pox3_events' | 'pox4_events';
 
-export interface DbPoxSyntheticBaseEventData {
-  stacker: string;
-  locked: bigint;
-  balance: bigint;
-  burnchain_unlock_height: bigint;
-  pox_addr: string | null;
-  pox_addr_raw: string | null;
-}
+export type DbPox4SyntheticEvent = DbEventBase & Pox4Event;
 
-export interface DbPoxSyntheticHandleUnlockEvent extends DbPoxSyntheticBaseEventData {
-  name: SyntheticPoxEventName.HandleUnlock;
-  data: {
-    first_cycle_locked: bigint;
-    first_unlocked_cycle: bigint;
-  };
-}
-
-export interface DbPoxSyntheticStackStxEvent extends DbPoxSyntheticBaseEventData {
-  name: SyntheticPoxEventName.StackStx;
-  data: {
-    lock_amount: bigint;
-    lock_period: bigint;
-    start_burn_height: bigint;
-    unlock_burn_height: bigint;
-    signer_key: string | null;
-    end_cycle_id: bigint | null;
-    start_cycle_id: bigint | null;
-  };
-}
-
-export interface DbPoxSyntheticStackIncreaseEvent extends DbPoxSyntheticBaseEventData {
-  name: SyntheticPoxEventName.StackIncrease;
-  data: {
-    increase_by: bigint;
-    total_locked: bigint;
-    signer_key: string | null;
-    end_cycle_id: bigint | null;
-    start_cycle_id: bigint | null;
-  };
-}
-
-export interface DbPoxSyntheticStackExtendEvent extends DbPoxSyntheticBaseEventData {
-  name: SyntheticPoxEventName.StackExtend;
-  data: {
-    extend_count: bigint;
-    unlock_burn_height: bigint;
-    signer_key: string | null;
-    end_cycle_id: bigint | null;
-    start_cycle_id: bigint | null;
-  };
-}
-
-export interface DbPoxSyntheticDelegateStxEvent extends DbPoxSyntheticBaseEventData {
-  name: SyntheticPoxEventName.DelegateStx;
-  data: {
-    amount_ustx: bigint;
-    delegate_to: string;
-    unlock_burn_height: bigint | null;
-    end_cycle_id: bigint | null;
-    start_cycle_id: bigint | null;
-  };
-}
-
-export interface DbPoxSyntheticDelegateStackStxEvent extends DbPoxSyntheticBaseEventData {
-  name: SyntheticPoxEventName.DelegateStackStx;
-  data: {
-    lock_amount: bigint;
-    unlock_burn_height: bigint;
-    start_burn_height: bigint;
-    lock_period: bigint;
-    delegator: string;
-    end_cycle_id: bigint | null;
-    start_cycle_id: bigint | null;
-  };
-}
-
-export interface DbPoxSyntheticDelegateStackIncreaseEvent extends DbPoxSyntheticBaseEventData {
-  name: SyntheticPoxEventName.DelegateStackIncrease;
-  data: {
-    increase_by: bigint;
-    total_locked: bigint;
-    delegator: string;
-    end_cycle_id: bigint | null;
-    start_cycle_id: bigint | null;
-  };
-}
-
-export interface DbPoxSyntheticDelegateStackExtendEvent extends DbPoxSyntheticBaseEventData {
-  name: SyntheticPoxEventName.DelegateStackExtend;
-  data: {
-    unlock_burn_height: bigint;
-    extend_count: bigint;
-    delegator: string;
-    end_cycle_id: bigint | null;
-    start_cycle_id: bigint | null;
-  };
-}
-
-export interface DbPoxSyntheticStackAggregationCommitEvent extends DbPoxSyntheticBaseEventData {
-  name: SyntheticPoxEventName.StackAggregationCommit;
-  data: {
-    reward_cycle: bigint;
-    amount_ustx: bigint;
-    signer_key: string | null;
-    end_cycle_id: bigint | null;
-    start_cycle_id: bigint | null;
-  };
-}
-
-export interface DbPoxSyntheticStackAggregationCommitIndexedEvent
-  extends DbPoxSyntheticBaseEventData {
-  name: SyntheticPoxEventName.StackAggregationCommitIndexed;
-  data: {
-    reward_cycle: bigint;
-    amount_ustx: bigint;
-    signer_key: string | null;
-    end_cycle_id: bigint | null;
-    start_cycle_id: bigint | null;
-  };
-}
-
-export interface DbPoxSyntheticStackAggregationIncreaseEvent extends DbPoxSyntheticBaseEventData {
-  name: SyntheticPoxEventName.StackAggregationIncrease;
-  data: {
-    reward_cycle: bigint;
-    amount_ustx: bigint;
-    end_cycle_id: bigint | null;
-    start_cycle_id: bigint | null;
-  };
-}
-
-export interface DbPoxSyntheticRevokeDelegateStxEvent extends DbPoxSyntheticBaseEventData {
-  name: SyntheticPoxEventName.RevokeDelegateStx;
-  data: {
-    delegate_to: string;
-    end_cycle_id: bigint | null;
-    start_cycle_id: bigint | null;
-  };
-}
-
-export type DbPoxSyntheticEventData =
-  | DbPoxSyntheticHandleUnlockEvent
-  | DbPoxSyntheticStackStxEvent
-  | DbPoxSyntheticStackIncreaseEvent
-  | DbPoxSyntheticStackExtendEvent
-  | DbPoxSyntheticDelegateStxEvent
-  | DbPoxSyntheticDelegateStackStxEvent
-  | DbPoxSyntheticDelegateStackIncreaseEvent
-  | DbPoxSyntheticDelegateStackExtendEvent
-  | DbPoxSyntheticStackAggregationCommitEvent
-  | DbPoxSyntheticStackAggregationCommitIndexedEvent
-  | DbPoxSyntheticStackAggregationIncreaseEvent
-  | DbPoxSyntheticRevokeDelegateStxEvent;
-
-export type DbPoxSyntheticEvent = DbEventBase & DbPoxSyntheticEventData;
+export type DbPox5SyntheticEvent = DbEventBase & Pox5Event;
 
 export interface DbPoxStacker {
   stacker: string;
@@ -660,6 +508,7 @@ export interface DataStoreBlockUpdateData {
   pox_v1_unlock_height?: number;
   pox_v2_unlock_height?: number;
   pox_v3_unlock_height?: number;
+  pox_v4_unlock_height?: number;
   poxSetSigners?: DbPoxSetSigners;
 }
 
@@ -678,9 +527,10 @@ export interface DataStoreTxEventData {
   smartContracts: DbSmartContract[];
   names: DbBnsName[];
   namespaces: DbBnsNamespace[];
-  pox2Events: DbPoxSyntheticEvent[];
-  pox3Events: DbPoxSyntheticEvent[];
-  pox4Events: DbPoxSyntheticEvent[];
+  pox2Events: DbPox4SyntheticEvent[];
+  pox3Events: DbPox4SyntheticEvent[];
+  pox4Events: DbPox4SyntheticEvent[];
+  pox5Events: DbPox5SyntheticEvent[];
 }
 
 export interface DataStoreAttachmentData {
@@ -1455,7 +1305,7 @@ export interface PoxSyntheticEventQueryResult {
   start_cycle_id?: string | null;
 }
 
-export interface PoxSyntheticEventInsertValues {
+export interface Pox4SyntheticEventInsertValues {
   event_index: number;
   tx_id: PgBytea;
   tx_index: number;
@@ -1518,6 +1368,12 @@ export interface PoxSyntheticEventInsertValues {
   // [pox4]
   end_cycle_id?: PgNumeric | null;
   start_cycle_id?: PgNumeric | null;
+}
+
+export interface Pox5SyntheticEventInsertValues extends DbTxLocation {
+  event_index: number;
+  name: string;
+  data: PgJsonb;
 }
 
 export interface NftEventInsertValues {
@@ -1762,6 +1618,7 @@ export interface DbChainTip {
   tx_count: number;
   tx_count_unanchored: number;
   mempool_tx_count: number;
+  bond_count: number;
 }
 
 export interface DbSmartContractStatus {
@@ -1769,4 +1626,75 @@ export interface DbSmartContractStatus {
   tx_id: string;
   status: DbTxStatus;
   block_height?: number;
+}
+
+export interface DbTxLocation {
+  tx_id: string;
+  tx_index: number;
+  block_height: number;
+  index_block_hash: string;
+  parent_index_block_hash: string;
+  microblock_hash: string;
+  microblock_sequence: number;
+  microblock_canonical: boolean;
+  canonical: boolean;
+}
+
+export interface DbBondInsertValues extends DbTxLocation {
+  bond_index: number;
+  target_rate: number;
+  stx_value_ratio: number;
+  min_ustx_ratio: number;
+  first_reward_cycle: number;
+  bond_start_height: number;
+  unlock_cycle: number;
+  unlock_burn_height: number;
+  early_unlock_bytes: string;
+  early_unlock_admin: string;
+}
+
+export interface DbBondRegistrationInsertValues extends DbTxLocation {
+  bond_index: number;
+  signer: string;
+  staker: string;
+  amount_ustx: string;
+  sats_total: string;
+  first_reward_cycle: number;
+  unlock_burn_height: number;
+  unlock_cycle: number;
+  is_l1_lock: boolean;
+}
+
+export interface DbBondAllowlistEntryInsertValues extends DbTxLocation {
+  bond_index: number;
+  staker: string;
+  max_sats: string;
+}
+
+export enum DbPrincipalBondPositionStatus {
+  Enrolled = 0,
+  Running = 1,
+  Unlocked = 2,
+  EarlyExit = 3,
+}
+
+export interface DbPrincipalBondPositionInsertValues extends DbTxLocation {
+  principal: string;
+  bond_index: number;
+  status: DbPrincipalBondPositionStatus;
+  active: boolean;
+  btc_locked: string;
+  stx_locked: string;
+  btc_paid_out: string;
+}
+
+export interface DbBondRewardDistributionInsertValues extends DbTxLocation {
+  bond_index: number;
+  remaining_rewards: string;
+  accrued_rewards: string;
+  new_reserve: string;
+  stx_staker_rewards: string;
+  stx_cycle: number;
+  cycle_staked_ustx: string;
+  next_rewards_per_ustx: string;
 }

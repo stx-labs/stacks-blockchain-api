@@ -1,5 +1,10 @@
 import { Static, Type } from '@sinclair/typebox';
 import { Nullable } from '../../v1/util.js';
+import {
+  BitcoinBlockPositionSchema,
+  BlockPositionSchema,
+  DecodedStxTransferMemoSchema,
+} from './common.js';
 
 export const TransactionSenderSchema = Type.Object({
   address: Type.String({
@@ -47,32 +52,8 @@ export const BaseTransactionSummarySchema = Type.Object({
   fee_rate: Type.String({
     description: 'Transaction fee as Integer string (64-bit unsigned integer).',
   }),
-  block: Type.Object({
-    height: Type.Integer({
-      description: 'Height of the block this transactions was associated with',
-    }),
-    hash: Type.String({
-      description: 'Hash of the blocked this transactions was associated with',
-    }),
-    index_hash: Type.String({
-      description: 'Hash of the index block this transactions was associated with',
-    }),
-    time: Type.Number({
-      description: 'Unix timestamp (in seconds) indicating when this block was mined.',
-    }),
-    tx_index: Type.Integer({
-      description:
-        'Index of the transaction, indicating the order. Starts at `0` and increases with each transaction',
-    }),
-  }),
-  bitcoin_block: Type.Object({
-    height: Type.Integer({
-      description: 'Height of the anchor burn block.',
-    }),
-    time: Type.Number({
-      description: 'Unix timestamp (in seconds) indicating when this block was mined.',
-    }),
-  }),
+  block: BlockPositionSchema,
+  bitcoin_block: BitcoinBlockPositionSchema,
   status: TransactionStatusSchema,
 });
 export type BaseTransactionSummary = Static<typeof BaseTransactionSummarySchema>;
@@ -87,12 +68,7 @@ export const TokenTransferTransactionSummarySchema = Type.Composite(
         amount: Type.String({
           description: 'Transfer amount as Integer string (64-bit unsigned integer)',
         }),
-        memo: Nullable(
-          Type.String({
-            description:
-              'Hex encoded arbitrary message, up to 34 bytes length (should try decoding to an ASCII string)',
-          })
-        ),
+        memo: Nullable(DecodedStxTransferMemoSchema),
       }),
     }),
   ],

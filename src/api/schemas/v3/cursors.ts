@@ -1,4 +1,4 @@
-import { ObjectOptions, TSchema, Type } from '@sinclair/typebox';
+import { ObjectOptions, Static, TSchema, Type } from '@sinclair/typebox';
 import { pagingQueryLimits, ResourceType } from '../../pagination.js';
 import { Nullable } from '../v1/util.js';
 
@@ -58,8 +58,22 @@ export const TransactionCursorSchema = Type.String({
     'Cursor for paginating transactions. Format: block_height:microblock_sequence:tx_index',
   pattern: '^[0-9]+:[0-9]+:[0-9]+$',
 });
+export type TransactionCursor = Static<typeof TransactionCursorSchema>;
 
 export const MempoolTransactionCursorSchema = Type.String({
   pattern: '^\\d+:(0x)?[a-fA-F0-9]{64}$',
   description: 'Cursor for paginating mempool transactions. Format: receipt_time:tx_id',
 });
+export type MempoolTransactionCursor = Static<typeof MempoolTransactionCursorSchema>;
+
+export const TransactionEventCursorSchema = Type.String({
+  pattern: '^[0-9]+$',
+  description: 'Cursor for paginating transaction events. Format: event_index',
+});
+export type TransactionEventCursor = Static<typeof TransactionEventCursorSchema>;
+
+export const BondCursorSchema = Type.String({
+  pattern: '^\\d+$',
+  description: 'Cursor for paginating bonds. Format: bond_index',
+});
+export type BondCursor = Static<typeof BondCursorSchema>;
