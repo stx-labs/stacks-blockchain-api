@@ -24,6 +24,7 @@
     "test:api:v2-proxy": "NODE_ENV=test node --import tsx --test --test-global-setup=./tests/api/setup.ts --test-concurrency=1 ./tests/api/v2-proxy/**/*.test.ts",
     "test:api:v3": "NODE_ENV=test node --import tsx --test --test-global-setup=./tests/api/setup.ts --test-concurrency=1 ./tests/api/v3/**/*.test.ts",
     "test:snp": "NODE_ENV=test node --import tsx --test --test-global-setup=./tests/snp/setup.ts --test-concurrency=1 ./tests/snp/**/*.test.ts",
+    "test:pox5": "NODE_ENV=test node --import tsx --test --test-global-setup=./tests/pox5/setup.ts --test-concurrency=1 ./tests/pox5/**/*.test.ts",
     "test:krypton:bns-e2e": "NODE_ENV=test node --import tsx --test --test-global-setup=./tests/krypton/setup.ts --test-concurrency=1 ./tests/krypton/bns-e2e/**/*.test.ts",
     "test:krypton:faucet-btc": "NODE_ENV=test node --import tsx --test --test-global-setup=./tests/krypton/setup.ts --test-concurrency=1 ./tests/krypton/faucet-btc/**/*.test.ts",
     "test:krypton:faucet-stx": "NODE_ENV=test node --import tsx --test --test-global-setup=./tests/krypton/setup.ts --test-concurrency=1 ./tests/krypton/faucet-stx/**/*.test.ts",
