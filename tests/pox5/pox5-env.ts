@@ -98,6 +98,38 @@ export function accountFromKey(
 
 // -- Stand-by helpers (poll the API datastore / node RPC for chain progress) --
 
+/**
+ * Generic polling helper: repeatedly invoke `fn` until it returns a truthy
+ * value (which is then returned), or throw once `timeoutMs` elapses. Logs a
+ * heartbeat with `desc` every 15s so long waits don't look frozen.
+ *
+ * Useful whenever a sidecar acts on its own schedule and there's no specific
+ * txid/height to wait on — e.g. "wait until some bond exists", "wait until a
+ * token-transfer shows up".
+ */
+export async function waitFor<T>(
+  desc: string,
+  fn: () => Promise<T | undefined | null | false> | T | undefined | null | false,
+  timeoutMs = 15 * 60_000
+): Promise<T> {
+  const deadline = Date.now() + timeoutMs;
+  let lastLog = 0;
+  while (true) {
+    const result = await fn();
+    if (result) {
+      return result as T;
+    }
+    if (Date.now() > deadline) {
+      throw new Error(`Timed out waiting for: ${desc}`);
+    }
+    if (Date.now() - lastLog >= 15_000) {
+      console.log(`Waiting for: ${desc}…`);
+      lastLog = Date.now();
+    }
+    await timeout(1_000);
+  }
+}
+
 export async function standByUntilBurnBlock(
   burnBlockHeight: number,
   ctx: Pox5Context
@@ -192,6 +224,67 @@ export async function standByForAccountUnlock(address: string, ctx: Pox5Context)
     }
     const info = await ctx.client.getInfo();
     await standByUntilBlock(info.stacks_tip_height + 1, ctx);
+  }
+}
+
+/**
+ * Poll the node's `/v2/pox` until the active pox contract id ends with the given
+ * contract name (e.g. `'pox-4'` pre-transition, `'pox-5'` after epoch 4.0).
+ * Robust alternative to hardcoding epoch burn heights.
+ */
+export async function standByForPoxContractId(
+  ctx: Pox5Context,
+  contractName: string,
+  timeoutMs = 15 * 60_000
+): Promise<CoreRpcPoxInfo> {
+  const deadline = Date.now() + timeoutMs;
+  let lastLog = 0;
+  while (true) {
+    const pox = await ctx.client.getPox();
+    if (pox.contract_id.endsWith(`.${contractName}`)) {
+      return pox;
+    }
+    if (Date.now() > deadline) {
+      throw new Error(
+        `Timed out waiting for pox contract '${contractName}' (current: ${pox.contract_id})`
+      );
+    }
+    if (Date.now() - lastLog >= 15_000) {
+      console.log(
+        `Waiting for pox contract '${contractName}' (current ${pox.contract_id} @ burn height ${pox.current_burnchain_block_height})…`
+      );
+      lastLog = Date.now();
+    }
+    await timeout(2_000);
+  }
+}
+
+/**
+ * Poll the datastore until a contract-deploy tx with the given id has been
+ * ingested. The staking sidecars deploy contracts autonomously (so we can't
+ * predict their txids), but the contract ids are deterministic
+ * (`<deployer>.<name>`), so we wait by id rather than by txid.
+ */
+export async function standByForContract(
+  ctx: Pox5Context,
+  contractId: string,
+  timeoutMs = 15 * 60_000
+): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  let lastLog = 0;
+  while (true) {
+    const res = await ctx.api.datastore.getSmartContract(contractId);
+    if (res.found) {
+      return;
+    }
+    if (Date.now() > deadline) {
+      throw new Error(`Timed out waiting for contract ${contractId} to be ingested`);
+    }
+    if (Date.now() - lastLog >= 15_000) {
+      console.log(`Waiting for contract ${contractId} to be ingested…`);
+      lastLog = Date.now();
+    }
+    await timeout(1_000);
   }
 }
 

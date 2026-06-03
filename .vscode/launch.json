@@ -137,5 +137,24 @@
         "NODE_ENV": "test"
       }
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "test: pox5",
+      "runtimeExecutable": "node",
+      "args": [
+        "--import",
+        "tsx",
+        "--test",
+        "--test-global-setup=./tests/pox5/setup.ts",
+        "--test-concurrency=1",
+        "./tests/pox5/pox-transition.test.ts"
+      ],
+      "outputCapture": "std",
+      "console": "integratedTerminal",
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
   ],
 }

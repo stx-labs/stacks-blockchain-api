@@ -34,7 +34,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 function pox5ComposeConfig(): DockerComposeTestConfig {
   return {
     projectName: 'stacks-api-test-pox5',
-    composeFile: join(__dirname, 'docker-compose.yml'),
+    composeFile: join(__dirname, 'regtest-env', 'docker-compose.yml'),
     // Run docker quietly (capture output, surface only on failure) so the
     // console stays focused on the test runner. Heartbeat lines report progress
     // during the build/boot/readiness waits; set DEBUG_COMPOSE=1 to stream the
