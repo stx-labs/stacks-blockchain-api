@@ -1710,6 +1710,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/extended/v3/principals/{principal}/balances/staking": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get principal staking balances
+         * @description Get principal staking balances
+         */
+        get: operations["get_principal_staking_balances"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/extended/v3/transactions": {
         parameters: {
             query?: never;
@@ -2042,9 +2062,6 @@ export interface operations {
                         server_version: string;
                         /** @description the current server status */
                         status: string;
-                        pox_v1_unlock_height?: number | null;
-                        pox_v2_unlock_height?: number | null;
-                        pox_v3_unlock_height?: number | null;
                         chain_tip?: {
                             /** @description the current block height */
                             block_height: number;
@@ -32119,6 +32136,26 @@ export interface operations {
                         [key: string]: unknown;
                     };
                 };
+            };
+        };
+    };
+    get_principal_staking_balances: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                principal: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
