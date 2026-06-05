@@ -22,13 +22,28 @@ export const up = (pgm: MigrationBuilder) => {
       type: 'integer',
       notNull: true,
     },
+    block_hash: {
+      type: 'bytea',
+    },
+    block_time: {
+      type: 'bigint',
+    },
     index_block_hash: {
       type: 'bytea',
       notNull: true,
     },
+    parent_block_hash: {
+      type: 'bytea',
+    },
     parent_index_block_hash: {
       type: 'bytea',
       notNull: true,
+    },
+    burn_block_height: {
+      type: 'integer',
+    },
+    burn_block_time: {
+      type: 'bigint',
     },
     microblock_hash: {
       type: 'bytea',

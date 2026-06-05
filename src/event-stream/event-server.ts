@@ -583,6 +583,7 @@ function parseDataStoreTxEventData(
       }
       poxEvent.event_index = associatedLogEvent.event_index;
     }
+    tx.pox5Events.sort((a, b) => a.event_index - b.event_index);
   }
 
   return dbData;

@@ -1,16 +1,29 @@
-export const TX_SUMMARY_COLUMNS = [
+export const TX_LOCATION_COLUMNS = [
   'tx_id',
+  'tx_index',
+  'block_height',
+  'block_hash',
+  'block_time',
+  'burn_block_height',
+  'burn_block_time',
+  'parent_block_hash',
+  'index_block_hash',
+  'parent_index_block_hash',
+  'microblock_hash',
+  'microblock_sequence',
+  'microblock_canonical',
+  'canonical',
+];
+
+export const TX_SUMMARY_COLUMNS = [
+  ...TX_LOCATION_COLUMNS,
   'sender_address',
   'sponsor_address',
   'sponsor_nonce',
   'nonce',
   'fee_rate',
-  'block_height',
   'block_hash',
-  'index_block_hash',
   'block_time',
-  'tx_index',
-  'microblock_sequence',
   'burn_block_height',
   'burn_block_time',
   'status',
@@ -107,14 +120,7 @@ export const BOND_SUMMARY_COLUMNS = [
 
 export const BOND_COLUMNS = [
   ...BOND_SUMMARY_COLUMNS,
-  'tx_id',
-  'block_height',
-  'block_hash',
-  'index_block_hash',
-  'block_time',
-  'tx_index',
-  'burn_block_height',
-  'burn_block_time',
+  ...TX_LOCATION_COLUMNS,
   'early_unlock_bytes',
   'early_unlock_admin',
 ];
@@ -140,4 +146,14 @@ export const BOND_REGISTRATION_COLUMNS = [
   'block_height',
   'microblock_sequence',
   'tx_index',
+];
+
+export const PRINCIPAL_BOND_POSITION_COLUMNS = [
+  'bond_index',
+  'status',
+  'active',
+  'btc_locked',
+  'stx_locked',
+  'btc_paid_out',
+  'tx_id',
 ];

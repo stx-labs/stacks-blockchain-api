@@ -3,11 +3,17 @@ import {
   DbBondAllowlistEntry,
   DbBondRegistration,
   DbBondSummary,
+  DbPrincipalBondPosition,
 } from '../../../datastore/v3/types.js';
+import { DbPrincipalBondPositionStatus } from '../../../datastore/common.js';
 import { Bond, BondSummary } from '../../schemas/v3/entities/bonds.js';
 import { BondStatus } from '../../schemas/v3/entities/bonds.js';
 import { BondAllowlist } from '../../schemas/v3/entities/bond-allowlist-entries.js';
 import { BondRegistration } from '../../schemas/v3/entities/bond-registrations.js';
+import {
+  PrincipalBondPosition,
+  PrincipalBondPositionStatus,
+} from '../../schemas/v3/entities/principal-bond-positions.js';
 
 function getBondStatus(summary: DbBondSummary, currentBurnBlockHeight: number): BondStatus {
   if (currentBurnBlockHeight < summary.bond_start_height) {
@@ -93,6 +99,47 @@ export function serializeDbBondAllowlistEntry(entry: DbBondAllowlistEntry): Bond
   return {
     staker: entry.staker,
     max_sats: entry.max_sats,
+  };
+}
+
+function getPrincipalBondPositionStatus(
+  status: DbPrincipalBondPositionStatus
+): PrincipalBondPositionStatus {
+  switch (status) {
+    case DbPrincipalBondPositionStatus.Enrolled:
+      return 'enrolled';
+    case DbPrincipalBondPositionStatus.Running:
+      return 'running';
+    case DbPrincipalBondPositionStatus.Unlocked:
+      return 'unlocked';
+    case DbPrincipalBondPositionStatus.EarlyExit:
+      return 'early_exit';
+  }
+}
+
+export function serializeDbPrincipalBondPosition(
+  position: DbPrincipalBondPosition
+): PrincipalBondPosition {
+  return {
+    bond_index: position.bond_index,
+    status: getPrincipalBondPositionStatus(position.status),
+    active: position.active,
+    balances: {
+      locked: {
+        btc: position.btc_locked,
+        stx: position.stx_locked,
+      },
+      paid_out: {
+        btc: position.btc_paid_out,
+      },
+    },
+    enrollment: {
+      tx_id: position.tx_id,
+      btc_lockup: {
+        amount: position.btc_locked,
+      },
+    },
+    amount: position.stx_locked,
   };
 }
 

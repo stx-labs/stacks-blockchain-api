@@ -20,12 +20,32 @@ export const up = (pgm: MigrationBuilder) => {
       type: 'integer',
       notNull: true,
     },
+    block_hash: {
+      type: 'bytea',
+      notNull: true,
+    },
+    block_time: {
+      type: 'bigint',
+      notNull: true,
+    },
     index_block_hash: {
+      type: 'bytea',
+      notNull: true,
+    },
+    parent_block_hash: {
       type: 'bytea',
       notNull: true,
     },
     parent_index_block_hash: {
       type: 'bytea',
+      notNull: true,
+    },
+    burn_block_height: {
+      type: 'integer',
+      notNull: true,
+    },
+    burn_block_time: {
+      type: 'bigint',
       notNull: true,
     },
     microblock_hash: {
@@ -87,6 +107,7 @@ export const up = (pgm: MigrationBuilder) => {
     btc_capacity: {
       type: 'numeric',
       notNull: true,
+      default: 0,
     },
     btc_locked: {
       type: 'numeric',
