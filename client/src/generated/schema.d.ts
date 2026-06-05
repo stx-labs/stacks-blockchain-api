@@ -1690,6 +1690,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/extended/v3/blocks/{height_or_hash}/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get block transactions
+         * @description Retrieves transactions confirmed in a single block
+         */
+        get: operations["get_block_transactions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/extended/v3/mempool/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get mempool transactions
+         * @description Retrieves a list of recently broadcasted transactions
+         */
+        get: operations["get_mempool_transactions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/extended/v3/principals/{principal}/transactions": {
         parameters: {
             query?: never;
@@ -1722,6 +1762,146 @@ export interface paths {
          * @description Get principal staking balances
          */
         get: operations["get_principal_staking_balances"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/extended/v3/staking/bonds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get bonds
+         * @description Get bonds
+         */
+        get: operations["get_bonds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/extended/v3/staking/bonds/{bond_index}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get bond
+         * @description Get bond
+         */
+        get: operations["get_bond"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/extended/v3/staking/bonds/{bond_index}/allowlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get bond allowlist entries
+         * @description Get bond allowlist entries
+         */
+        get: operations["get_bond_allowlist_entries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/extended/v3/staking/bonds/{bond_index}/allowlist/{principal}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get bond allowlist entry
+         * @description Get bond allowlist entry
+         */
+        get: operations["get_bond_allowlist_entry"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/extended/v3/staking/bonds/{bond_index}/registrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get bond registrations
+         * @description Get bond registrations
+         */
+        get: operations["get_bond_registrations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/extended/v3/staking/bonds/{bond_index}/registrations/{principal}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get bond registration
+         * @description Get bond registration
+         */
+        get: operations["get_bond_registration"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/extended/v3/staking/principals/{principal}/positions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get principal staking positions
+         * @description Get a principal's bond positions across all bonds it is enrolled in
+         */
+        get: operations["get_principal_staking_positions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1782,46 +1962,6 @@ export interface paths {
          * @description Retrieves events for a given transaction ID
          */
         get: operations["get_transaction_events"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/extended/v3/mempool/transactions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get mempool transactions
-         * @description Retrieves a list of recently broadcasted transactions
-         */
-        get: operations["get_mempool_transactions"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/extended/v3/blocks/{height_or_hash}/transactions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get block transactions
-         * @description Retrieves transactions confirmed in a single block
-         */
-        get: operations["get_block_transactions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -31801,6 +31941,545 @@ export interface operations {
             };
         };
     };
+    get_block_transactions: {
+        parameters: {
+            query?: {
+                /** @description Number of results per page */
+                limit?: number;
+                /** @description Cursor for paginating transactions. Format: block_height:microblock_sequence:tx_index */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                height_or_hash: "latest" | string | number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example 1 */
+                        total: number;
+                        /**
+                         * @description Number of results per page
+                         * @default 20
+                         */
+                        limit: number;
+                        cursor: {
+                            next: string | null;
+                            previous: string | null;
+                            current: string | null;
+                        };
+                        results: ({
+                            /** @description Transaction ID */
+                            tx_id: string;
+                            sender: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            };
+                            sponsor: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            } | null;
+                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
+                            fee_rate: string;
+                            block: {
+                                /** @description Height of the block this transactions was associated with */
+                                height: number;
+                                /** @description Hash of the blocked this transactions was associated with */
+                                hash: string;
+                                /** @description Hash of the index block this transactions was associated with */
+                                index_hash: string;
+                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
+                                time: number;
+                                /** @description Index of the transaction, indicating the order. Starts at `0` and increases with each transaction */
+                                tx_index: number;
+                            };
+                            bitcoin_block: {
+                                /** @description Height of the anchor burn block. */
+                                height: number;
+                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
+                                time: number;
+                            };
+                            /** @description Status of the transaction */
+                            status: "success" | "abort_by_response" | "abort_by_post_condition";
+                            /** @enum {string} */
+                            type: "token_transfer";
+                            token_transfer: {
+                                recipient: string;
+                                /** @description Transfer amount as Integer string (64-bit unsigned integer) */
+                                amount: string;
+                                memo: {
+                                    hex: string;
+                                    repr: string;
+                                } | null;
+                            };
+                        } | {
+                            /** @description Transaction ID */
+                            tx_id: string;
+                            sender: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            };
+                            sponsor: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            } | null;
+                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
+                            fee_rate: string;
+                            block: {
+                                /** @description Height of the block this transactions was associated with */
+                                height: number;
+                                /** @description Hash of the blocked this transactions was associated with */
+                                hash: string;
+                                /** @description Hash of the index block this transactions was associated with */
+                                index_hash: string;
+                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
+                                time: number;
+                                /** @description Index of the transaction, indicating the order. Starts at `0` and increases with each transaction */
+                                tx_index: number;
+                            };
+                            bitcoin_block: {
+                                /** @description Height of the anchor burn block. */
+                                height: number;
+                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
+                                time: number;
+                            };
+                            /** @description Status of the transaction */
+                            status: "success" | "abort_by_response" | "abort_by_post_condition";
+                            /** @enum {string} */
+                            type: "smart_contract";
+                            smart_contract: {
+                                clarity_version: number | null;
+                                /** @description Contract identifier formatted as `<principaladdress>.<contract_name>` */
+                                contract_id: string;
+                            };
+                        } | {
+                            /** @description Transaction ID */
+                            tx_id: string;
+                            sender: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            };
+                            sponsor: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            } | null;
+                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
+                            fee_rate: string;
+                            block: {
+                                /** @description Height of the block this transactions was associated with */
+                                height: number;
+                                /** @description Hash of the blocked this transactions was associated with */
+                                hash: string;
+                                /** @description Hash of the index block this transactions was associated with */
+                                index_hash: string;
+                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
+                                time: number;
+                                /** @description Index of the transaction, indicating the order. Starts at `0` and increases with each transaction */
+                                tx_index: number;
+                            };
+                            bitcoin_block: {
+                                /** @description Height of the anchor burn block. */
+                                height: number;
+                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
+                                time: number;
+                            };
+                            /** @description Status of the transaction */
+                            status: "success" | "abort_by_response" | "abort_by_post_condition";
+                            /** @enum {string} */
+                            type: "contract_call";
+                            contract_call: {
+                                /** @description Contract identifier formatted as `<principaladdress>.<contract_name>` */
+                                contract_id: string;
+                                /** @description Name of the Clarity function to be invoked */
+                                function_name: string;
+                            };
+                        } | {
+                            /** @description Transaction ID */
+                            tx_id: string;
+                            sender: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            };
+                            sponsor: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            } | null;
+                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
+                            fee_rate: string;
+                            block: {
+                                /** @description Height of the block this transactions was associated with */
+                                height: number;
+                                /** @description Hash of the blocked this transactions was associated with */
+                                hash: string;
+                                /** @description Hash of the index block this transactions was associated with */
+                                index_hash: string;
+                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
+                                time: number;
+                                /** @description Index of the transaction, indicating the order. Starts at `0` and increases with each transaction */
+                                tx_index: number;
+                            };
+                            bitcoin_block: {
+                                /** @description Height of the anchor burn block. */
+                                height: number;
+                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
+                                time: number;
+                            };
+                            /** @description Status of the transaction */
+                            status: "success" | "abort_by_response" | "abort_by_post_condition";
+                            /** @enum {string} */
+                            type: "poison_microblock";
+                        } | {
+                            /** @description Transaction ID */
+                            tx_id: string;
+                            sender: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            };
+                            sponsor: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            } | null;
+                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
+                            fee_rate: string;
+                            block: {
+                                /** @description Height of the block this transactions was associated with */
+                                height: number;
+                                /** @description Hash of the blocked this transactions was associated with */
+                                hash: string;
+                                /** @description Hash of the index block this transactions was associated with */
+                                index_hash: string;
+                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
+                                time: number;
+                                /** @description Index of the transaction, indicating the order. Starts at `0` and increases with each transaction */
+                                tx_index: number;
+                            };
+                            bitcoin_block: {
+                                /** @description Height of the anchor burn block. */
+                                height: number;
+                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
+                                time: number;
+                            };
+                            /** @description Status of the transaction */
+                            status: "success" | "abort_by_response" | "abort_by_post_condition";
+                            /** @enum {string} */
+                            type: "coinbase";
+                            coinbase: {
+                                alt_recipient: string | null;
+                            };
+                        } | {
+                            /** @description Transaction ID */
+                            tx_id: string;
+                            sender: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            };
+                            sponsor: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            } | null;
+                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
+                            fee_rate: string;
+                            block: {
+                                /** @description Height of the block this transactions was associated with */
+                                height: number;
+                                /** @description Hash of the blocked this transactions was associated with */
+                                hash: string;
+                                /** @description Hash of the index block this transactions was associated with */
+                                index_hash: string;
+                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
+                                time: number;
+                                /** @description Index of the transaction, indicating the order. Starts at `0` and increases with each transaction */
+                                tx_index: number;
+                            };
+                            bitcoin_block: {
+                                /** @description Height of the anchor burn block. */
+                                height: number;
+                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
+                                time: number;
+                            };
+                            /** @description Status of the transaction */
+                            status: "success" | "abort_by_response" | "abort_by_post_condition";
+                            /** @enum {string} */
+                            type: "tenure_change";
+                            tenure_change: {
+                                /** @description Cause of change in mining tenure. Depending on cause, tenure can be ended or extended. */
+                                cause: "block_found" | "extended" | "extended_runtime" | "extended_read_count" | "extended_read_length" | "extended_write_count" | "extended_write_length";
+                            };
+                        })[];
+                    };
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    get_mempool_transactions: {
+        parameters: {
+            query?: {
+                /** @description Number of results per page */
+                limit?: number;
+                /** @description Cursor for paginating mempool transactions. Format: receipt_time:tx_id */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example 1 */
+                        total: number;
+                        /**
+                         * @description Number of results per page
+                         * @default 20
+                         */
+                        limit: number;
+                        cursor: {
+                            next: string | null;
+                            previous: string | null;
+                            current: string | null;
+                        };
+                        results: ({
+                            /** @description Transaction ID */
+                            tx_id: string;
+                            sender: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            };
+                            sponsor: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            } | null;
+                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
+                            fee_rate: string;
+                            /** @description A unix timestamp (in seconds) indicating when the transaction broadcast was received by the node. */
+                            receipt_time: number;
+                            /** @description Height of the block this transaction was received by the node */
+                            receipt_block_height: number;
+                            /** @description Status of the mempool transaction */
+                            status: "pending" | "dropped_replace_by_fee" | "dropped_replace_across_fork" | "dropped_too_expensive" | "dropped_stale_garbage_collect" | "dropped_problematic";
+                            /** @enum {string} */
+                            type: "token_transfer";
+                            token_transfer: {
+                                recipient: string;
+                                /** @description Transfer amount as Integer string (64-bit unsigned integer) */
+                                amount: string;
+                                memo: {
+                                    hex: string;
+                                    repr: string;
+                                } | null;
+                            };
+                        } | {
+                            /** @description Transaction ID */
+                            tx_id: string;
+                            sender: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            };
+                            sponsor: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            } | null;
+                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
+                            fee_rate: string;
+                            /** @description A unix timestamp (in seconds) indicating when the transaction broadcast was received by the node. */
+                            receipt_time: number;
+                            /** @description Height of the block this transaction was received by the node */
+                            receipt_block_height: number;
+                            /** @description Status of the mempool transaction */
+                            status: "pending" | "dropped_replace_by_fee" | "dropped_replace_across_fork" | "dropped_too_expensive" | "dropped_stale_garbage_collect" | "dropped_problematic";
+                            /** @enum {string} */
+                            type: "smart_contract";
+                            smart_contract: {
+                                clarity_version: number | null;
+                                /** @description Contract identifier formatted as `<principaladdress>.<contract_name>` */
+                                contract_id: string;
+                            };
+                        } | {
+                            /** @description Transaction ID */
+                            tx_id: string;
+                            sender: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            };
+                            sponsor: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            } | null;
+                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
+                            fee_rate: string;
+                            /** @description A unix timestamp (in seconds) indicating when the transaction broadcast was received by the node. */
+                            receipt_time: number;
+                            /** @description Height of the block this transaction was received by the node */
+                            receipt_block_height: number;
+                            /** @description Status of the mempool transaction */
+                            status: "pending" | "dropped_replace_by_fee" | "dropped_replace_across_fork" | "dropped_too_expensive" | "dropped_stale_garbage_collect" | "dropped_problematic";
+                            /** @enum {string} */
+                            type: "contract_call";
+                            contract_call: {
+                                /** @description Contract identifier formatted as `<principaladdress>.<contract_name>` */
+                                contract_id: string;
+                                /** @description Name of the Clarity function to be invoked */
+                                function_name: string;
+                            };
+                        } | {
+                            /** @description Transaction ID */
+                            tx_id: string;
+                            sender: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            };
+                            sponsor: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            } | null;
+                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
+                            fee_rate: string;
+                            /** @description A unix timestamp (in seconds) indicating when the transaction broadcast was received by the node. */
+                            receipt_time: number;
+                            /** @description Height of the block this transaction was received by the node */
+                            receipt_block_height: number;
+                            /** @description Status of the mempool transaction */
+                            status: "pending" | "dropped_replace_by_fee" | "dropped_replace_across_fork" | "dropped_too_expensive" | "dropped_stale_garbage_collect" | "dropped_problematic";
+                            /** @enum {string} */
+                            type: "poison_microblock";
+                        } | {
+                            /** @description Transaction ID */
+                            tx_id: string;
+                            sender: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            };
+                            sponsor: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            } | null;
+                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
+                            fee_rate: string;
+                            /** @description A unix timestamp (in seconds) indicating when the transaction broadcast was received by the node. */
+                            receipt_time: number;
+                            /** @description Height of the block this transaction was received by the node */
+                            receipt_block_height: number;
+                            /** @description Status of the mempool transaction */
+                            status: "pending" | "dropped_replace_by_fee" | "dropped_replace_across_fork" | "dropped_too_expensive" | "dropped_stale_garbage_collect" | "dropped_problematic";
+                            /** @enum {string} */
+                            type: "coinbase";
+                        } | {
+                            /** @description Transaction ID */
+                            tx_id: string;
+                            sender: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            };
+                            sponsor: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            } | null;
+                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
+                            fee_rate: string;
+                            /** @description A unix timestamp (in seconds) indicating when the transaction broadcast was received by the node. */
+                            receipt_time: number;
+                            /** @description Height of the block this transaction was received by the node */
+                            receipt_block_height: number;
+                            /** @description Status of the mempool transaction */
+                            status: "pending" | "dropped_replace_by_fee" | "dropped_replace_across_fork" | "dropped_too_expensive" | "dropped_stale_garbage_collect" | "dropped_problematic";
+                            /** @enum {string} */
+                            type: "tenure_change";
+                        })[];
+                    };
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
     get_principal_transactions: {
         parameters: {
             query?: {
@@ -32156,6 +32835,496 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    get_bonds: {
+        parameters: {
+            query?: {
+                /** @description Number of results per page */
+                limit?: number;
+                /** @description Cursor for paginating bonds. Format: bond_index */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example 1 */
+                        total: number;
+                        /**
+                         * @description Number of results per page
+                         * @default 20
+                         */
+                        limit: number;
+                        cursor: {
+                            next: string | null;
+                            previous: string | null;
+                            current: string | null;
+                        };
+                        results: {
+                            /** @description The index of the bond in the PoX-5 bond list */
+                            index: number;
+                            /** @enum {string} */
+                            pox_version: "pox5";
+                            status: "upcoming" | "active" | "unlocked";
+                            parameters: {
+                                /** @description The target yield rate (APY) in basis points */
+                                target_rate_bps: number;
+                                /** @description This is a representation of the STXBTC price. The value represents "uSTX per 100 sats" */
+                                stx_value_ratio: number;
+                                /** @description The amount of STX that must be locked relative to BTC, in equal-valued terms (ie in USD terms). This value is represented in basis points. */
+                                minimum_stx_ratio: number;
+                                /** @description The total capacity of BTC that can be locked up for this bond */
+                                btc_capacity: string;
+                            };
+                            registrations: {
+                                /** @description The number of entries in the allowlist for this bond */
+                                allowed_count: number;
+                                /** @description The number of registrations for this bond */
+                                registered_count: number;
+                            };
+                            schedule: {
+                                activation: {
+                                    /** @description The height at which the bond was activated */
+                                    bitcoin_height: number;
+                                    /** @description The POX cycle at which the bond was activated */
+                                    pox_cycle: number;
+                                };
+                                unlock: {
+                                    /** @description The height at which the bond can be unlocked */
+                                    bitcoin_height: number;
+                                    /** @description The POX cycle at which the bond can be unlocked */
+                                    pox_cycle: number;
+                                };
+                            };
+                            balances: {
+                                locked: {
+                                    /** @description The total amount of BTC that is locked up for this bond */
+                                    btc: string;
+                                    /** @description The total amount of STX that is locked up for this bond */
+                                    stx: string;
+                                };
+                                paid_out: {
+                                    /** @description The total amount of BTC that has been paid out for this bond */
+                                    btc: string;
+                                };
+                            };
+                        }[];
+                    };
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    get_bond: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The index of the bond in the PoX-5 bond list */
+                bond_index: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description The index of the bond in the PoX-5 bond list */
+                        index: number;
+                        /** @enum {string} */
+                        pox_version: "pox5";
+                        status: "upcoming" | "active" | "unlocked";
+                        parameters: {
+                            /** @description The target yield rate (APY) in basis points */
+                            target_rate_bps: number;
+                            /** @description This is a representation of the STXBTC price. The value represents "uSTX per 100 sats" */
+                            stx_value_ratio: number;
+                            /** @description The amount of STX that must be locked relative to BTC, in equal-valued terms (ie in USD terms). This value is represented in basis points. */
+                            minimum_stx_ratio: number;
+                            /** @description The total capacity of BTC that can be locked up for this bond */
+                            btc_capacity: string;
+                        };
+                        registrations: {
+                            /** @description The number of entries in the allowlist for this bond */
+                            allowed_count: number;
+                            /** @description The number of registrations for this bond */
+                            registered_count: number;
+                        };
+                        schedule: {
+                            activation: {
+                                /** @description The height at which the bond was activated */
+                                bitcoin_height: number;
+                                /** @description The POX cycle at which the bond was activated */
+                                pox_cycle: number;
+                            };
+                            unlock: {
+                                /** @description The height at which the bond can be unlocked */
+                                bitcoin_height: number;
+                                /** @description The POX cycle at which the bond can be unlocked */
+                                pox_cycle: number;
+                            };
+                        };
+                        balances: {
+                            locked: {
+                                /** @description The total amount of BTC that is locked up for this bond */
+                                btc: string;
+                                /** @description The total amount of STX that is locked up for this bond */
+                                stx: string;
+                            };
+                            paid_out: {
+                                /** @description The total amount of BTC that has been paid out for this bond */
+                                btc: string;
+                            };
+                        };
+                        transaction: {
+                            /** @description The transaction ID that created the bond */
+                            tx_id: string;
+                            block: {
+                                /** @description Height of the block this transactions was associated with */
+                                height: number;
+                                /** @description Hash of the blocked this transactions was associated with */
+                                hash: string;
+                                /** @description Hash of the index block this transactions was associated with */
+                                index_hash: string;
+                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
+                                time: number;
+                                /** @description Index of the transaction, indicating the order. Starts at `0` and increases with each transaction */
+                                tx_index: number;
+                            };
+                            bitcoin_block: {
+                                /** @description Height of the anchor burn block. */
+                                height: number;
+                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
+                                time: number;
+                            };
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    get_bond_allowlist_entries: {
+        parameters: {
+            query?: {
+                /** @description Number of results per page */
+                limit?: number;
+                /** @description Cursor for paginating transactions. Format: block_height:microblock_sequence:tx_index */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description The index of the bond in the PoX-5 bond list */
+                bond_index: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example 1 */
+                        total: number;
+                        /**
+                         * @description Number of results per page
+                         * @default 20
+                         */
+                        limit: number;
+                        cursor: {
+                            next: string | null;
+                            previous: string | null;
+                            current: string | null;
+                        };
+                        results: {
+                            staker: string;
+                            max_sats: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    get_bond_allowlist_entry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The index of the bond in the PoX-5 bond list */
+                bond_index: number;
+                principal: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        staker: string;
+                        max_sats: string;
+                    };
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    get_bond_registrations: {
+        parameters: {
+            query?: {
+                /** @description Number of results per page */
+                limit?: number;
+                /** @description Cursor for paginating transactions. Format: block_height:microblock_sequence:tx_index */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description The index of the bond in the PoX-5 bond list */
+                bond_index: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example 1 */
+                        total: number;
+                        /**
+                         * @description Number of results per page
+                         * @default 20
+                         */
+                        limit: number;
+                        cursor: {
+                            next: string | null;
+                            previous: string | null;
+                            current: string | null;
+                        };
+                        results: {
+                            bond_index: number;
+                            signer: string;
+                            staker: string;
+                            amount_ustx: string;
+                            sats_total: string;
+                            first_reward_cycle: number;
+                            unlock_burn_height: number;
+                            unlock_cycle: number;
+                            is_l1_lock: boolean;
+                        }[];
+                    };
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    get_bond_registration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The index of the bond in the PoX-5 bond list */
+                bond_index: number;
+                principal: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        bond_index: number;
+                        signer: string;
+                        staker: string;
+                        amount_ustx: string;
+                        sats_total: string;
+                        first_reward_cycle: number;
+                        unlock_burn_height: number;
+                        unlock_cycle: number;
+                        is_l1_lock: boolean;
+                    };
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    get_principal_staking_positions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                principal: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description The index of the bond in the PoX-5 bond list */
+                        bond_index: number;
+                        status: "enrolled" | "running" | "early_exit" | "unlocked";
+                        /** @description Whether the position is active */
+                        active: boolean;
+                        balances: {
+                            locked: {
+                                /** @description The total amount of BTC that is locked up for this bond */
+                                btc: string;
+                                /** @description The total amount of STX that is locked up for this bond */
+                                stx: string;
+                            };
+                            paid_out: {
+                                /** @description The total amount of BTC that has been paid out for this bond */
+                                btc: string;
+                            };
+                        };
+                        enrollment: {
+                            /**
+                             * Transaction ID
+                             * @description Transaction ID
+                             * @example 0xf6bd5f4a7b26184a3466340b2e99fd003b4962c0e382a7e4b6a13df3dd7a91c6
+                             */
+                            tx_id: string;
+                            btc_lockup: {
+                                /** @description The amount of BTC that is locked up for this principal */
+                                amount: string;
+                            };
+                        };
+                        /** @description The amount of STX that is locked up for this principal */
+                        amount: string;
+                    }[];
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
             };
         };
     };
@@ -34164,545 +35333,6 @@ export interface operations {
                                     hex: string;
                                     repr: string;
                                 };
-                            };
-                        })[];
-                    };
-                };
-            };
-            /** @description Default Response */
-            "4XX": {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        error: string;
-                        message?: string;
-                    } & {
-                        [key: string]: unknown;
-                    };
-                };
-            };
-        };
-    };
-    get_mempool_transactions: {
-        parameters: {
-            query?: {
-                /** @description Number of results per page */
-                limit?: number;
-                /** @description Cursor for paginating mempool transactions. Format: receipt_time:tx_id */
-                cursor?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Default Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @example 1 */
-                        total: number;
-                        /**
-                         * @description Number of results per page
-                         * @default 20
-                         */
-                        limit: number;
-                        cursor: {
-                            next: string | null;
-                            previous: string | null;
-                            current: string | null;
-                        };
-                        results: ({
-                            /** @description Transaction ID */
-                            tx_id: string;
-                            sender: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            };
-                            sponsor: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            } | null;
-                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
-                            fee_rate: string;
-                            /** @description A unix timestamp (in seconds) indicating when the transaction broadcast was received by the node. */
-                            receipt_time: number;
-                            /** @description Height of the block this transaction was received by the node */
-                            receipt_block_height: number;
-                            /** @description Status of the mempool transaction */
-                            status: "pending" | "dropped_replace_by_fee" | "dropped_replace_across_fork" | "dropped_too_expensive" | "dropped_stale_garbage_collect" | "dropped_problematic";
-                            /** @enum {string} */
-                            type: "token_transfer";
-                            token_transfer: {
-                                recipient: string;
-                                /** @description Transfer amount as Integer string (64-bit unsigned integer) */
-                                amount: string;
-                                memo: {
-                                    hex: string;
-                                    repr: string;
-                                } | null;
-                            };
-                        } | {
-                            /** @description Transaction ID */
-                            tx_id: string;
-                            sender: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            };
-                            sponsor: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            } | null;
-                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
-                            fee_rate: string;
-                            /** @description A unix timestamp (in seconds) indicating when the transaction broadcast was received by the node. */
-                            receipt_time: number;
-                            /** @description Height of the block this transaction was received by the node */
-                            receipt_block_height: number;
-                            /** @description Status of the mempool transaction */
-                            status: "pending" | "dropped_replace_by_fee" | "dropped_replace_across_fork" | "dropped_too_expensive" | "dropped_stale_garbage_collect" | "dropped_problematic";
-                            /** @enum {string} */
-                            type: "smart_contract";
-                            smart_contract: {
-                                clarity_version: number | null;
-                                /** @description Contract identifier formatted as `<principaladdress>.<contract_name>` */
-                                contract_id: string;
-                            };
-                        } | {
-                            /** @description Transaction ID */
-                            tx_id: string;
-                            sender: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            };
-                            sponsor: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            } | null;
-                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
-                            fee_rate: string;
-                            /** @description A unix timestamp (in seconds) indicating when the transaction broadcast was received by the node. */
-                            receipt_time: number;
-                            /** @description Height of the block this transaction was received by the node */
-                            receipt_block_height: number;
-                            /** @description Status of the mempool transaction */
-                            status: "pending" | "dropped_replace_by_fee" | "dropped_replace_across_fork" | "dropped_too_expensive" | "dropped_stale_garbage_collect" | "dropped_problematic";
-                            /** @enum {string} */
-                            type: "contract_call";
-                            contract_call: {
-                                /** @description Contract identifier formatted as `<principaladdress>.<contract_name>` */
-                                contract_id: string;
-                                /** @description Name of the Clarity function to be invoked */
-                                function_name: string;
-                            };
-                        } | {
-                            /** @description Transaction ID */
-                            tx_id: string;
-                            sender: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            };
-                            sponsor: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            } | null;
-                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
-                            fee_rate: string;
-                            /** @description A unix timestamp (in seconds) indicating when the transaction broadcast was received by the node. */
-                            receipt_time: number;
-                            /** @description Height of the block this transaction was received by the node */
-                            receipt_block_height: number;
-                            /** @description Status of the mempool transaction */
-                            status: "pending" | "dropped_replace_by_fee" | "dropped_replace_across_fork" | "dropped_too_expensive" | "dropped_stale_garbage_collect" | "dropped_problematic";
-                            /** @enum {string} */
-                            type: "poison_microblock";
-                        } | {
-                            /** @description Transaction ID */
-                            tx_id: string;
-                            sender: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            };
-                            sponsor: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            } | null;
-                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
-                            fee_rate: string;
-                            /** @description A unix timestamp (in seconds) indicating when the transaction broadcast was received by the node. */
-                            receipt_time: number;
-                            /** @description Height of the block this transaction was received by the node */
-                            receipt_block_height: number;
-                            /** @description Status of the mempool transaction */
-                            status: "pending" | "dropped_replace_by_fee" | "dropped_replace_across_fork" | "dropped_too_expensive" | "dropped_stale_garbage_collect" | "dropped_problematic";
-                            /** @enum {string} */
-                            type: "coinbase";
-                        } | {
-                            /** @description Transaction ID */
-                            tx_id: string;
-                            sender: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            };
-                            sponsor: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            } | null;
-                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
-                            fee_rate: string;
-                            /** @description A unix timestamp (in seconds) indicating when the transaction broadcast was received by the node. */
-                            receipt_time: number;
-                            /** @description Height of the block this transaction was received by the node */
-                            receipt_block_height: number;
-                            /** @description Status of the mempool transaction */
-                            status: "pending" | "dropped_replace_by_fee" | "dropped_replace_across_fork" | "dropped_too_expensive" | "dropped_stale_garbage_collect" | "dropped_problematic";
-                            /** @enum {string} */
-                            type: "tenure_change";
-                        })[];
-                    };
-                };
-            };
-            /** @description Default Response */
-            "4XX": {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        error: string;
-                        message?: string;
-                    } & {
-                        [key: string]: unknown;
-                    };
-                };
-            };
-        };
-    };
-    get_block_transactions: {
-        parameters: {
-            query?: {
-                /** @description Number of results per page */
-                limit?: number;
-                /** @description Cursor for paginating transactions. Format: block_height:microblock_sequence:tx_index */
-                cursor?: string;
-            };
-            header?: never;
-            path: {
-                height_or_hash: "latest" | string | number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Default Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @example 1 */
-                        total: number;
-                        /**
-                         * @description Number of results per page
-                         * @default 20
-                         */
-                        limit: number;
-                        cursor: {
-                            next: string | null;
-                            previous: string | null;
-                            current: string | null;
-                        };
-                        results: ({
-                            /** @description Transaction ID */
-                            tx_id: string;
-                            sender: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            };
-                            sponsor: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            } | null;
-                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
-                            fee_rate: string;
-                            block: {
-                                /** @description Height of the block this transactions was associated with */
-                                height: number;
-                                /** @description Hash of the blocked this transactions was associated with */
-                                hash: string;
-                                /** @description Hash of the index block this transactions was associated with */
-                                index_hash: string;
-                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
-                                time: number;
-                                /** @description Index of the transaction, indicating the order. Starts at `0` and increases with each transaction */
-                                tx_index: number;
-                            };
-                            bitcoin_block: {
-                                /** @description Height of the anchor burn block. */
-                                height: number;
-                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
-                                time: number;
-                            };
-                            /** @description Status of the transaction */
-                            status: "success" | "abort_by_response" | "abort_by_post_condition";
-                            /** @enum {string} */
-                            type: "token_transfer";
-                            token_transfer: {
-                                recipient: string;
-                                /** @description Transfer amount as Integer string (64-bit unsigned integer) */
-                                amount: string;
-                                memo: {
-                                    hex: string;
-                                    repr: string;
-                                } | null;
-                            };
-                        } | {
-                            /** @description Transaction ID */
-                            tx_id: string;
-                            sender: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            };
-                            sponsor: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            } | null;
-                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
-                            fee_rate: string;
-                            block: {
-                                /** @description Height of the block this transactions was associated with */
-                                height: number;
-                                /** @description Hash of the blocked this transactions was associated with */
-                                hash: string;
-                                /** @description Hash of the index block this transactions was associated with */
-                                index_hash: string;
-                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
-                                time: number;
-                                /** @description Index of the transaction, indicating the order. Starts at `0` and increases with each transaction */
-                                tx_index: number;
-                            };
-                            bitcoin_block: {
-                                /** @description Height of the anchor burn block. */
-                                height: number;
-                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
-                                time: number;
-                            };
-                            /** @description Status of the transaction */
-                            status: "success" | "abort_by_response" | "abort_by_post_condition";
-                            /** @enum {string} */
-                            type: "smart_contract";
-                            smart_contract: {
-                                clarity_version: number | null;
-                                /** @description Contract identifier formatted as `<principaladdress>.<contract_name>` */
-                                contract_id: string;
-                            };
-                        } | {
-                            /** @description Transaction ID */
-                            tx_id: string;
-                            sender: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            };
-                            sponsor: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            } | null;
-                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
-                            fee_rate: string;
-                            block: {
-                                /** @description Height of the block this transactions was associated with */
-                                height: number;
-                                /** @description Hash of the blocked this transactions was associated with */
-                                hash: string;
-                                /** @description Hash of the index block this transactions was associated with */
-                                index_hash: string;
-                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
-                                time: number;
-                                /** @description Index of the transaction, indicating the order. Starts at `0` and increases with each transaction */
-                                tx_index: number;
-                            };
-                            bitcoin_block: {
-                                /** @description Height of the anchor burn block. */
-                                height: number;
-                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
-                                time: number;
-                            };
-                            /** @description Status of the transaction */
-                            status: "success" | "abort_by_response" | "abort_by_post_condition";
-                            /** @enum {string} */
-                            type: "contract_call";
-                            contract_call: {
-                                /** @description Contract identifier formatted as `<principaladdress>.<contract_name>` */
-                                contract_id: string;
-                                /** @description Name of the Clarity function to be invoked */
-                                function_name: string;
-                            };
-                        } | {
-                            /** @description Transaction ID */
-                            tx_id: string;
-                            sender: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            };
-                            sponsor: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            } | null;
-                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
-                            fee_rate: string;
-                            block: {
-                                /** @description Height of the block this transactions was associated with */
-                                height: number;
-                                /** @description Hash of the blocked this transactions was associated with */
-                                hash: string;
-                                /** @description Hash of the index block this transactions was associated with */
-                                index_hash: string;
-                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
-                                time: number;
-                                /** @description Index of the transaction, indicating the order. Starts at `0` and increases with each transaction */
-                                tx_index: number;
-                            };
-                            bitcoin_block: {
-                                /** @description Height of the anchor burn block. */
-                                height: number;
-                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
-                                time: number;
-                            };
-                            /** @description Status of the transaction */
-                            status: "success" | "abort_by_response" | "abort_by_post_condition";
-                            /** @enum {string} */
-                            type: "poison_microblock";
-                        } | {
-                            /** @description Transaction ID */
-                            tx_id: string;
-                            sender: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            };
-                            sponsor: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            } | null;
-                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
-                            fee_rate: string;
-                            block: {
-                                /** @description Height of the block this transactions was associated with */
-                                height: number;
-                                /** @description Hash of the blocked this transactions was associated with */
-                                hash: string;
-                                /** @description Hash of the index block this transactions was associated with */
-                                index_hash: string;
-                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
-                                time: number;
-                                /** @description Index of the transaction, indicating the order. Starts at `0` and increases with each transaction */
-                                tx_index: number;
-                            };
-                            bitcoin_block: {
-                                /** @description Height of the anchor burn block. */
-                                height: number;
-                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
-                                time: number;
-                            };
-                            /** @description Status of the transaction */
-                            status: "success" | "abort_by_response" | "abort_by_post_condition";
-                            /** @enum {string} */
-                            type: "coinbase";
-                            coinbase: {
-                                alt_recipient: string | null;
-                            };
-                        } | {
-                            /** @description Transaction ID */
-                            tx_id: string;
-                            sender: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            };
-                            sponsor: {
-                                /** @description Address of the transaction initiator */
-                                address: string;
-                                /** @description Nonce of the transaction initiator */
-                                nonce: number;
-                            } | null;
-                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
-                            fee_rate: string;
-                            block: {
-                                /** @description Height of the block this transactions was associated with */
-                                height: number;
-                                /** @description Hash of the blocked this transactions was associated with */
-                                hash: string;
-                                /** @description Hash of the index block this transactions was associated with */
-                                index_hash: string;
-                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
-                                time: number;
-                                /** @description Index of the transaction, indicating the order. Starts at `0` and increases with each transaction */
-                                tx_index: number;
-                            };
-                            bitcoin_block: {
-                                /** @description Height of the anchor burn block. */
-                                height: number;
-                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
-                                time: number;
-                            };
-                            /** @description Status of the transaction */
-                            status: "success" | "abort_by_response" | "abort_by_post_condition";
-                            /** @enum {string} */
-                            type: "tenure_change";
-                            tenure_change: {
-                                /** @description Cause of change in mining tenure. Depending on cause, tenure can be ended or extended. */
-                                cause: "block_found" | "extended" | "extended_runtime" | "extended_read_count" | "extended_read_length" | "extended_write_count" | "extended_write_length";
                             };
                         })[];
                     };
