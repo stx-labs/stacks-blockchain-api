@@ -9,20 +9,29 @@ export type DbCursorPaginatedResult<T> = {
   results: T[];
 };
 
-export interface DbTransactionSummary {
+export interface DbTxLocation {
   tx_id: string;
+  tx_index: number;
+  block_height: number;
+  block_hash: string;
+  block_time: number;
+  burn_block_height: number;
+  burn_block_time: number;
+  index_block_hash: string;
+  parent_block_hash: string;
+  parent_index_block_hash: string;
+  microblock_hash: string;
+  microblock_sequence: number;
+  microblock_canonical: boolean;
+  canonical: boolean;
+}
+
+export interface DbTransactionSummary extends DbTxLocation {
   sender_address: string;
   nonce: number;
   sponsor_address: string | null;
   sponsor_nonce: number | null;
   fee_rate: string;
-  block_height: number;
-  block_hash: string;
-  index_block_hash: string;
-  block_time: number;
-  tx_index: number;
-  burn_block_height: number;
-  burn_block_time: number;
   status: DbTxStatus;
   type_id: DbTxTypeId;
   token_transfer_recipient_address: string | null;
@@ -37,8 +46,6 @@ export interface DbTransactionSummary {
 }
 
 export interface DbTransaction extends DbTransactionSummary {
-  parent_block_hash: string;
-  parent_index_block_hash: string;
   post_conditions: string;
   event_count: number;
   execution_cost_read_count: number;
@@ -141,15 +148,7 @@ export interface DbBondSummary {
   registered_count: number;
 }
 
-export interface DbBond extends DbBondSummary {
-  tx_id: string;
-  block_height: number;
-  block_hash: string;
-  index_block_hash: string;
-  block_time: number;
-  tx_index: number;
-  burn_block_height: number;
-  burn_block_time: number;
+export interface DbBond extends DbBondSummary, DbTxLocation {
   early_unlock_bytes: string;
   early_unlock_admin: string;
 }
@@ -169,6 +168,17 @@ export interface DbBondRegistration {
   unlock_burn_height: number;
   unlock_cycle: number;
   is_l1_lock: boolean;
+}
+
+export interface DbPrincipalBondPosition {
+  bond_index: number;
+  /** `DbPrincipalBondPositionStatus` stored as a smallint. */
+  status: number;
+  active: boolean;
+  btc_locked: string;
+  stx_locked: string;
+  btc_paid_out: string;
+  tx_id: string;
 }
 
 export interface DbTransactionCursor {

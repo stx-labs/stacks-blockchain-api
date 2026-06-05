@@ -20,6 +20,7 @@ import {
   DbMicroblockPartial,
   DbMinerReward,
   DbNftEvent,
+  DbPox5SyntheticEvent,
   DbSmartContract,
   DbSmartContractEvent,
   DbStxEvent,
@@ -31,6 +32,7 @@ import {
 import { bufferCV, bufferCVFromString, serializeCV, uintCV } from '@stacks/transactions';
 import { createClarityValueArray } from '../test-helpers.ts';
 import { bufferToHex } from '@stacks/api-toolkit';
+import { Pox5EventName } from '@stacks/codec';
 
 // Default values when none given. Useful when they are irrelevant for a particular test.
 const BLOCK_HEIGHT = 1;
@@ -489,6 +491,34 @@ function testSmartContractLogEvent(args?: TestSmartContractLogEventArgs): DbSmar
   };
 }
 
+interface TestPox5EventArgs {
+  name?: Pox5EventName;
+  data?: any;
+  canonical?: boolean;
+  event_index?: number;
+  tx_id?: string;
+  tx_index?: number;
+  block_height?: number;
+}
+
+/**
+ * Generate a test pox5 event.
+ * @param args - Optional event data
+ * @returns `DbPox5SyntheticEvent`
+ */
+function testPox5Event(args?: TestPox5EventArgs): DbPox5SyntheticEvent {
+  return {
+    event_index: args?.event_index ?? 0,
+    tx_id: args?.tx_id ?? TX_ID,
+    tx_index: args?.tx_index ?? 0,
+    block_height: args?.block_height ?? BLOCK_HEIGHT,
+    canonical: args?.canonical ?? true,
+    name: args?.name ?? Pox5EventName.SetupBond,
+    data: args?.data ?? {},
+    pox_version: 'pox5',
+  };
+}
+
 interface TestStxEventLockArgs {
   tx_id?: string;
   block_height?: number;
@@ -796,6 +826,16 @@ export class TestBlockBuilder {
       reveal_block: this.block.block_height,
     };
     this.txData.namespaces.push(testBnsNamespace({ ...defaultArgs, ...args }));
+    return this;
+  }
+
+  addTxPox5Event(args?: TestPox5EventArgs): TestBlockBuilder {
+    const defaultArgs: TestPox5EventArgs = {
+      tx_id: this.txData.tx.tx_id,
+      tx_index: this.txIndex,
+      event_index: ++this.eventIndex,
+    };
+    this.txData.pox5Events.push(testPox5Event({ ...defaultArgs, ...args }));
     return this;
   }
 

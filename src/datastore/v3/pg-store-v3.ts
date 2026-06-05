@@ -7,6 +7,7 @@ import {
   DbCursorPaginatedResult,
   DbMempoolTransaction,
   DbMempoolTransactionSummary,
+  DbPrincipalBondPosition,
   DbPrincipalTransactionSummary,
   DbTransaction,
   DbTransactionCursor,
@@ -15,11 +16,12 @@ import {
 } from './types.js';
 import {
   BOND_ALLOWLIST_ENTRY_COLUMNS,
-  BOND_REGISTRATION_COLUMNS,
   BOND_COLUMNS,
+  BOND_REGISTRATION_COLUMNS,
   BOND_SUMMARY_COLUMNS,
   MEMPOOL_TX_COLUMNS,
   MEMPOOL_TX_SUMMARY_COLUMNS,
+  PRINCIPAL_BOND_POSITION_COLUMNS,
   TX_COLUMNS,
   TX_SUMMARY_COLUMNS,
 } from './constants.js';
@@ -735,7 +737,7 @@ export class PgStoreV3 extends BasePgStoreModule {
         SELECT burn_block_height FROM chain_tip LIMIT 1
       `;
       const result = await sql<DbBond[]>`
-        SELECT ${this.sql(BOND_COLUMNS)}
+        SELECT ${sql(BOND_COLUMNS)}
         FROM bonds
         WHERE canonical = true
           AND microblock_canonical = true
@@ -977,6 +979,26 @@ export class PgStoreV3 extends BasePgStoreModule {
         LIMIT 1
       `;
       return result[0] ?? null;
+    });
+  }
+
+  /**
+   * Gets all bond positions for a principal (across the bonds it is enrolled in).
+   * @param args - The arguments for the query.
+   * @returns The principal's bond positions.
+   */
+  async getPrincipalStakingPositions(args: {
+    principal: Principal;
+  }): Promise<DbPrincipalBondPosition[]> {
+    return await this.sqlTransaction(async sql => {
+      return await sql<DbPrincipalBondPosition[]>`
+        SELECT ${sql(PRINCIPAL_BOND_POSITION_COLUMNS)}
+        FROM principal_bond_positions
+        WHERE canonical = true
+          AND microblock_canonical = true
+          AND principal = ${args.principal}
+        ORDER BY bond_index ASC
+      `;
     });
   }
 }

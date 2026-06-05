@@ -19,9 +19,6 @@ export const PrincipalBondPositionSchema = Type.Object({
   balances: BondBalancesSchema,
   enrollment: Type.Object({
     tx_id: TransactionIdSchema,
-    pox_address: Type.String({
-      description: 'The POX address of the principal',
-    }),
     btc_lockup: Type.Object({
       amount: Type.String({
         description: 'The amount of BTC that is locked up for this principal',

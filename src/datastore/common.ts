@@ -1632,6 +1632,11 @@ export interface DbTxLocation {
   tx_id: string;
   tx_index: number;
   block_height: number;
+  block_hash: string;
+  block_time: number;
+  burn_block_height: number;
+  burn_block_time: number;
+  parent_block_hash: string;
   index_block_hash: string;
   parent_index_block_hash: string;
   microblock_hash: string;

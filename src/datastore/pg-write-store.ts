@@ -535,6 +535,11 @@ export class PgWriteStore extends PgStore {
         tx_id: tx.tx.tx_id,
         tx_index: tx.tx.tx_index,
         block_height: tx.tx.block_height,
+        block_hash: tx.tx.block_hash,
+        block_time: tx.tx.block_time,
+        burn_block_height: tx.tx.burn_block_height,
+        burn_block_time: tx.tx.burn_block_time,
+        parent_block_hash: tx.tx.parent_block_hash,
         index_block_hash: tx.tx.index_block_hash,
         parent_index_block_hash: tx.tx.parent_index_block_hash,
         microblock_hash: tx.tx.microblock_hash,
@@ -638,6 +643,14 @@ export class PgWriteStore extends PgStore {
       };
       await sql`
         INSERT INTO bond_registrations ${sql(bondRegistration)}
+      `;
+      // Maintain the bond's registered_count on write (a new registration).
+      await sql`
+        UPDATE bonds
+        SET registered_count = registered_count + 1
+        WHERE bond_index = ${bondIndex}
+          AND canonical = true
+          AND microblock_canonical = true
       `;
     } else {
       const updateResult = await sql`
@@ -858,7 +871,9 @@ export class PgWriteStore extends PgStore {
         RETURNING bond_index, max_sats
       )
       UPDATE bonds AS b
-      SET btc_capacity = b.btc_capacity + i.max_sats::numeric
+      SET
+        btc_capacity = b.btc_capacity + i.max_sats::numeric,
+        allowed_count = b.allowed_count + 1
       FROM inserted AS i
       WHERE b.bond_index = i.bond_index
         AND b.canonical = true
@@ -4041,6 +4056,89 @@ export class PgWriteStore extends PgStore {
       } else {
         updatedEntities.markedNonCanonical.pox4Events += pox4Result.count;
       }
+    });
+    // pox-5 tables that only need their canonical flag flipped (no derived
+    // bond counters depend on them).
+    for (const pox5Table of ['pox5_events', 'bonds', 'bond_reward_distributions']) {
+      q.enqueue(async () => {
+        await sql`
+          UPDATE ${sql(pox5Table)}
+          SET canonical = ${canonical}
+          WHERE index_block_hash = ${indexBlockHash} AND canonical != ${canonical}
+        `;
+      });
+    }
+    // The bond aggregate counters live on the `bonds` row and are maintained
+    // incrementally. On reorg we flip the child rows' canonical flag and apply
+    // a signed delta (+ when restoring, − when orphaning) to the parent bond's
+    // counters — the same flip-and-delta approach used for ft_balances above.
+    // No `bonds.canonical` guard on the delta: the delta must apply symmetrically
+    // in both directions (orphan then restore) to avoid double-counting, exactly
+    // like the ft_balances upsert.
+    q.enqueue(async () => {
+      await sql`
+        WITH updated AS (
+          UPDATE bond_allowlist_entries
+          SET canonical = ${canonical}
+          WHERE index_block_hash = ${indexBlockHash} AND canonical != ${canonical}
+          RETURNING bond_index, max_sats, canonical
+        ),
+        changes AS (
+          SELECT bond_index,
+            SUM(CASE WHEN canonical THEN max_sats::numeric ELSE -max_sats::numeric END) AS capacity_change,
+            SUM(CASE WHEN canonical THEN 1 ELSE -1 END) AS count_change
+          FROM updated
+          GROUP BY bond_index
+        )
+        UPDATE bonds AS b
+        SET btc_capacity = b.btc_capacity + c.capacity_change,
+            allowed_count = b.allowed_count + c.count_change
+        FROM changes c
+        WHERE b.bond_index = c.bond_index
+      `;
+    });
+    q.enqueue(async () => {
+      await sql`
+        WITH updated AS (
+          UPDATE bond_registrations
+          SET canonical = ${canonical}
+          WHERE index_block_hash = ${indexBlockHash} AND canonical != ${canonical}
+          RETURNING bond_index, canonical
+        ),
+        changes AS (
+          SELECT bond_index, SUM(CASE WHEN canonical THEN 1 ELSE -1 END) AS count_change
+          FROM updated
+          GROUP BY bond_index
+        )
+        UPDATE bonds AS b
+        SET registered_count = b.registered_count + c.count_change
+        FROM changes c
+        WHERE b.bond_index = c.bond_index
+      `;
+    });
+    q.enqueue(async () => {
+      await sql`
+        WITH updated AS (
+          UPDATE principal_bond_positions
+          SET canonical = ${canonical}
+          WHERE index_block_hash = ${indexBlockHash} AND canonical != ${canonical}
+          RETURNING bond_index, btc_locked, stx_locked, btc_paid_out, canonical
+        ),
+        changes AS (
+          SELECT bond_index,
+            SUM(CASE WHEN canonical THEN btc_locked::numeric ELSE -btc_locked::numeric END) AS btc_change,
+            SUM(CASE WHEN canonical THEN stx_locked::numeric ELSE -stx_locked::numeric END) AS stx_change,
+            SUM(CASE WHEN canonical THEN btc_paid_out::numeric ELSE -btc_paid_out::numeric END) AS paid_change
+          FROM updated
+          GROUP BY bond_index
+        )
+        UPDATE bonds AS b
+        SET btc_locked = b.btc_locked + c.btc_change,
+            stx_locked = b.stx_locked + c.stx_change,
+            btc_paid_out = b.btc_paid_out + c.paid_change
+        FROM changes c
+        WHERE b.bond_index = c.bond_index
+      `;
     });
     q.enqueue(async () => {
       const contractLogResult = await sql<{ contract_identifier: string; delta: number }[]>`
