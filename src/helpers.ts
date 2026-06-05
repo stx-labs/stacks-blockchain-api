@@ -432,8 +432,30 @@ export function getChainIDNetwork(chainID: ChainID): 'mainnet' | 'testnet' {
   } else if (chainID === NETWORK_CHAIN_ID.testnet) {
     return 'testnet';
   }
+  const chainIDHex = numberToHex(chainID);
+  const customChainIDs = ENV.CUSTOM_CHAIN_IDS;
+  if (!customChainIDs) {
+    throw new Error(
+      `Unknown chain_id ${chainIDHex}, use CUSTOM_CHAIN_IDS to specify custom testnet or mainnet chain_ids`
+    );
+  }
+  const customIdMap = new Map<number, string>(
+    customChainIDs
+      .split(',')
+      .map(pair => pair.split('='))
+      .map(([k, v]) => [parseInt(v), k.trim().toLowerCase()])
+  );
+  const customIdNetwork = customIdMap.get(chainID);
+  if (customIdNetwork) {
+    if (customIdNetwork === 'testnet' || customIdNetwork === 'mainnet') {
+      return customIdNetwork;
+    }
+    throw new Error(
+      `Error parsing CUSTOM_CHAIN_IDS chain_id network "${customIdNetwork}", should be either 'testnet' or 'mainnet'`
+    );
+  }
   throw new Error(
-    `Unknown chain_id ${numberToHex(chainID)}, does not match mainnet=0x00000001 or testnet=0x80000000`
+    `Unknown chain_id ${chainIDHex}, does not match mainnet=0x00000001, testnet=0x80000000, or any configured custom IDs: CUSTOM_CHAIN_IDS=${customChainIDs}`
   );
 }
 
@@ -447,7 +469,7 @@ export function chainIdConfigurationCheck() {
     const mainnetHex = numberToHex(NETWORK_CHAIN_ID.mainnet);
     const testnetHex = numberToHex(NETWORK_CHAIN_ID.testnet);
     logger.error(
-      `Oops! The configuration for STACKS_CHAIN_ID=${chainIdHex} does not match mainnet=${mainnetHex} or testnet=${testnetHex}`
+      `Oops! The configuration for STACKS_CHAIN_ID=${chainIdHex} does not match mainnet=${mainnetHex}, testnet=${testnetHex}, or custom chain IDs: CUSTOM_CHAIN_IDS=${ENV.CUSTOM_CHAIN_IDS}`
     );
   }
 }

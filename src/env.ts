@@ -130,6 +130,11 @@ const schema = Type.Object({
   STACKS_CORE_PROXY_BODY_LIMIT: Type.Integer({ default: 10000000, minimum: 0 }),
   /** Configure the chainID/networkID; testnet: 0x80000000, mainnet: 0x00000001 */
   STACKS_CHAIN_ID: Type.String({ default: '0x80000000' }),
+  /**
+   * Configure custom testnet and mainnet chainIDs for other networks, multiple values can be set
+   * using comma-separated key-value pairs.
+   */
+  CUSTOM_CHAIN_IDS: Type.Optional(Type.String()),
   SKIP_STACKS_CHAIN_ID_CHECK: Type.Boolean({ default: true }),
   /**
    * If specified, an http server providing profiling capability endpoints will be opened on the
