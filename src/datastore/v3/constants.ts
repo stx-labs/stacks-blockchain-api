@@ -155,5 +155,6 @@ export const PRINCIPAL_BOND_POSITION_COLUMNS = [
   'btc_locked',
   'stx_locked',
   'btc_paid_out',
+  'accrued_rewards',
   'tx_id',
 ];

@@ -140,6 +140,7 @@ export function serializeDbPrincipalBondPosition(
       },
     },
     amount: position.stx_locked,
+    accrued_rewards: position.accrued_rewards,
   };
 }
 

@@ -1693,6 +1693,18 @@ export interface DbPrincipalBondPositionInsertValues extends DbTxLocation {
   btc_paid_out: string;
 }
 
+/**
+ * Per-participant reward distribution source row: the sBTC reward sats a single
+ * participant accrued from one `bond-distribution` event (its share of the
+ * bond's rewards by staked weight). Backs the running
+ * `principal_bond_positions.accrued_rewards` total under reorgs.
+ */
+export interface DbPrincipalBondRewardDistributionInsertValues extends DbTxLocation {
+  principal: string;
+  bond_index: number;
+  reward_amount: string;
+}
+
 /** Per-bond reward distribution, from the pox-5 `bond-distribution` event. */
 export interface DbBondRewardDistributionInsertValues extends DbTxLocation {
   bond_index: number;
