@@ -87,6 +87,14 @@ export function up(pgm: MigrationBuilder): void {
       type: 'numeric',
       notNull: true,
     },
+    // Running sBTC reward sats accrued to this position, distributed from the
+    // bond's per-sat reward rate by this participant's staked weight. Maintained
+    // incrementally on write (and via signed deltas on reorg).
+    accrued_rewards: {
+      type: 'numeric',
+      notNull: true,
+      default: 0,
+    },
   });
 
   pgm.createIndex('principal_bond_positions', ['principal', 'bond_index'], {

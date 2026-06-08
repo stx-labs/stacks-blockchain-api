@@ -97,6 +97,7 @@ interface PrincipalBondPositionItem {
   balances: { locked: { btc: string; stx: string }; paid_out: { btc: string } };
   enrollment: { tx_id: string; btc_lockup: { amount: string } };
   amount: string;
+  accrued_rewards: string;
 }
 
 const normalizeTxId = (txid: string) => txid.replace(/^0x/, '').toLowerCase();
@@ -242,9 +243,9 @@ describe('pox-5 bonds (simulated ingestion)', () => {
     assert.equal(reg.is_l1_lock, false);
   });
 
-  test("alice's position appears in GET .../principals/:principal/positions", async () => {
+  test("alice's position appears in GET .../principals/:principal/balances/staking", async () => {
     const positions = await getJson<PrincipalBondPositionItem[]>(
-      `/extended/v3/staking/principals/${ALICE}/positions`
+      `/extended/v3/principals/${ALICE}/balances/staking`
     );
     const pos = positions.find(p => p.bond_index === BOND_INDEX);
     assert.ok(pos, `alice has a position for bond #${BOND_INDEX}`);
@@ -492,7 +493,7 @@ describe('pox-5 bonds reorg handling', () => {
     assert.ok((await canonicalBondEventCount()) > 0, 'pox5_events canonical on fork A');
     const regs = await getJson<CursorPaginated<BondRegistration>>(`/extended/v3/staking/bonds/${BOND_INDEX}/registrations?limit=50`);
     assert.equal(regs.results.length, 1, 'registration visible on fork A');
-    const positions = await getJson<PrincipalBondPositionItem[]>(`/extended/v3/staking/principals/${ALICE}/positions`);
+    const positions = await getJson<PrincipalBondPositionItem[]>(`/extended/v3/principals/${ALICE}/balances/staking`);
     assert.equal(positions.length, 1, 'position visible on fork A');
 
     // Fork B overtakes fork A (height 2 then 3) — no bond on this fork.
@@ -523,7 +524,7 @@ describe('pox-5 bonds reorg handling', () => {
       `/extended/v3/staking/bonds/${BOND_INDEX}/registrations?limit=50`
     );
     assert.equal(regsAfter.results.length, 0, 'registration gone after reorg');
-    const positionsAfter = await getJson<PrincipalBondPositionItem[]>(`/extended/v3/staking/principals/${ALICE}/positions`);
+    const positionsAfter = await getJson<PrincipalBondPositionItem[]>(`/extended/v3/principals/${ALICE}/balances/staking`);
     assert.equal(positionsAfter.length, 0, 'position gone after reorg');
 
     // Fork A wins again (extends to height 4) — the bond is restored.
@@ -553,7 +554,7 @@ describe('pox-5 bonds reorg handling', () => {
     );
     assert.equal(regsRestored.results.length, 1, 'registration restored');
     const positionsRestored = await getJson<PrincipalBondPositionItem[]>(
-      `/extended/v3/staking/principals/${ALICE}/positions`
+      `/extended/v3/principals/${ALICE}/balances/staking`
     );
     assert.equal(positionsRestored.length, 1, 'position restored');
   });
@@ -662,7 +663,7 @@ describe('pox-5 bonds reorg handling', () => {
     assert.equal(regs.results.length, 0, 'registration orphaned');
     assert.equal(regs.total, 0, 'registration total reverted');
     const positions = await getJson<PrincipalBondPositionItem[]>(
-      `/extended/v3/staking/principals/${ALICE}/positions`
+      `/extended/v3/principals/${ALICE}/balances/staking`
     );
     assert.equal(positions.length, 0, 'position orphaned');
   });
@@ -692,7 +693,7 @@ describe('pox-5 bonds unstake / early-exit', () => {
     return pos;
   }
   const getPositions = () =>
-    getJson<PrincipalBondPositionItem[]>(`/extended/v3/staking/principals/${ALICE}/positions`);
+    getJson<PrincipalBondPositionItem[]>(`/extended/v3/principals/${ALICE}/balances/staking`);
   const getBond = () => getJson<BondDetail>(`/extended/v3/staking/bonds/${BOND_INDEX}`);
 
   beforeEach(async () => {
@@ -813,5 +814,163 @@ describe('pox-5 bonds unstake / early-exit', () => {
     // Announcing an exit does not move funds; locked balances are unchanged.
     assert.equal(BigInt(pos.balances.locked.btc), SBTC_SATS, 'locked sBTC unchanged');
     assert.equal(BigInt((await getBond()).balances.locked.btc), SBTC_SATS, 'bond btc_locked unchanged');
+  });
+});
+
+/**
+ * Reward accrual: each pox-5 `bond-distribution` event is split across the
+ * bond's participants by staked weight and accrued onto their position; the
+ * accrual is reorg-safe (reverts if the distribution block is orphaned).
+ */
+describe('pox-5 bonds reward accrual', () => {
+  let db: PgWriteStore;
+  let api: ApiServer;
+
+  const BOB_REGISTER_TX_ID = '0x' + '33'.repeat(32);
+  const DIST_TX_ID = '0x' + 'd1'.repeat(32);
+  const ALICE_SATS = 1_000n;
+  const BOB_SATS = 4_000n;
+  // 2 reward sats per staked sat (PRECISION = 1e18).
+  const ACCRUED_PER_SAT = (2n * 1_000_000_000_000_000_000n).toString();
+  const ALICE_EXPECTED = ALICE_SATS * 2n; // 2000
+  const BOB_EXPECTED = BOB_SATS * 2n; // 8000
+
+  async function getJson<T>(path: string): Promise<T> {
+    const res = await supertest(api.server).get(path);
+    assert.equal(res.status, 200, `GET ${path} -> ${res.status}: ${res.text}`);
+    return JSON.parse(res.text) as T;
+  }
+  async function accruedFor(principal: string): Promise<bigint> {
+    const positions = await getJson<PrincipalBondPositionItem[]>(
+      `/extended/v3/principals/${principal}/balances/staking`
+    );
+    const pos = positions.find(p => p.bond_index === BOND_INDEX);
+    assert.ok(pos, `position for ${principal}`);
+    return BigInt(pos.accrued_rewards);
+  }
+  function registerEvent(staker: string, sats: bigint) {
+    return {
+      bond_index: String(BOND_INDEX),
+      signer: SIGNER,
+      staker,
+      amount_ustx: AMOUNT_USTX.toString(),
+      sats_total: sats.toString(),
+      first_reward_cycle: String(FIRST_REWARD_CYCLE),
+      unlock_burn_height: String(UNLOCK_BURN_HEIGHT),
+      unlock_cycle: String(UNLOCK_CYCLE),
+      is_l1_lock: false,
+    };
+  }
+  function distributionBlock(args: {
+    block_height: number;
+    block_hash: string;
+    index_block_hash: string;
+    parent_block_hash: string;
+    parent_index_block_hash: string;
+  }) {
+    return new TestBlockBuilder(args)
+      .addTx({ tx_id: DIST_TX_ID })
+      .addTxPox5Event({
+        name: Pox5EventName.BondDistribution,
+        data: {
+          bond_index: String(BOND_INDEX),
+          target_yield: '0',
+          bond_rewards: ((ALICE_SATS + BOB_SATS) * 2n).toString(),
+          bond_staked_sats: (ALICE_SATS + BOB_SATS).toString(),
+          accrued_rewards_per_sat: ACCRUED_PER_SAT,
+          cumulative_rewards_per_sat: ACCRUED_PER_SAT,
+        },
+      })
+      .build();
+  }
+
+  beforeEach(async () => {
+    await migrate('up');
+    db = await PgWriteStore.connect({ usageName: 'tests', withNotifier: false, skipMigrations: true });
+    api = await startApiServer({ datastore: db, chainId: STACKS_TESTNET.chainId });
+
+    // Seed (block 1): bond with alice + bob registered at different weights.
+    await db.update(
+      new TestBlockBuilder({ block_height: 1, block_hash: '0x01', index_block_hash: '0x01' })
+        .addTx({ tx_id: SETUP_TX_ID })
+        .addTxPox5Event({ name: Pox5EventName.SetupBond, data: SETUP_BOND_DATA })
+        .addTxPox5Event({
+          name: Pox5EventName.AddToAllowlist,
+          data: { bond_index: String(BOND_INDEX), staker: ALICE, max_sats: ALICE_MAX_SATS.toString() },
+        })
+        .addTxPox5Event({
+          name: Pox5EventName.AddToAllowlist,
+          data: { bond_index: String(BOND_INDEX), staker: BOB, max_sats: BOB_MAX_SATS.toString() },
+        })
+        .addTx({ tx_id: REGISTER_TX_ID })
+        .addTxPox5Event({ name: Pox5EventName.RegisterForBond, data: registerEvent(ALICE, ALICE_SATS) })
+        .addTx({ tx_id: BOB_REGISTER_TX_ID })
+        .addTxPox5Event({ name: Pox5EventName.RegisterForBond, data: registerEvent(BOB, BOB_SATS) })
+        .build()
+    );
+  });
+
+  afterEach(async () => {
+    await api.terminate();
+    await db?.close();
+    await migrate('down');
+  });
+
+  test('a bond-distribution accrues rewards to participants by staked weight', async () => {
+    // No rewards before the distribution.
+    assert.equal(await accruedFor(ALICE), 0n);
+    assert.equal(await accruedFor(BOB), 0n);
+
+    await db.update(
+      distributionBlock({
+        block_height: 2,
+        block_hash: '0x02',
+        index_block_hash: '0x02',
+        parent_block_hash: '0x01',
+        parent_index_block_hash: '0x01',
+      })
+    );
+
+    // alice has 1/5 of the weight, bob 4/5 — split 2 sats per staked sat.
+    assert.equal(await accruedFor(ALICE), ALICE_EXPECTED);
+    assert.equal(await accruedFor(BOB), BOB_EXPECTED);
+  });
+
+  test('orphaning the distribution block reverts the accrued rewards', async () => {
+    await db.update(
+      distributionBlock({
+        block_height: 2,
+        block_hash: '0x02',
+        index_block_hash: '0x02',
+        parent_block_hash: '0x01',
+        parent_index_block_hash: '0x01',
+      })
+    );
+    assert.equal(await accruedFor(ALICE), ALICE_EXPECTED);
+    assert.equal(await accruedFor(BOB), BOB_EXPECTED);
+
+    // Fork B branches from the seed (block 1) and overtakes, orphaning the
+    // distribution block — the seed/positions survive, the accrual reverts.
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 2,
+        block_hash: '0xb2',
+        index_block_hash: '0xb2',
+        parent_block_hash: '0x01',
+        parent_index_block_hash: '0x01',
+      }).build()
+    );
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 3,
+        block_hash: '0xb3',
+        index_block_hash: '0xb3',
+        parent_block_hash: '0xb2',
+        parent_index_block_hash: '0xb2',
+      }).build()
+    );
+
+    assert.equal(await accruedFor(ALICE), 0n, 'alice accrual reverted');
+    assert.equal(await accruedFor(BOB), 0n, 'bob accrual reverted');
   });
 });

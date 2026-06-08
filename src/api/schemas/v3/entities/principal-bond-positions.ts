@@ -28,5 +28,8 @@ export const PrincipalBondPositionSchema = Type.Object({
   amount: Type.String({
     description: 'The amount of STX that is locked up for this principal',
   }),
+  accrued_rewards: Type.String({
+    description: "The sBTC reward sats accrued to this participant's position",
+  }),
 });
 export type PrincipalBondPosition = Static<typeof PrincipalBondPositionSchema>;

@@ -178,6 +178,7 @@ export interface DbPrincipalBondPosition {
   btc_locked: string;
   stx_locked: string;
   btc_paid_out: string;
+  accrued_rewards: string;
   tx_id: string;
 }
 

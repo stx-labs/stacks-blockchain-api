@@ -2,10 +2,31 @@ import type { ColumnDefinitions, MigrationBuilder } from 'node-pg-migrate';
 
 export const shorthands: ColumnDefinitions | undefined = undefined;
 
+/**
+ * Per-participant reward distribution source rows. Each pox-5 `bond-distribution`
+ * event is split across the bond's participants by their staked weight; one row
+ * is written here per participant per distribution (the amount that participant
+ * accrued). These rows are the source of truth for reorg adjustments to the
+ * running `principal_bond_positions.accrued_rewards` total — analogous to how
+ * `ft_events` rows back the running `ft_balances` totals.
+ */
 export function up(pgm: MigrationBuilder): void {
-  pgm.createTable('bond_reward_distributions', {
+  pgm.createTable('principal_bond_reward_distributions', {
+    id: {
+      type: 'bigserial',
+      primaryKey: true,
+    },
+    principal: {
+      type: 'text',
+      notNull: true,
+    },
     bond_index: {
       type: 'integer',
+      notNull: true,
+    },
+    // sBTC reward sats this participant accrued from this distribution.
+    reward_amount: {
+      type: 'numeric',
       notNull: true,
     },
     tx_id: {
@@ -59,35 +80,13 @@ export function up(pgm: MigrationBuilder): void {
       type: 'boolean',
       notNull: true,
     },
-    // Per-bond reward distribution, from the pox-5 `bond-distribution` event
-    // (emitted once per bond during a `calculate-rewards` call).
-    target_yield: {
-      type: 'numeric',
-      notNull: true,
-    },
-    // sBTC rewards earned by this bond in this calculation.
-    bond_rewards: {
-      type: 'numeric',
-      notNull: true,
-    },
-    // Total sats staked in the bond at the time of this calculation.
-    bond_staked_sats: {
-      type: 'numeric',
-      notNull: true,
-    },
-    // Per-sat rewards accrued in this calculation.
-    accrued_rewards_per_sat: {
-      type: 'numeric',
-      notNull: true,
-    },
-    // Running per-sat reward total for the bond after this calculation.
-    cumulative_rewards_per_sat: {
-      type: 'numeric',
-      notNull: true,
-    },
   });
+
+  pgm.createIndex('principal_bond_reward_distributions', 'tx_id');
+  pgm.createIndex('principal_bond_reward_distributions', ['index_block_hash', 'canonical']);
+  pgm.createIndex('principal_bond_reward_distributions', ['principal', 'bond_index']);
 }
 
 export function down(pgm: MigrationBuilder): void {
-  pgm.dropTable('bond_reward_distributions');
+  pgm.dropTable('principal_bond_reward_distributions');
 }

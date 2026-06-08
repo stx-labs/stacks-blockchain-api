@@ -71,7 +71,9 @@ import {
   DbBondAllowlistEntryInsertValues,
   DbPrincipalBondPositionInsertValues,
   DbPrincipalBondPositionStatus,
+  DbBondRewardCalculationInsertValues,
   DbBondRewardDistributionInsertValues,
+  DbPrincipalBondRewardDistributionInsertValues,
 } from './common.js';
 import {
   BLOCK_COLUMNS,
@@ -109,6 +111,7 @@ import {
   Pox4EventName,
   Pox5EventAddToAllowlist,
   Pox5EventAnnounceL1EarlyExit,
+  Pox5EventBondDistribution,
   Pox5EventCalculateRewards,
   Pox5EventName,
   Pox5EventRegisterForBond,
@@ -571,10 +574,10 @@ export class PgWriteStore extends PgStore {
             await this.updatePrincipalBondPosition(sql, txLocation, poxEvent);
             break;
           case Pox5EventName.CalculateRewards:
-            await this.updateBondRewardDistribution(sql, txLocation, poxEvent);
+            await this.updateBondRewardCalculation(sql, txLocation, poxEvent);
             break;
           case Pox5EventName.BondDistribution:
-            // TODO: Implement
+            await this.updateBondRewardDistribution(sql, txLocation, poxEvent);
             break;
           case Pox5EventName.ClaimRewards:
             break;
@@ -825,31 +828,90 @@ export class PgWriteStore extends PgStore {
     }
   }
 
+  /** Per-bond reward distribution, from the pox-5 `bond-distribution` event. */
   private async updateBondRewardDistribution(
+    sql: PgSqlClient,
+    txLocation: DbTxLocation,
+    event: Pox5EventBondDistribution
+  ) {
+    const bondIndex = parseInt(event.data.bond_index);
+    const rewardDistribution: DbBondRewardDistributionInsertValues = {
+      ...txLocation,
+      bond_index: bondIndex,
+      target_yield: event.data.target_yield,
+      bond_rewards: event.data.bond_rewards,
+      bond_staked_sats: event.data.bond_staked_sats,
+      accrued_rewards_per_sat: event.data.accrued_rewards_per_sat,
+      cumulative_rewards_per_sat: event.data.cumulative_rewards_per_sat,
+    };
+    await sql`
+      INSERT INTO bond_reward_distributions ${sql(rewardDistribution)}
+    `;
+
+    // Split this distribution across the bond's participants by their staked
+    // weight: each participant accrues `floor(staked_sats * per_sat / PRECISION)`
+    // (PRECISION = 1e18). The bond's per-sat rate is uniform, so this is the
+    // participant's exact share (modulo integer-rounding dust).
+    const perSat = event.data.accrued_rewards_per_sat;
+    const participantRewards = await sql<{ principal: string; reward_amount: string }[]>`
+      SELECT principal,
+        floor(btc_locked::numeric * ${perSat}::numeric / 1000000000000000000)::text AS reward_amount
+      FROM principal_bond_positions
+      WHERE bond_index = ${bondIndex}
+        AND canonical = true
+        AND microblock_canonical = true
+        AND floor(btc_locked::numeric * ${perSat}::numeric / 1000000000000000000) > 0
+    `;
+    if (participantRewards.length === 0) {
+      return;
+    }
+    const rewardRows: DbPrincipalBondRewardDistributionInsertValues[] = participantRewards.map(
+      p => ({
+        ...txLocation,
+        principal: p.principal,
+        bond_index: bondIndex,
+        reward_amount: p.reward_amount,
+      })
+    );
+    for (const batch of batchIterate(rewardRows, INSERT_BATCH_SIZE)) {
+      await sql`
+        INSERT INTO principal_bond_reward_distributions ${sql(batch)}
+      `;
+    }
+    for (const p of participantRewards) {
+      await sql`
+        UPDATE principal_bond_positions
+        SET accrued_rewards = accrued_rewards + ${p.reward_amount}::numeric
+        WHERE principal = ${p.principal}
+          AND bond_index = ${bondIndex}
+          AND canonical = true
+          AND microblock_canonical = true
+      `;
+    }
+  }
+
+  /** Cycle-level reward aggregate, from the pox-5 `calculate-rewards` event. */
+  private async updateBondRewardCalculation(
     sql: PgSqlClient,
     txLocation: DbTxLocation,
     event: Pox5EventCalculateRewards
   ) {
-    const rewardDistributions: DbBondRewardDistributionInsertValues[] = [];
-    for (const bondIndex of event.data.bond_periods) {
-      // TODO: Divide rewards by bond period
-      rewardDistributions.push({
-        ...txLocation,
-        bond_index: parseInt(bondIndex),
-        remaining_rewards: event.data.remaining_rewards,
-        accrued_rewards: event.data.accrued_rewards,
-        new_reserve: event.data.new_reserve ?? '0',
-        stx_staker_rewards: event.data.stx_staker_rewards,
-        stx_cycle: parseInt(event.data.stx_cycle),
-        cycle_staked_ustx: event.data.cycle_staked_ustx,
-        next_rewards_per_ustx: event.data.next_rewards_per_ustx,
-      });
-    }
-    for (const batch of batchIterate(rewardDistributions, INSERT_BATCH_SIZE)) {
-      await sql`
-        INSERT INTO bond_reward_distributions ${sql(batch)}
-      `;
-    }
+    const rewardCalculation: DbBondRewardCalculationInsertValues = {
+      ...txLocation,
+      calculation_height: parseInt(event.data.calculation_height),
+      gross_accrued_rewards: event.data.gross_accrued_rewards,
+      total_bond_rewards: event.data.total_bond_rewards,
+      reserve_deposit: event.data.reserve_deposit,
+      reserve_balance: event.data.reserve_balance,
+      stx_cycle: parseInt(event.data.stx_cycle),
+      total_stx_staker_rewards: event.data.total_stx_staker_rewards,
+      cycle_staked_ustx: event.data.cycle_staked_ustx,
+      accrued_rewards_per_ustx: event.data.accrued_rewards_per_ustx,
+      cumulative_rewards_per_ustx: event.data.cumulative_rewards_per_ustx,
+    };
+    await sql`
+      INSERT INTO bond_reward_calculations ${sql(rewardCalculation)}
+    `;
   }
 
   private async updateBondAllowlistEntry(
@@ -4059,7 +4121,12 @@ export class PgWriteStore extends PgStore {
     });
     // pox-5 tables that only need their canonical flag flipped (no derived
     // bond counters depend on them).
-    for (const pox5Table of ['pox5_events', 'bonds', 'bond_reward_distributions']) {
+    for (const pox5Table of [
+      'pox5_events',
+      'bonds',
+      'bond_reward_distributions',
+      'bond_reward_calculations',
+    ]) {
       q.enqueue(async () => {
         await sql`
           UPDATE ${sql(pox5Table)}
@@ -4138,6 +4205,28 @@ export class PgWriteStore extends PgStore {
             btc_paid_out = b.btc_paid_out + c.paid_change
         FROM changes c
         WHERE b.bond_index = c.bond_index
+      `;
+    });
+    q.enqueue(async () => {
+      // Flip the per-participant reward source rows and apply the signed delta to
+      // each participant's running accrued_rewards total (ft_events → ft_balances).
+      await sql`
+        WITH updated AS (
+          UPDATE principal_bond_reward_distributions
+          SET canonical = ${canonical}
+          WHERE index_block_hash = ${indexBlockHash} AND canonical != ${canonical}
+          RETURNING principal, bond_index, reward_amount, canonical
+        ),
+        changes AS (
+          SELECT principal, bond_index,
+            SUM(CASE WHEN canonical THEN reward_amount::numeric ELSE -reward_amount::numeric END) AS reward_change
+          FROM updated
+          GROUP BY principal, bond_index
+        )
+        UPDATE principal_bond_positions p
+        SET accrued_rewards = p.accrued_rewards + c.reward_change
+        FROM changes c
+        WHERE p.principal = c.principal AND p.bond_index = c.bond_index
       `;
     });
     q.enqueue(async () => {
