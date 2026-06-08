@@ -1759,7 +1759,7 @@ export interface paths {
         };
         /**
          * Get principal staking balances
-         * @description Get principal staking balances
+         * @description Get a principal's staking balances: its bond positions (staked amounts and accrued rewards) across all bonds it is enrolled in
          */
         get: operations["get_principal_staking_balances"];
         put?: never;
@@ -1882,26 +1882,6 @@ export interface paths {
          * @description Get bond registration
          */
         get: operations["get_bond_registration"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/extended/v3/staking/principals/{principal}/positions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get principal staking positions
-         * @description Get a principal's bond positions across all bonds it is enrolled in
-         */
-        get: operations["get_principal_staking_positions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -32834,7 +32814,57 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @description The index of the bond in the PoX-5 bond list */
+                        bond_index: number;
+                        status: "enrolled" | "running" | "early_exit" | "unlocked";
+                        /** @description Whether the position is active */
+                        active: boolean;
+                        balances: {
+                            locked: {
+                                /** @description The total amount of BTC that is locked up for this bond */
+                                btc: string;
+                                /** @description The total amount of STX that is locked up for this bond */
+                                stx: string;
+                            };
+                            paid_out: {
+                                /** @description The total amount of BTC that has been paid out for this bond */
+                                btc: string;
+                            };
+                        };
+                        enrollment: {
+                            /**
+                             * Transaction ID
+                             * @description Transaction ID
+                             * @example 0xf6bd5f4a7b26184a3466340b2e99fd003b4962c0e382a7e4b6a13df3dd7a91c6
+                             */
+                            tx_id: string;
+                            btc_lockup: {
+                                /** @description The amount of BTC that is locked up for this principal */
+                                amount: string;
+                            };
+                        };
+                        /** @description The amount of STX that is locked up for this principal */
+                        amount: string;
+                        /** @description The sBTC reward sats accrued to this participant's position */
+                        accrued_rewards: string;
+                    }[];
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
             };
         };
     };
@@ -33242,74 +33272,6 @@ export interface operations {
                         unlock_cycle: number;
                         is_l1_lock: boolean;
                     };
-                };
-            };
-            /** @description Default Response */
-            "4XX": {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        error: string;
-                        message?: string;
-                    } & {
-                        [key: string]: unknown;
-                    };
-                };
-            };
-        };
-    };
-    get_principal_staking_positions: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                principal: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Default Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @description The index of the bond in the PoX-5 bond list */
-                        bond_index: number;
-                        status: "enrolled" | "running" | "early_exit" | "unlocked";
-                        /** @description Whether the position is active */
-                        active: boolean;
-                        balances: {
-                            locked: {
-                                /** @description The total amount of BTC that is locked up for this bond */
-                                btc: string;
-                                /** @description The total amount of STX that is locked up for this bond */
-                                stx: string;
-                            };
-                            paid_out: {
-                                /** @description The total amount of BTC that has been paid out for this bond */
-                                btc: string;
-                            };
-                        };
-                        enrollment: {
-                            /**
-                             * Transaction ID
-                             * @description Transaction ID
-                             * @example 0xf6bd5f4a7b26184a3466340b2e99fd003b4962c0e382a7e4b6a13df3dd7a91c6
-                             */
-                            tx_id: string;
-                            btc_lockup: {
-                                /** @description The amount of BTC that is locked up for this principal */
-                                amount: string;
-                            };
-                        };
-                        /** @description The amount of STX that is locked up for this principal */
-                        amount: string;
-                    }[];
                 };
             };
             /** @description Default Response */
