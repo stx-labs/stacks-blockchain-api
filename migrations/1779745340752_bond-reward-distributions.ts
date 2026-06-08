@@ -59,34 +59,32 @@ export function up(pgm: MigrationBuilder): void {
       type: 'boolean',
       notNull: true,
     },
-    remaining_rewards: {
+    // Per-bond reward distribution, from the pox-5 `bond-distribution` event
+    // (emitted once per bond during a `calculate-rewards` call).
+    target_yield: {
       type: 'numeric',
       notNull: true,
     },
-    accrued_rewards: {
+    // sBTC rewards earned by this bond in this calculation.
+    bond_rewards: {
       type: 'numeric',
       notNull: true,
     },
-    new_reserve: {
+    // Total sats staked in the bond at the time of this calculation.
+    bond_staked_sats: {
       type: 'numeric',
       notNull: true,
     },
-    stx_staker_rewards: {
+    // Per-sat rewards accrued in this calculation.
+    accrued_rewards_per_sat: {
       type: 'numeric',
       notNull: true,
     },
-    stx_cycle: {
-      type: 'integer',
-      notNull: true,
-    },
-    cycle_staked_ustx: {
+    // Running per-sat reward total for the bond after this calculation.
+    cumulative_rewards_per_sat: {
       type: 'numeric',
       notNull: true,
     },
-    next_rewards_per_ustx: {
-      type: 'numeric',
-      notNull: true,
-    }
   });
 }
 

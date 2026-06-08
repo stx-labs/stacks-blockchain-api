@@ -71,6 +71,7 @@ import {
   DbBondAllowlistEntryInsertValues,
   DbPrincipalBondPositionInsertValues,
   DbPrincipalBondPositionStatus,
+  DbBondRewardCalculationInsertValues,
   DbBondRewardDistributionInsertValues,
 } from './common.js';
 import {
@@ -109,6 +110,7 @@ import {
   Pox4EventName,
   Pox5EventAddToAllowlist,
   Pox5EventAnnounceL1EarlyExit,
+  Pox5EventBondDistribution,
   Pox5EventCalculateRewards,
   Pox5EventName,
   Pox5EventRegisterForBond,
@@ -571,10 +573,10 @@ export class PgWriteStore extends PgStore {
             await this.updatePrincipalBondPosition(sql, txLocation, poxEvent);
             break;
           case Pox5EventName.CalculateRewards:
-            await this.updateBondRewardDistribution(sql, txLocation, poxEvent);
+            await this.updateBondRewardCalculation(sql, txLocation, poxEvent);
             break;
           case Pox5EventName.BondDistribution:
-            // TODO: Implement
+            await this.updateBondRewardDistribution(sql, txLocation, poxEvent);
             break;
           case Pox5EventName.ClaimRewards:
             break;
@@ -825,31 +827,48 @@ export class PgWriteStore extends PgStore {
     }
   }
 
+  /** Per-bond reward distribution, from the pox-5 `bond-distribution` event. */
   private async updateBondRewardDistribution(
+    sql: PgSqlClient,
+    txLocation: DbTxLocation,
+    event: Pox5EventBondDistribution
+  ) {
+    const rewardDistribution: DbBondRewardDistributionInsertValues = {
+      ...txLocation,
+      bond_index: parseInt(event.data.bond_index),
+      target_yield: event.data.target_yield,
+      bond_rewards: event.data.bond_rewards,
+      bond_staked_sats: event.data.bond_staked_sats,
+      accrued_rewards_per_sat: event.data.accrued_rewards_per_sat,
+      cumulative_rewards_per_sat: event.data.cumulative_rewards_per_sat,
+    };
+    await sql`
+      INSERT INTO bond_reward_distributions ${sql(rewardDistribution)}
+    `;
+  }
+
+  /** Cycle-level reward aggregate, from the pox-5 `calculate-rewards` event. */
+  private async updateBondRewardCalculation(
     sql: PgSqlClient,
     txLocation: DbTxLocation,
     event: Pox5EventCalculateRewards
   ) {
-    const rewardDistributions: DbBondRewardDistributionInsertValues[] = [];
-    for (const bondIndex of event.data.bond_periods) {
-      // TODO: Divide rewards by bond period
-      rewardDistributions.push({
-        ...txLocation,
-        bond_index: parseInt(bondIndex),
-        remaining_rewards: event.data.remaining_rewards,
-        accrued_rewards: event.data.accrued_rewards,
-        new_reserve: event.data.new_reserve ?? '0',
-        stx_staker_rewards: event.data.stx_staker_rewards,
-        stx_cycle: parseInt(event.data.stx_cycle),
-        cycle_staked_ustx: event.data.cycle_staked_ustx,
-        next_rewards_per_ustx: event.data.next_rewards_per_ustx,
-      });
-    }
-    for (const batch of batchIterate(rewardDistributions, INSERT_BATCH_SIZE)) {
-      await sql`
-        INSERT INTO bond_reward_distributions ${sql(batch)}
-      `;
-    }
+    const rewardCalculation: DbBondRewardCalculationInsertValues = {
+      ...txLocation,
+      calculation_height: parseInt(event.data.calculation_height),
+      gross_accrued_rewards: event.data.gross_accrued_rewards,
+      total_bond_rewards: event.data.total_bond_rewards,
+      reserve_deposit: event.data.reserve_deposit,
+      reserve_balance: event.data.reserve_balance,
+      stx_cycle: parseInt(event.data.stx_cycle),
+      total_stx_staker_rewards: event.data.total_stx_staker_rewards,
+      cycle_staked_ustx: event.data.cycle_staked_ustx,
+      accrued_rewards_per_ustx: event.data.accrued_rewards_per_ustx,
+      cumulative_rewards_per_ustx: event.data.cumulative_rewards_per_ustx,
+    };
+    await sql`
+      INSERT INTO bond_reward_calculations ${sql(rewardCalculation)}
+    `;
   }
 
   private async updateBondAllowlistEntry(
@@ -4059,7 +4078,12 @@ export class PgWriteStore extends PgStore {
     });
     // pox-5 tables that only need their canonical flag flipped (no derived
     // bond counters depend on them).
-    for (const pox5Table of ['pox5_events', 'bonds', 'bond_reward_distributions']) {
+    for (const pox5Table of [
+      'pox5_events',
+      'bonds',
+      'bond_reward_distributions',
+      'bond_reward_calculations',
+    ]) {
       q.enqueue(async () => {
         await sql`
           UPDATE ${sql(pox5Table)}

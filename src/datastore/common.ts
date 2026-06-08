@@ -1693,13 +1693,26 @@ export interface DbPrincipalBondPositionInsertValues extends DbTxLocation {
   btc_paid_out: string;
 }
 
+/** Per-bond reward distribution, from the pox-5 `bond-distribution` event. */
 export interface DbBondRewardDistributionInsertValues extends DbTxLocation {
   bond_index: number;
-  remaining_rewards: string;
-  accrued_rewards: string;
-  new_reserve: string;
-  stx_staker_rewards: string;
+  target_yield: string;
+  bond_rewards: string;
+  bond_staked_sats: string;
+  accrued_rewards_per_sat: string;
+  cumulative_rewards_per_sat: string;
+}
+
+/** Cycle-level reward calculation aggregate, from the pox-5 `calculate-rewards` event. */
+export interface DbBondRewardCalculationInsertValues extends DbTxLocation {
+  calculation_height: number;
+  gross_accrued_rewards: string;
+  total_bond_rewards: string;
+  reserve_deposit: string;
+  reserve_balance: string;
   stx_cycle: number;
+  total_stx_staker_rewards: string;
   cycle_staked_ustx: string;
-  next_rewards_per_ustx: string;
+  accrued_rewards_per_ustx: string;
+  cumulative_rewards_per_ustx: string;
 }
