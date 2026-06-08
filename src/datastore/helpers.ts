@@ -1370,6 +1370,30 @@ export function removeNullBytes(str: string): string {
 }
 
 /**
+ * Maps the `contract_name` of a node-emitted `stx_lock` event to the pox
+ * version that produced it. Returns `undefined` for unrecognized contracts.
+ * Note: pox-5 locks are materialized by the synthetic stake/unstake handlers,
+ * not from `stx_lock` events, so callers feeding `stx_locked_balances` should
+ * skip version 5.
+ */
+export function poxVersionFromContractName(contractName: string): number | undefined {
+  switch (contractName) {
+    case 'pox':
+      return 1;
+    case 'pox-2':
+      return 2;
+    case 'pox-3':
+      return 3;
+    case 'pox-4':
+      return 4;
+    case 'pox-5':
+      return 5;
+    default:
+      return undefined;
+  }
+}
+
+/**
  * Priority queue for parallel Postgres write query execution. This helps performance because it
  * parallelizes the work postgres.js has to do when serializing JS types to PG types.
  */
