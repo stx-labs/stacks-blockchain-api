@@ -11,6 +11,9 @@ import {
 } from '../../schemas/v3/cursors.js';
 import { PrincipalTransactionSummarySchema } from '../../schemas/v3/entities/principal-transactions.js';
 import { serializePrincipalTransactionSummary } from '../../serializers/v3/transactions.js';
+import { PrincipalBondPositionSchema } from '../../schemas/v3/entities/principal-bond-positions.js';
+import { serializeDbPrincipalBondPosition } from '../../serializers/v3/bonds.js';
+import { handleChainTipCache } from '../../controllers/cache-controller.js';
 
 export const PrincipalsRoutes: FastifyPluginAsync<
   Record<never, never>,
@@ -59,15 +62,24 @@ export const PrincipalsRoutes: FastifyPluginAsync<
   fastify.get(
     '/principals/:principal/balances/staking',
     {
+      preHandler: handleChainTipCache,
       schema: {
         operationId: 'get_principal_staking_balances',
         summary: 'Get principal staking balances',
-        description: 'Get principal staking balances',
+        description:
+          "Get a principal's staking balances: its bond positions (staked amounts and accrued rewards) across all bonds it is enrolled in",
         tags: ['Staking'],
+        params: Type.Object({ principal: PrincipalSchema }),
+        response: {
+          200: Type.Array(PrincipalBondPositionSchema),
+        },
       },
     },
-    async (_req, reply) => {
-      await reply.send();
+    async (req, reply) => {
+      const positions = await fastify.db.v3.getPrincipalStakingPositions({
+        principal: req.params.principal,
+      });
+      await reply.send(positions.map(serializeDbPrincipalBondPosition));
     }
   );
 

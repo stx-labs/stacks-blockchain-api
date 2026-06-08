@@ -243,9 +243,9 @@ describe('pox-5 bonds (simulated ingestion)', () => {
     assert.equal(reg.is_l1_lock, false);
   });
 
-  test("alice's position appears in GET .../principals/:principal/positions", async () => {
+  test("alice's position appears in GET .../principals/:principal/balances/staking", async () => {
     const positions = await getJson<PrincipalBondPositionItem[]>(
-      `/extended/v3/staking/principals/${ALICE}/positions`
+      `/extended/v3/principals/${ALICE}/balances/staking`
     );
     const pos = positions.find(p => p.bond_index === BOND_INDEX);
     assert.ok(pos, `alice has a position for bond #${BOND_INDEX}`);
@@ -493,7 +493,7 @@ describe('pox-5 bonds reorg handling', () => {
     assert.ok((await canonicalBondEventCount()) > 0, 'pox5_events canonical on fork A');
     const regs = await getJson<CursorPaginated<BondRegistration>>(`/extended/v3/staking/bonds/${BOND_INDEX}/registrations?limit=50`);
     assert.equal(regs.results.length, 1, 'registration visible on fork A');
-    const positions = await getJson<PrincipalBondPositionItem[]>(`/extended/v3/staking/principals/${ALICE}/positions`);
+    const positions = await getJson<PrincipalBondPositionItem[]>(`/extended/v3/principals/${ALICE}/balances/staking`);
     assert.equal(positions.length, 1, 'position visible on fork A');
 
     // Fork B overtakes fork A (height 2 then 3) — no bond on this fork.
@@ -524,7 +524,7 @@ describe('pox-5 bonds reorg handling', () => {
       `/extended/v3/staking/bonds/${BOND_INDEX}/registrations?limit=50`
     );
     assert.equal(regsAfter.results.length, 0, 'registration gone after reorg');
-    const positionsAfter = await getJson<PrincipalBondPositionItem[]>(`/extended/v3/staking/principals/${ALICE}/positions`);
+    const positionsAfter = await getJson<PrincipalBondPositionItem[]>(`/extended/v3/principals/${ALICE}/balances/staking`);
     assert.equal(positionsAfter.length, 0, 'position gone after reorg');
 
     // Fork A wins again (extends to height 4) — the bond is restored.
@@ -554,7 +554,7 @@ describe('pox-5 bonds reorg handling', () => {
     );
     assert.equal(regsRestored.results.length, 1, 'registration restored');
     const positionsRestored = await getJson<PrincipalBondPositionItem[]>(
-      `/extended/v3/staking/principals/${ALICE}/positions`
+      `/extended/v3/principals/${ALICE}/balances/staking`
     );
     assert.equal(positionsRestored.length, 1, 'position restored');
   });
@@ -663,7 +663,7 @@ describe('pox-5 bonds reorg handling', () => {
     assert.equal(regs.results.length, 0, 'registration orphaned');
     assert.equal(regs.total, 0, 'registration total reverted');
     const positions = await getJson<PrincipalBondPositionItem[]>(
-      `/extended/v3/staking/principals/${ALICE}/positions`
+      `/extended/v3/principals/${ALICE}/balances/staking`
     );
     assert.equal(positions.length, 0, 'position orphaned');
   });
@@ -693,7 +693,7 @@ describe('pox-5 bonds unstake / early-exit', () => {
     return pos;
   }
   const getPositions = () =>
-    getJson<PrincipalBondPositionItem[]>(`/extended/v3/staking/principals/${ALICE}/positions`);
+    getJson<PrincipalBondPositionItem[]>(`/extended/v3/principals/${ALICE}/balances/staking`);
   const getBond = () => getJson<BondDetail>(`/extended/v3/staking/bonds/${BOND_INDEX}`);
 
   beforeEach(async () => {
@@ -842,7 +842,7 @@ describe('pox-5 bonds reward accrual', () => {
   }
   async function accruedFor(principal: string): Promise<bigint> {
     const positions = await getJson<PrincipalBondPositionItem[]>(
-      `/extended/v3/staking/principals/${principal}/positions`
+      `/extended/v3/principals/${principal}/balances/staking`
     );
     const pos = positions.find(p => p.bond_index === BOND_INDEX);
     assert.ok(pos, `position for ${principal}`);
