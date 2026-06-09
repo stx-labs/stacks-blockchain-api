@@ -8,6 +8,7 @@ import {
   DbMempoolTransaction,
   DbMempoolTransactionSummary,
   DbPrincipalBondPosition,
+  DbPrincipalFtBalance,
   DbPrincipalTransactionSummary,
   DbTransaction,
   DbTransactionCursor,
@@ -33,10 +34,16 @@ import { InvalidRequestError, InvalidRequestErrorType } from '../../errors.js';
 import { TransactionIncludeField } from '../../api/schemas/v3/entities/transactions.js';
 import type {
   BondCursor,
+  FtBalanceCursor,
   TransactionCursor,
   TransactionEventCursor,
 } from '../../api/schemas/v3/cursors.js';
-import { encodeTransactionCursor, resolveTransactionCursor } from './helpers.js';
+import {
+  encodeFtBalanceCursor,
+  encodeTransactionCursor,
+  parseFtBalanceCursor,
+  resolveTransactionCursor,
+} from './helpers.js';
 import { DbEventTypeId } from '../common.js';
 
 export class PgStoreV3 extends BasePgStoreModule {
@@ -249,6 +256,86 @@ export class PgStoreV3 extends BasePgStoreModule {
         current_cursor: currentCursor,
         total,
         results,
+      };
+    });
+  }
+
+  /**
+   * Gets a principal's fungible-token balances, sorted by balance descending,
+   * keyset-paginated by `(balance, asset_identifier)`.
+   * @param args - The arguments for the query.
+   * @returns The principal's FT positions.
+   */
+  async getPrincipalFtBalances(args: {
+    principal: Principal;
+    limit: number;
+    cursor?: FtBalanceCursor;
+  }): Promise<DbCursorPaginatedResult<DbPrincipalFtBalance>> {
+    return await this.sqlTransaction(async sql => {
+      // Position the page at or after the cursor in `(balance DESC, token ASC)`
+      // order: a smaller balance comes later, or the same balance with a token
+      // at-or-after the cursor's token.
+      let cursorFilter = sql``;
+      if (args.cursor) {
+        const cursor = parseFtBalanceCursor(args.cursor);
+        cursorFilter = sql`
+          AND (
+            balance < ${cursor.balance}::numeric
+            OR (balance = ${cursor.balance}::numeric AND token >= ${cursor.token})
+          )
+        `;
+      }
+      const baseFilter = sql`
+        address = ${args.principal} AND token != 'stx' AND balance > 0
+      `;
+      const resultQuery = await sql<(DbPrincipalFtBalance & { total: number })[]>`
+        SELECT
+          token,
+          balance::text AS balance,
+          (SELECT COUNT(*)::int FROM ft_balances WHERE ${baseFilter}) AS total
+        FROM ft_balances
+        WHERE ${baseFilter} ${cursorFilter}
+        ORDER BY balance DESC, token ASC
+        LIMIT ${args.limit + 1}
+      `;
+
+      const hasNextPage = resultQuery.count > args.limit;
+      const results = hasNextPage ? resultQuery.slice(0, args.limit) : resultQuery;
+      const total = resultQuery.count > 0 ? resultQuery[0].total : 0;
+
+      const nextResult = resultQuery[resultQuery.length - 1];
+      const nextCursor = hasNextPage && nextResult ? encodeFtBalanceCursor(nextResult) : null;
+
+      const firstResult = results[0];
+      const currentCursor = firstResult ? encodeFtBalanceCursor(firstResult) : null;
+
+      // The previous page is the rows strictly before the first result in sort
+      // order: a larger balance, or the same balance with an earlier token.
+      let prevCursor: string | null = null;
+      if (firstResult) {
+        const prevPageQuery = await sql<{ balance: string; token: string }[]>`
+          SELECT token, balance::text AS balance
+          FROM ft_balances
+          WHERE ${baseFilter}
+            AND (
+              balance > ${firstResult.balance}::numeric
+              OR (balance = ${firstResult.balance}::numeric AND token < ${firstResult.token})
+            )
+          ORDER BY balance ASC, token DESC
+          LIMIT ${args.limit}
+        `;
+        if (prevPageQuery.length > 0) {
+          prevCursor = encodeFtBalanceCursor(prevPageQuery[prevPageQuery.length - 1]);
+        }
+      }
+
+      return {
+        limit: args.limit,
+        next_cursor: nextCursor,
+        prev_cursor: prevCursor,
+        current_cursor: currentCursor,
+        total,
+        results: results.map(r => ({ token: r.token, balance: r.balance })),
       };
     });
   }

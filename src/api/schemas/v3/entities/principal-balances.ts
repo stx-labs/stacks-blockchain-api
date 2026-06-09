@@ -49,3 +49,18 @@ export const PrincipalStxBalanceSchema = Type.Object(
   { title: 'PrincipalStxBalance' }
 );
 export type PrincipalStxBalance = Static<typeof PrincipalStxBalanceSchema>;
+
+export const PrincipalFtPositionSchema = Type.Object(
+  {
+    asset_identifier: Type.String({
+      description: 'Fungible token asset identifier',
+      examples: ['SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token::sbtc-token'],
+    }),
+    balance: Type.String({
+      description:
+        "The principal's balance of this token, as a string-quoted integer in base units",
+    }),
+  },
+  { title: 'PrincipalFtPosition' }
+);
+export type PrincipalFtPosition = Static<typeof PrincipalFtPositionSchema>;

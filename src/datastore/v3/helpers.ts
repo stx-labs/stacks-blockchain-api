@@ -1,4 +1,4 @@
-import { TransactionCursor } from '../../api/schemas/v3/cursors.js';
+import { FtBalanceCursor, TransactionCursor } from '../../api/schemas/v3/cursors.js';
 import { I32_MAX } from '../../helpers.js';
 
 const MAX_TX_INDEX = 0x7fff;
@@ -40,3 +40,24 @@ export const resolveTransactionCursor = async (
 
 export const encodeTransactionCursor = (tx: TransactionCursorRow): TransactionCursor =>
   `${tx.block_height}:${tx.microblock_sequence}:${tx.tx_index}`;
+
+export type FtBalanceCursorRow = {
+  balance: string;
+  token: string;
+};
+
+/**
+ * Parses an FT balance cursor (`balance:asset_identifier`). The balance is
+ * digits-only and contains no colon, so the cursor is split on the first colon;
+ * the remainder is the asset identifier (which may itself contain `::`).
+ */
+export const parseFtBalanceCursor = (cursor: FtBalanceCursor): FtBalanceCursorRow => {
+  const separatorIndex = cursor.indexOf(':');
+  return {
+    balance: cursor.slice(0, separatorIndex),
+    token: cursor.slice(separatorIndex + 1),
+  };
+};
+
+export const encodeFtBalanceCursor = (row: FtBalanceCursorRow): FtBalanceCursor =>
+  `${row.balance}:${row.token}`;

@@ -187,3 +187,9 @@ export interface DbTransactionCursor {
   microblock_sequence: number;
   tx_index: number;
 }
+
+export interface DbPrincipalFtBalance {
+  /** The fungible token asset identifier (the `ft_balances.token` column). */
+  token: string;
+  balance: string;
+}

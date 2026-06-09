@@ -674,4 +674,103 @@ describe('principals', () => {
       assert.notEqual(newEtag, etag);
     });
   });
+
+  describe('/v3/principals/:principal/balances/ft', () => {
+    const ftAddr = 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5';
+    const tokenBig = 'SP000000000000000000002Q6VF78.token-big::big';
+    const tokenMid = 'SP000000000000000000002Q6VF78.token-mid::mid';
+    const tokenSmall = 'SP000000000000000000002Q6VF78.token-small::small';
+    const tokenZero = 'SP000000000000000000002Q6VF78.token-zero::zero';
+
+    const getFtBalances = async (principal: string, query: Record<string, string> = {}) => {
+      const res = await api.fastifyApp.inject({
+        method: 'GET',
+        url: `/extended/v3/principals/${principal}/balances/ft`,
+        query,
+      });
+      assert.equal(res.statusCode, 200, res.body);
+      return JSON.parse(res.body);
+    };
+
+    // Block 3: credits `ftAddr` three tokens of distinct balances, an STX
+    // balance (must be excluded), and a token that nets to zero (must be excluded).
+    const buildFtBlock = () =>
+      new TestBlockBuilder({
+        block_height: 3,
+        block_hash: hex(3),
+        index_block_hash: hex(3),
+        parent_index_block_hash: hex(2),
+        parent_block_hash: hex(2),
+        burn_block_height: 3,
+      })
+        .addTx({
+          tx_id: hex(310),
+          block_hash: hex(3),
+          index_block_hash: hex(3),
+          burn_block_height: 3,
+          sender_address: testAddr4,
+        })
+        .addTxStxEvent({ recipient: ftAddr, sender: testAddr4, amount: 9_999n })
+        .addTxFtEvent({ recipient: ftAddr, sender: testAddr4, asset_identifier: tokenBig, amount: 3_000_000n })
+        .addTxFtEvent({ recipient: ftAddr, sender: testAddr4, asset_identifier: tokenMid, amount: 2_000_000n })
+        .addTxFtEvent({ recipient: ftAddr, sender: testAddr4, asset_identifier: tokenSmall, amount: 1_000_000n })
+        .addTxFtEvent({ recipient: ftAddr, sender: testAddr4, asset_identifier: tokenZero, amount: 500_000n })
+        .addTxFtEvent({ sender: ftAddr, recipient: testAddr4, asset_identifier: tokenZero, amount: 500_000n })
+        .build();
+
+    test('returns an empty page for a principal with no FT balances', async () => {
+      const body = await getFtBalances(emptyPrincipal);
+      assert.deepEqual(body, {
+        total: 0,
+        limit: 100,
+        cursor: { next: null, previous: null, current: null },
+        results: [],
+      });
+    });
+
+    test('lists FT positions sorted by balance descending, excluding stx and zero balances', async () => {
+      await db.update(buildFtBlock());
+      const body = await getFtBalances(ftAddr);
+      assert.equal(body.total, 3);
+      assert.deepEqual(body.results, [
+        { asset_identifier: tokenBig, balance: '3000000' },
+        { asset_identifier: tokenMid, balance: '2000000' },
+        { asset_identifier: tokenSmall, balance: '1000000' },
+      ]);
+      assert.deepEqual(body.cursor, { next: null, previous: null, current: `3000000:${tokenBig}` });
+    });
+
+    test('paginates with cursors across pages', async () => {
+      await db.update(buildFtBlock());
+
+      // Page 1.
+      const page1 = await getFtBalances(ftAddr, { limit: '1' });
+      assert.equal(page1.total, 3);
+      assert.equal(page1.limit, 1);
+      assert.deepEqual(page1.results, [{ asset_identifier: tokenBig, balance: '3000000' }]);
+      assert.deepEqual(page1.cursor, {
+        next: `2000000:${tokenMid}`,
+        previous: null,
+        current: `3000000:${tokenBig}`,
+      });
+
+      // Page 2.
+      const page2 = await getFtBalances(ftAddr, { limit: '1', cursor: page1.cursor.next });
+      assert.deepEqual(page2.results, [{ asset_identifier: tokenMid, balance: '2000000' }]);
+      assert.deepEqual(page2.cursor, {
+        next: `1000000:${tokenSmall}`,
+        previous: `3000000:${tokenBig}`,
+        current: `2000000:${tokenMid}`,
+      });
+
+      // Page 3 (last).
+      const page3 = await getFtBalances(ftAddr, { limit: '1', cursor: page2.cursor.next });
+      assert.deepEqual(page3.results, [{ asset_identifier: tokenSmall, balance: '1000000' }]);
+      assert.deepEqual(page3.cursor, {
+        next: null,
+        previous: `2000000:${tokenMid}`,
+        current: `1000000:${tokenSmall}`,
+      });
+    });
+  });
 });

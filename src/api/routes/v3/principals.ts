@@ -10,6 +10,7 @@ import { PrincipalSchema } from '../../schemas/v3/entities/common.js';
 import {
   CursorPaginationQuerystring,
   CursorPaginatedResponse,
+  FtBalanceCursorSchema,
   TransactionCursorSchema,
 } from '../../schemas/v3/cursors.js';
 import { PrincipalTransactionSummarySchema } from '../../schemas/v3/entities/principal-transactions.js';
@@ -18,6 +19,7 @@ import { PrincipalBondPositionSchema } from '../../schemas/v3/entities/principal
 import { serializeDbPrincipalBondPosition } from '../../serializers/v3/bonds.js';
 import { handleChainTipCache } from '../../controllers/cache-controller.js';
 import {
+  PrincipalFtPositionSchema,
   PrincipalStxBalance,
   PrincipalStxBalanceSchema,
 } from '../../schemas/v3/entities/principal-balances.js';
@@ -146,6 +148,48 @@ export const PrincipalsRoutes: FastifyPluginAsync<
         return response;
       });
       await reply.send(result);
+    }
+  );
+
+  fastify.get(
+    '/principals/:principal/balances/ft',
+    {
+      preHandler: handlePrincipalCache,
+      schema: {
+        operationId: 'get_principal_ft_balances',
+        summary: 'Get principal FT balances',
+        description: "Get a principal's fungible-token balances, sorted by balance descending.",
+        tags: ['Accounts'],
+        params: Type.Object({ principal: PrincipalSchema }),
+        querystring: CursorPaginationQuerystring(FtBalanceCursorSchema, ResourceType.FtBalance),
+        response: {
+          200: CursorPaginatedResponse(
+            PrincipalFtPositionSchema,
+            FtBalanceCursorSchema,
+            ResourceType.FtBalance
+          ),
+        },
+      },
+    },
+    async (req, reply) => {
+      const results = await fastify.db.v3.getPrincipalFtBalances({
+        principal: req.params.principal,
+        limit: req.query.limit ?? getPagingQueryLimit(ResourceType.FtBalance),
+        cursor: req.query.cursor,
+      });
+      await reply.send({
+        limit: results.limit,
+        total: results.total,
+        cursor: {
+          next: results.next_cursor,
+          previous: results.prev_cursor,
+          current: results.current_cursor,
+        },
+        results: results.results.map(r => ({
+          asset_identifier: r.token,
+          balance: r.balance,
+        })),
+      });
     }
   );
 
