@@ -592,7 +592,7 @@ export class PgWriteStore extends PgStore {
             await this.clearStxLockedBalance(sql, poxEvent.data.staker);
             break;
           case Pox5EventName.RegisterSigner:
-            // TODO: Implement
+            // No-op.
             break;
         }
       }

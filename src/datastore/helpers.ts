@@ -275,6 +275,97 @@ export function prefixedCols(columns: string[], prefix: string): string[] {
   return columns.map(c => `${prefix}.${c}`);
 }
 
+/** A materialized current-lock row from the `stx_locked_balances` table. */
+export interface MaterializedStxLockRow {
+  locked_amount: string;
+  unlock_burn_height: string;
+  pox_version: number;
+  lock_tx_id: string;
+  lock_block_height: number;
+  burnchain_lock_height: string;
+}
+
+/** The locked-STX portion of a principal's balance response. */
+export interface ResolvedStxLock {
+  lockTxId: string;
+  locked: bigint;
+  lockHeight: number;
+  burnchainLockHeight: number;
+  burnchainUnlockHeight: number;
+}
+
+const EMPTY_STX_LOCK: ResolvedStxLock = {
+  lockTxId: '',
+  locked: 0n,
+  lockHeight: 0,
+  burnchainLockHeight: 0,
+  burnchainUnlockHeight: 0,
+};
+
+/**
+ * Resolve a materialized `stx_locked_balances` row into the locked-STX portion
+ * of a balance response, applying lock expiry. The lock is considered unlocked
+ * (zeroed out) when either:
+ *  - the burn chain has reached the lock's `unlock_burn_height`, or
+ *  - the pox version's force-unlock height (e.g. `pox_v4_unlock_height`) has
+ *    been surpassed (pox-5 has no force-unlock height).
+ *
+ * `stx_locked_balances` only reflects the current canonical tip, so this is only
+ * valid for current-tip reads; historical (`until_block`) reads must derive the
+ * lock from the per-version event tables instead.
+ */
+export function resolveMaterializedStxLock(
+  row: MaterializedStxLockRow | undefined,
+  burnBlockHeight: number,
+  forceUnlockHeights: {
+    pox1UnlockHeight: number | null;
+    pox2UnlockHeight: number | null;
+    pox3UnlockHeight: number | null;
+    pox4UnlockHeight: number | null;
+  } | null
+): ResolvedStxLock {
+  if (!row) {
+    return { ...EMPTY_STX_LOCK };
+  }
+  const burnchainUnlockHeight = Number(row.unlock_burn_height);
+  // Lock has naturally expired (mirrors the `unlock_height >= burnBlockHeight`
+  // filter used by the per-version event scan).
+  if (burnchainUnlockHeight < burnBlockHeight) {
+    return { ...EMPTY_STX_LOCK };
+  }
+  // Apply the per-version force-unlock height, if one is set.
+  let forcedUnlockHeight: number | null = null;
+  if (forceUnlockHeights) {
+    switch (row.pox_version) {
+      case 1:
+        forcedUnlockHeight = forceUnlockHeights.pox1UnlockHeight;
+        break;
+      case 2:
+        forcedUnlockHeight = forceUnlockHeights.pox2UnlockHeight;
+        break;
+      case 3:
+        forcedUnlockHeight = forceUnlockHeights.pox3UnlockHeight;
+        break;
+      case 4:
+        forcedUnlockHeight = forceUnlockHeights.pox4UnlockHeight;
+        break;
+      default:
+        // pox-5 (and anything newer) has no force-unlock height.
+        forcedUnlockHeight = null;
+    }
+  }
+  if (forcedUnlockHeight && burnBlockHeight > forcedUnlockHeight) {
+    return { ...EMPTY_STX_LOCK };
+  }
+  return {
+    lockTxId: row.lock_tx_id,
+    locked: BigInt(row.locked_amount),
+    lockHeight: row.lock_block_height,
+    burnchainLockHeight: Number(row.burnchain_lock_height),
+    burnchainUnlockHeight,
+  };
+}
+
 /**
  * Shorthand function that returns a column query to retrieve the smart contract abi when querying transactions
  * that may be of type `contract_call`. Usually used alongside `TX_COLUMNS` or `MEMPOOL_TX_COLUMNS`.

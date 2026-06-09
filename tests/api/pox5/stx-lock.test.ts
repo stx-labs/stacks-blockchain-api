@@ -131,6 +131,84 @@ describe('pox-5 stake locked balances', () => {
 });
 
 /**
+ * The STX balance read path resolves the `locked` amount from the materialized
+ * `stx_locked_balances` table for current-tip reads, so a pox-5 stake must now
+ * surface as locked STX in the balance response (it previously did not).
+ */
+describe('pox-5 locked STX in balance read path', () => {
+  let db: PgWriteStore;
+  let api: ApiServer;
+
+  const ALICE = 'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6';
+  const SIGNER = 'ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP.signer-manager';
+  const STAKE_AMOUNT = 50_000_000n;
+  const TIP_BURN_HEIGHT = 100;
+  const ACTIVE_UNLOCK = 500;
+  const EXPIRED_UNLOCK = 50;
+
+  function stakeData(amount: bigint, unlock: number) {
+    return {
+      signer: SIGNER,
+      staker: ALICE,
+      amount_ustx: amount.toString(),
+      num_cycles: '2',
+      first_reward_cycle: '8',
+      unlock_burn_height: String(unlock),
+      unlock_cycle: '20',
+    };
+  }
+
+  beforeEach(async () => {
+    await migrate('up');
+    db = await PgWriteStore.connect({ usageName: 'tests', withNotifier: false, skipMigrations: true });
+    api = await startApiServer({ datastore: db, chainId: STACKS_TESTNET.chainId });
+  });
+
+  afterEach(async () => {
+    await api.terminate();
+    await db?.close();
+    await migrate('down');
+  });
+
+  test('an active pox-5 stake is reported as locked STX', async () => {
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 1,
+        block_hash: '0x01',
+        index_block_hash: '0x01',
+        burn_block_height: TIP_BURN_HEIGHT,
+      })
+        .addTx({ tx_id: '0x' + 'a1'.repeat(32) })
+        .addTxPox5Event({ name: Pox5EventName.Stake, data: stakeData(STAKE_AMOUNT, ACTIVE_UNLOCK) })
+        .build()
+    );
+    const balance = await db.getStxBalance({ stxAddress: ALICE, includeUnanchored: false });
+    assert.equal(balance.locked, STAKE_AMOUNT);
+    assert.equal(balance.burnchainUnlockHeight, ACTIVE_UNLOCK);
+    assert.equal(balance.lockHeight, 1);
+    assert.notEqual(balance.lockTxId, '');
+  });
+
+  test('a pox-5 stake whose unlock height has passed reports zero locked STX', async () => {
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 1,
+        block_hash: '0x01',
+        index_block_hash: '0x01',
+        burn_block_height: TIP_BURN_HEIGHT,
+      })
+        .addTx({ tx_id: '0x' + 'a1'.repeat(32) })
+        .addTxPox5Event({ name: Pox5EventName.Stake, data: stakeData(STAKE_AMOUNT, EXPIRED_UNLOCK) })
+        .build()
+    );
+    const balance = await db.getStxBalance({ stxAddress: ALICE, includeUnanchored: false });
+    assert.equal(balance.locked, 0n);
+    assert.equal(balance.lockTxId, '');
+    assert.equal(balance.burnchainUnlockHeight, 0);
+  });
+});
+
+/**
  * pox-4 (and earlier) `stx_lock` events emitted by transactions are inherited
  * into the same materialized `stx_locked_balances` table, with the pox version
  * derived from the lock event's `contract_name`.

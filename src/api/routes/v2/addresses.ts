@@ -195,7 +195,6 @@ export const AddressRoutesV2: FastifyPluginAsync<
         const stxPoxLockedResult = await fastify.db.v2.getStxPoxLockedAtBlock({
           sql,
           stxAddress,
-          blockHeight: chainTip.block_height,
           burnBlockHeight: chainTip.burn_block_height,
         });
 

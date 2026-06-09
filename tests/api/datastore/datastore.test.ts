@@ -110,7 +110,7 @@ describe('postgres datastore', () => {
       block_hash: '0x9876',
       block_height: 1,
       block_time: 2837565,
-      burn_block_height: 1,
+      burn_block_height: 123,
       burn_block_time: 2837565,
       parent_burn_block_time: 1626122935,
       type_id: DbTxTypeId.Coinbase,
@@ -196,8 +196,11 @@ describe('postgres datastore', () => {
       return stxEvent;
     };
     const stxLockEvents = [
-      createStxLockEvent('addrA', 400n),
+      // addrA: an earlier lock superseded by a later, still-active lock. The
+      // latest lock (400n, unlock = block_height + 200 = 201) is authoritative.
       createStxLockEvent('addrA', 222n, 1),
+      createStxLockEvent('addrA', 400n),
+      // addrB: a single lock that has already expired (unlock height 1) → not locked.
       createStxLockEvent('addrB', 333n, 1),
     ];
     await db.updateStxLockEvents(client, [{ tx, stxLockEvents }]);
