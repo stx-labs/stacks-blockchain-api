@@ -134,7 +134,8 @@ export function serializeDbTransactionSummary(summary: DbTransactionSummary): Tr
       };
       return tokenTransfer;
     }
-    case DbTxTypeId.SmartContract: {
+    case DbTxTypeId.SmartContract:
+    case DbTxTypeId.VersionedSmartContract: {
       const smartContract: SmartContractTransactionSummary = {
         ...result,
         type: 'smart_contract',
@@ -163,7 +164,9 @@ export function serializeDbTransactionSummary(summary: DbTransactionSummary): Tr
       };
       return poisonMicroblock;
     }
-    case DbTxTypeId.Coinbase: {
+    case DbTxTypeId.Coinbase:
+    case DbTxTypeId.CoinbaseToAltRecipient:
+    case DbTxTypeId.NakamotoCoinbase: {
       const coinbase: CoinbaseTransactionSummary = {
         ...result,
         type: 'coinbase',
@@ -274,7 +277,8 @@ export function serializeDbTransaction(
       };
       return tokenTransfer;
     }
-    case DbTxTypeId.SmartContract: {
+    case DbTxTypeId.SmartContract:
+    case DbTxTypeId.VersionedSmartContract: {
       const smartContract: SmartContractTransaction = {
         ...result,
         type: 'smart_contract',
@@ -313,7 +317,9 @@ export function serializeDbTransaction(
       };
       return poisonMicroblock;
     }
-    case DbTxTypeId.Coinbase: {
+    case DbTxTypeId.Coinbase:
+    case DbTxTypeId.CoinbaseToAltRecipient:
+    case DbTxTypeId.NakamotoCoinbase: {
       const coinbase: CoinbaseTransaction = {
         ...result,
         type: 'coinbase',
