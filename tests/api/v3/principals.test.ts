@@ -4,7 +4,7 @@ import { ApiServer, startApiServer } from '../../../src/api/init.ts';
 import { migrate } from '../../test-helpers.ts';
 import { STACKS_TESTNET } from '@stacks/network';
 import * as assert from 'node:assert/strict';
-import { TestBlockBuilder } from '../test-builders.ts';
+import { TestBlockBuilder, testMempoolTx } from '../test-builders.ts';
 import { DbTxStatus, DbTxTypeId } from '../../../src/datastore/common.ts';
 import { hex } from '../test-helpers.ts';
 import { I32_MAX } from '../../../src/helpers.ts';
@@ -516,6 +516,162 @@ describe('principals', () => {
         headers: { 'if-none-match': newEtag as string },
       });
       assert.equal(refreshed.statusCode, 304);
+    });
+  });
+
+  describe('/v3/principals/:principal/balances/stx', () => {
+    // Fresh principals not touched by the shared block setup.
+    const balAddr = 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5';
+    const lockAddr = 'ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP';
+
+    const getStxBalance = async (principal: string) => {
+      const res = await api.fastifyApp.inject({
+        method: 'GET',
+        url: `/extended/v3/principals/${principal}/balances/stx`,
+      });
+      assert.equal(res.statusCode, 200, res.body);
+      return JSON.parse(res.body);
+    };
+
+    // Block 3: credits `balAddr` 1,000,000 µSTX, and credits + locks 400,000 of
+    // `lockAddr`'s STX via a pox-4 lock that unlocks far in the future.
+    const buildBlock3 = () =>
+      new TestBlockBuilder({
+        block_height: 3,
+        block_hash: hex(3),
+        index_block_hash: hex(3),
+        parent_index_block_hash: hex(2),
+        parent_block_hash: hex(2),
+        burn_block_height: 3,
+      })
+        .addTx({
+          tx_id: hex(301),
+          block_hash: hex(3),
+          index_block_hash: hex(3),
+          burn_block_height: 3,
+          sender_address: testAddr4,
+        })
+        .addTxStxEvent({ recipient: balAddr, sender: testAddr4, amount: 1_000_000n })
+        .addTx({
+          tx_id: hex(302),
+          block_hash: hex(3),
+          index_block_hash: hex(3),
+          burn_block_height: 3,
+          tx_index: 1,
+          sender_address: testAddr4,
+        })
+        .addTxStxEvent({ recipient: lockAddr, sender: testAddr4, amount: 1_000_000n })
+        .addTxStxLockEvent({
+          locked_address: lockAddr,
+          locked_amount: 400_000,
+          unlock_height: 1000,
+          contract_name: 'pox-4',
+        })
+        .build();
+
+    test('returns zeroed balance for a principal with no activity', async () => {
+      const body = await getStxBalance(emptyPrincipal);
+      assert.deepEqual(body, {
+        balance: '0',
+        available: '0',
+        locked: null,
+        mempool: null,
+      });
+    });
+
+    test('returns the confirmed STX balance with no lock or mempool activity', async () => {
+      await db.update(buildBlock3());
+      const body = await getStxBalance(balAddr);
+      assert.deepEqual(body, {
+        balance: '1000000',
+        available: '1000000',
+        locked: null,
+        mempool: null,
+      });
+    });
+
+    test('reports locked STX with available = balance − locked', async () => {
+      await db.update(buildBlock3());
+      const body = await getStxBalance(lockAddr);
+      assert.equal(body.balance, '1000000');
+      assert.equal(body.available, '600000');
+      assert.equal(body.mempool, null);
+      assert.deepEqual(body.locked, {
+        amount: '400000',
+        pox_version: 4,
+        lock_tx_id: hex(302),
+        stacks_lock_height: 3,
+        burn_lock_height: 3,
+        burn_unlock_height: 1000,
+      });
+    });
+
+    test('includes pending mempool balance and projects the estimated balance', async () => {
+      await db.update(buildBlock3());
+      // A pending outbound transfer of 50,000 µSTX + 1,234 fee from balAddr.
+      await db.updateMempoolTxs({
+        mempoolTxs: [
+          testMempoolTx({
+            tx_id: hex(401),
+            sender_address: balAddr,
+            token_transfer_amount: 50_000n,
+            fee_rate: 1_234n,
+          }),
+        ],
+      });
+      const body = await getStxBalance(balAddr);
+      assert.equal(body.balance, '1000000');
+      assert.equal(body.available, '1000000');
+      assert.equal(body.locked, null);
+      assert.deepEqual(body.mempool, {
+        // available (1,000,000) − outbound (50,000 + 1,234)
+        estimated_balance: '948766',
+        inbound: '0',
+        outbound: '51234',
+      });
+    });
+
+    test('ETag tracks mempool changes (handlePrincipalMempoolCache)', async () => {
+      await db.update(buildBlock3());
+
+      const first = await api.fastifyApp.inject({
+        method: 'GET',
+        url: `/extended/v3/principals/${balAddr}/balances/stx`,
+      });
+      assert.equal(first.statusCode, 200);
+      const etag = first.headers['etag'];
+      assert.ok(etag, 'expected ETag header to be set');
+
+      // Same ETag returns 304.
+      const cached = await api.fastifyApp.inject({
+        method: 'GET',
+        url: `/extended/v3/principals/${balAddr}/balances/stx`,
+        headers: { 'if-none-match': etag as string },
+      });
+      assert.equal(cached.statusCode, 304);
+      assert.equal(cached.body, '');
+
+      // A new pending mempool tx for the principal invalidates the ETag.
+      await db.updateMempoolTxs({
+        mempoolTxs: [
+          testMempoolTx({
+            tx_id: hex(402),
+            sender_address: balAddr,
+            token_transfer_amount: 10_000n,
+            fee_rate: 500n,
+          }),
+        ],
+      });
+
+      const afterMempool = await api.fastifyApp.inject({
+        method: 'GET',
+        url: `/extended/v3/principals/${balAddr}/balances/stx`,
+        headers: { 'if-none-match': etag as string },
+      });
+      assert.equal(afterMempool.statusCode, 200);
+      const newEtag = afterMempool.headers['etag'];
+      assert.ok(newEtag);
+      assert.notEqual(newEtag, etag);
     });
   });
 });

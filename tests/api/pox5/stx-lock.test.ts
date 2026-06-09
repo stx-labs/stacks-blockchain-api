@@ -1,3 +1,4 @@
+import supertest from 'supertest';
 import { afterEach, beforeEach, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { STACKS_TESTNET } from '@stacks/network';
@@ -205,6 +206,55 @@ describe('pox-5 locked STX in balance read path', () => {
     assert.equal(balance.locked, 0n);
     assert.equal(balance.lockTxId, '');
     assert.equal(balance.burnchainUnlockHeight, 0);
+  });
+
+  test('the v3 /balances/stx endpoint reports the active pox-5 lock', async () => {
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 1,
+        block_hash: '0x01',
+        index_block_hash: '0x01',
+        burn_block_height: TIP_BURN_HEIGHT,
+      })
+        .addTx({ tx_id: '0x' + 'a1'.repeat(32) })
+        // Credit alice so she actually holds the STX she locks.
+        .addTxStxEvent({ recipient: ALICE, amount: STAKE_AMOUNT })
+        .addTxPox5Event({ name: Pox5EventName.Stake, data: stakeData(STAKE_AMOUNT, ACTIVE_UNLOCK) })
+        .build()
+    );
+    const res = await supertest(api.server).get(`/extended/v3/principals/${ALICE}/balances/stx`);
+    assert.equal(res.status, 200, res.text);
+    const body = JSON.parse(res.text);
+    assert.ok(body.locked, 'locked object present');
+    assert.equal(body.locked.amount, STAKE_AMOUNT.toString());
+    assert.equal(body.locked.pox_version, 5);
+    assert.equal(body.locked.burn_unlock_height, ACTIVE_UNLOCK);
+    assert.notEqual(body.locked.lock_tx_id, '');
+    // No STX credits in this block, so total balance is just the locked amount and
+    // available is balance − locked = 0. Mempool is empty → null.
+    assert.equal(body.balance, STAKE_AMOUNT.toString());
+    assert.equal(body.available, '0');
+    assert.equal(body.mempool, null);
+  });
+
+  test('the v3 /balances/stx endpoint returns null locked when nothing is locked', async () => {
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 1,
+        block_hash: '0x01',
+        index_block_hash: '0x01',
+        burn_block_height: TIP_BURN_HEIGHT,
+      })
+        .addTx({ tx_id: '0x' + 'a1'.repeat(32) })
+        .build()
+    );
+    const res = await supertest(api.server).get(`/extended/v3/principals/${ALICE}/balances/stx`);
+    assert.equal(res.status, 200, res.text);
+    const body = JSON.parse(res.text);
+    assert.equal(body.locked, null);
+    assert.equal(body.mempool, null);
+    assert.equal(body.balance, '0');
+    assert.equal(body.available, '0');
   });
 });
 

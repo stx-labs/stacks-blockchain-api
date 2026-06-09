@@ -292,6 +292,8 @@ export interface ResolvedStxLock {
   lockHeight: number;
   burnchainLockHeight: number;
   burnchainUnlockHeight: number;
+  /** PoX contract version that created the lock (e.g. 4, 5); 0 when nothing is locked. */
+  poxVersion: number;
 }
 
 const EMPTY_STX_LOCK: ResolvedStxLock = {
@@ -300,6 +302,7 @@ const EMPTY_STX_LOCK: ResolvedStxLock = {
   lockHeight: 0,
   burnchainLockHeight: 0,
   burnchainUnlockHeight: 0,
+  poxVersion: 0,
 };
 
 /**
@@ -363,6 +366,7 @@ export function resolveMaterializedStxLock(
     lockHeight: row.lock_block_height,
     burnchainLockHeight: Number(row.burnchain_lock_height),
     burnchainUnlockHeight,
+    poxVersion: row.pox_version,
   };
 }
 
