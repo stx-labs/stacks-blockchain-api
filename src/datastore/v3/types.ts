@@ -193,3 +193,9 @@ export interface DbPrincipalFtBalance {
   token: string;
   balance: string;
 }
+
+export interface DbPrincipalNftBalance {
+  asset_identifier: string;
+  /** The NFT instance value (Clarity value) as a `0x`-prefixed hex string. */
+  value: string;
+}

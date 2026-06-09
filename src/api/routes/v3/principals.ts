@@ -11,8 +11,10 @@ import {
   CursorPaginationQuerystring,
   CursorPaginatedResponse,
   FtBalanceCursorSchema,
+  NftBalanceCursorSchema,
   TransactionCursorSchema,
 } from '../../schemas/v3/cursors.js';
+import { decodeClarityValueToRepr } from '@stacks/codec';
 import { PrincipalTransactionSummarySchema } from '../../schemas/v3/entities/principal-transactions.js';
 import { serializePrincipalTransactionSummary } from '../../serializers/v3/transactions.js';
 import { PrincipalBondPositionSchema } from '../../schemas/v3/entities/principal-bond-positions.js';
@@ -20,6 +22,7 @@ import { serializeDbPrincipalBondPosition } from '../../serializers/v3/bonds.js'
 import { handleChainTipCache } from '../../controllers/cache-controller.js';
 import {
   PrincipalFtPositionSchema,
+  PrincipalNftPositionSchema,
   PrincipalStxBalance,
   PrincipalStxBalanceSchema,
 } from '../../schemas/v3/entities/principal-balances.js';
@@ -188,6 +191,52 @@ export const PrincipalsRoutes: FastifyPluginAsync<
         results: results.results.map(r => ({
           asset_identifier: r.token,
           balance: r.balance,
+        })),
+      });
+    }
+  );
+
+  fastify.get(
+    '/principals/:principal/balances/nft',
+    {
+      preHandler: handlePrincipalCache,
+      schema: {
+        operationId: 'get_principal_nft_balances',
+        summary: 'Get principal NFT balances',
+        description:
+          'Get the non-fungible token instances currently owned by a principal, ordered by asset identifier and value.',
+        tags: ['Accounts'],
+        params: Type.Object({ principal: PrincipalSchema }),
+        querystring: CursorPaginationQuerystring(NftBalanceCursorSchema, ResourceType.NftBalance),
+        response: {
+          200: CursorPaginatedResponse(
+            PrincipalNftPositionSchema,
+            NftBalanceCursorSchema,
+            ResourceType.NftBalance
+          ),
+        },
+      },
+    },
+    async (req, reply) => {
+      const results = await fastify.db.v3.getPrincipalNftBalances({
+        principal: req.params.principal,
+        limit: req.query.limit ?? getPagingQueryLimit(ResourceType.NftBalance),
+        cursor: req.query.cursor,
+      });
+      await reply.send({
+        limit: results.limit,
+        total: results.total,
+        cursor: {
+          next: results.next_cursor,
+          previous: results.prev_cursor,
+          current: results.current_cursor,
+        },
+        results: results.results.map(r => ({
+          asset_identifier: r.asset_identifier,
+          value: {
+            hex: r.value,
+            repr: decodeClarityValueToRepr(r.value),
+          },
         })),
       });
     }

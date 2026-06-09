@@ -64,3 +64,21 @@ export const PrincipalFtPositionSchema = Type.Object(
   { title: 'PrincipalFtPosition' }
 );
 export type PrincipalFtPosition = Static<typeof PrincipalFtPositionSchema>;
+
+export const PrincipalNftPositionSchema = Type.Object(
+  {
+    asset_identifier: Type.String({
+      description: 'Non-fungible token asset identifier',
+      examples: ['SP2X0TZ59D5SZ8ACQ6YMCHHNR2ZN51Z32E2CJ173.the-explorer-guild::The-Explorer-Guild'],
+    }),
+    value: Type.Object(
+      {
+        hex: Type.String(),
+        repr: Type.String(),
+      },
+      { description: 'The NFT instance identifier, as a Clarity value' }
+    ),
+  },
+  { title: 'PrincipalNftPosition' }
+);
+export type PrincipalNftPosition = Static<typeof PrincipalNftPositionSchema>;

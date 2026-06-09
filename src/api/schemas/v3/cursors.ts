@@ -84,3 +84,10 @@ export const FtBalanceCursorSchema = Type.String({
     'Cursor for paginating FT balances (sorted by balance, descending). Format: balance:asset_identifier',
 });
 export type FtBalanceCursor = Static<typeof FtBalanceCursorSchema>;
+
+export const NftBalanceCursorSchema = Type.String({
+  pattern: '^0x[0-9a-fA-F]*:.+$',
+  description:
+    'Cursor for paginating NFT balances (sorted by asset identifier then value). Format: value:asset_identifier',
+});
+export type NftBalanceCursor = Static<typeof NftBalanceCursorSchema>;

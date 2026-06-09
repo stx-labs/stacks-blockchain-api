@@ -42,6 +42,7 @@ export enum ResourceType {
   TokenHolders,
   BlockSignerSignature,
   FtBalance,
+  NftBalance,
 }
 
 export const pagingQueryLimits: Record<ResourceType, { defaultLimit: number; maxLimit: number }> = {
@@ -102,6 +103,10 @@ export const pagingQueryLimits: Record<ResourceType, { defaultLimit: number; max
     maxLimit: 1000,
   },
   [ResourceType.FtBalance]: {
+    defaultLimit: 100,
+    maxLimit: 200,
+  },
+  [ResourceType.NftBalance]: {
     defaultLimit: 100,
     maxLimit: 200,
   },

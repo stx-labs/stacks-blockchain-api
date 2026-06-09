@@ -9,6 +9,7 @@ import {
   DbMempoolTransactionSummary,
   DbPrincipalBondPosition,
   DbPrincipalFtBalance,
+  DbPrincipalNftBalance,
   DbPrincipalTransactionSummary,
   DbTransaction,
   DbTransactionCursor,
@@ -35,13 +36,16 @@ import { TransactionIncludeField } from '../../api/schemas/v3/entities/transacti
 import type {
   BondCursor,
   FtBalanceCursor,
+  NftBalanceCursor,
   TransactionCursor,
   TransactionEventCursor,
 } from '../../api/schemas/v3/cursors.js';
 import {
   encodeFtBalanceCursor,
+  encodeNftBalanceCursor,
   encodeTransactionCursor,
   parseFtBalanceCursor,
+  parseNftBalanceCursor,
   resolveTransactionCursor,
 } from './helpers.js';
 import { DbEventTypeId } from '../common.js';
@@ -336,6 +340,85 @@ export class PgStoreV3 extends BasePgStoreModule {
         current_cursor: currentCursor,
         total,
         results: results.map(r => ({ token: r.token, balance: r.balance })),
+      };
+    });
+  }
+
+  /**
+   * Gets a principal's individually-owned NFT instances, keyset-paginated by
+   * `(asset_identifier, value)` (the unique key for an NFT instance), sorted
+   * ascending. Backed by the `nft_custody` index on
+   * `(recipient, asset_identifier, value)`.
+   * @param args - The arguments for the query.
+   * @returns The principal's NFT positions.
+   */
+  async getPrincipalNftBalances(args: {
+    principal: Principal;
+    limit: number;
+    cursor?: NftBalanceCursor;
+  }): Promise<DbCursorPaginatedResult<DbPrincipalNftBalance>> {
+    return await this.sqlTransaction(async sql => {
+      // Position the page strictly after the cursor in `(asset_identifier, value)`
+      // ascending order.
+      let cursorFilter = sql``;
+      if (args.cursor) {
+        const cursor = parseNftBalanceCursor(args.cursor);
+        // Inclusive on the cursor row: `next_cursor` points at the first row of
+        // the next page, which is re-included here as that page's first result.
+        cursorFilter = sql`
+          AND (
+            asset_identifier > ${cursor.asset_identifier}
+            OR (asset_identifier = ${cursor.asset_identifier} AND value >= ${cursor.value})
+          )
+        `;
+      }
+      const resultQuery = await sql<(DbPrincipalNftBalance & { total: number })[]>`
+        SELECT
+          asset_identifier,
+          value,
+          (SELECT COUNT(*)::int FROM nft_custody WHERE recipient = ${args.principal}) AS total
+        FROM nft_custody
+        WHERE recipient = ${args.principal} ${cursorFilter}
+        ORDER BY asset_identifier ASC, value ASC
+        LIMIT ${args.limit + 1}
+      `;
+
+      const hasNextPage = resultQuery.count > args.limit;
+      const results = hasNextPage ? resultQuery.slice(0, args.limit) : resultQuery;
+      const total = resultQuery.count > 0 ? resultQuery[0].total : 0;
+
+      const nextResult = resultQuery[resultQuery.length - 1];
+      const nextCursor = hasNextPage && nextResult ? encodeNftBalanceCursor(nextResult) : null;
+
+      const firstResult = results[0];
+      const currentCursor = firstResult ? encodeNftBalanceCursor(firstResult) : null;
+
+      // The previous page is the rows strictly before the first result in sort order.
+      let prevCursor: string | null = null;
+      if (firstResult) {
+        const prevPageQuery = await sql<{ asset_identifier: string; value: string }[]>`
+          SELECT asset_identifier, value
+          FROM nft_custody
+          WHERE recipient = ${args.principal}
+            AND (
+              asset_identifier < ${firstResult.asset_identifier}
+              OR (asset_identifier = ${firstResult.asset_identifier} AND value < ${firstResult.value})
+            )
+          ORDER BY asset_identifier DESC, value DESC
+          LIMIT ${args.limit}
+        `;
+        if (prevPageQuery.length > 0) {
+          prevCursor = encodeNftBalanceCursor(prevPageQuery[prevPageQuery.length - 1]);
+        }
+      }
+
+      return {
+        limit: args.limit,
+        next_cursor: nextCursor,
+        prev_cursor: prevCursor,
+        current_cursor: currentCursor,
+        total,
+        results: results.map(r => ({ asset_identifier: r.asset_identifier, value: r.value })),
       };
     });
   }
