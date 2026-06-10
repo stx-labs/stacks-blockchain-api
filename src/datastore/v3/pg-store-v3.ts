@@ -3,6 +3,7 @@ import {
   DbBond,
   DbBondAllowlistEntry,
   DbBondRegistration,
+  DbBondRegistrationSummary,
   DbBondSummary,
   DbCursorPaginatedResult,
   DbMempoolTransaction,
@@ -18,6 +19,7 @@ import {
   BOND_ALLOWLIST_ENTRY_COLUMNS,
   BOND_COLUMNS,
   BOND_REGISTRATION_COLUMNS,
+  BOND_REGISTRATION_SUMMARY_COLUMNS,
   BOND_SUMMARY_COLUMNS,
   MEMPOOL_TX_COLUMNS,
   MEMPOOL_TX_SUMMARY_COLUMNS,
@@ -36,7 +38,11 @@ import type {
   TransactionCursor,
   TransactionEventCursor,
 } from '../../api/schemas/v3/cursors.js';
-import { encodeTransactionCursor, resolveTransactionCursor } from './helpers.js';
+import {
+  encodeTransactionCursor,
+  parseBondLockupTxs,
+  resolveTransactionCursor,
+} from './helpers.js';
 import { DbEventTypeId } from '../common.js';
 
 export class PgStoreV3 extends BasePgStoreModule {
@@ -871,11 +877,11 @@ export class PgStoreV3 extends BasePgStoreModule {
    * @param args - The arguments for the query.
    * @returns The registrations for a bond.
    */
-  async getBondRegistrations(args: {
+  async getBondRegistrationSummaries(args: {
     bondIndex: number;
     limit: number;
     cursor?: TransactionCursor;
-  }): Promise<DbCursorPaginatedResult<DbBondRegistration>> {
+  }): Promise<DbCursorPaginatedResult<DbBondRegistrationSummary>> {
     return await this.sqlTransaction(async sql => {
       const limit = args.limit;
       let cursorFilter = sql``;
@@ -909,8 +915,8 @@ export class PgStoreV3 extends BasePgStoreModule {
         LIMIT 1
       `;
 
-      const resultQuery = await sql<(DbBondRegistration & DbTransactionCursor)[]>`
-        SELECT ${sql(BOND_REGISTRATION_COLUMNS)}
+      const resultQuery = await sql<(DbBondRegistrationSummary & DbTransactionCursor)[]>`
+        SELECT ${sql(BOND_REGISTRATION_SUMMARY_COLUMNS)}, block_height, microblock_sequence, tx_index
         FROM bond_registrations
         WHERE canonical = true
           AND microblock_canonical = true
@@ -978,7 +984,10 @@ export class PgStoreV3 extends BasePgStoreModule {
           AND staker = ${args.principal}
         LIMIT 1
       `;
-      return result[0] ?? null;
+      if (!result[0]) {
+        return null;
+      }
+      return { ...result[0], btc_lockup_txs: parseBondLockupTxs(result[0].btc_lockup_txs) };
     });
   }
 

@@ -12,11 +12,13 @@ import {
 import { BondSchema, BondSummarySchema } from '../../schemas/v3/entities/bonds.js';
 import { BondAllowlistSchema } from '../../schemas/v3/entities/bond-allowlist-entries.js';
 import { BondRegistrationSchema } from '../../schemas/v3/entities/bond-registrations.js';
+import { BondRegistrationSummarySchema } from '../../schemas/v3/entities/bond-registration-summaries.js';
 import { BondIndexSchema, PrincipalSchema } from '../../schemas/v3/entities/common.js';
 import {
   serializeDbBond,
   serializeDbBondAllowlistEntry,
   serializeDbBondRegistration,
+  serializeDbBondRegistrationSummary,
   serializeDbBondSummary,
 } from '../../serializers/v3/bonds.js';
 import { NotFoundError } from '../../../errors.js';
@@ -171,7 +173,7 @@ export const StakingBondsRoutes: FastifyPluginAsync<
         querystring: CursorPaginationQuerystring(TransactionCursorSchema, ResourceType.Tx),
         response: {
           200: CursorPaginatedResponse(
-            BondRegistrationSchema,
+            BondRegistrationSummarySchema,
             TransactionCursorSchema,
             ResourceType.Tx
           ),
@@ -179,7 +181,7 @@ export const StakingBondsRoutes: FastifyPluginAsync<
       },
     },
     async (req, reply) => {
-      const results = await fastify.db.v3.getBondRegistrations({
+      const results = await fastify.db.v3.getBondRegistrationSummaries({
         bondIndex: req.params.bond_index,
         limit: req.query.limit ?? getPagingQueryLimit(ResourceType.Tx),
         cursor: req.query.cursor,
@@ -192,7 +194,7 @@ export const StakingBondsRoutes: FastifyPluginAsync<
           previous: results.prev_cursor,
           current: results.current_cursor,
         },
-        results: results.results.map(r => serializeDbBondRegistration(r)),
+        results: results.results.map(r => serializeDbBondRegistrationSummary(r)),
       });
     }
   );

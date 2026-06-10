@@ -71,6 +71,7 @@ import {
   DbBondAllowlistEntryInsertValues,
   DbPrincipalBondPositionInsertValues,
   DbPrincipalBondPositionStatus,
+  bondLockupTypeFromString,
   DbBondRewardCalculationInsertValues,
   DbBondRewardDistributionInsertValues,
   DbPrincipalBondRewardDistributionInsertValues,
@@ -649,7 +650,12 @@ export class PgWriteStore extends PgStore {
         first_reward_cycle: parseInt(event.data.first_reward_cycle),
         unlock_burn_height: parseInt(event.data.unlock_burn_height),
         unlock_cycle: parseInt(event.data.unlock_cycle),
-        is_l1_lock: event.data.is_l1_lock,
+        // Capture the BTC/sBTC lockup provenance from the event. `txs` lists the
+        // proven L1 outputs for an L1 lockup and is null for an sBTC lockup.
+        btc_lockup_type: bondLockupTypeFromString(event.data.btc_lockup.type),
+        btc_lockup_txs: event.data.btc_lockup.txs
+          ? JSON.stringify(event.data.btc_lockup.txs)
+          : null,
       };
       await sql`
         INSERT INTO bond_registrations ${sql(bondRegistration)}

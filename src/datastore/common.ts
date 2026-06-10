@@ -1658,6 +1658,26 @@ export interface DbBondInsertValues extends DbTxLocation {
   early_unlock_admin: string;
 }
 
+/** How the BTC backing a bond registration was locked. */
+export enum DbBondLockupType {
+  /** A proven Bitcoin L1 lockup. */
+  L1 = 0,
+  /** An sBTC lockup. */
+  L2 = 1,
+}
+
+/** Maps a pox-5 `btc_lockup.type` string (`'l1'`/`'l2'`) to its enum value. */
+export function bondLockupTypeFromString(type: string): DbBondLockupType {
+  switch (type) {
+    case 'l1':
+      return DbBondLockupType.L1;
+    case 'l2':
+      return DbBondLockupType.L2;
+    default:
+      throw new Error(`Unknown bond lockup type: ${type}`);
+  }
+}
+
 export interface DbBondRegistrationInsertValues extends DbTxLocation {
   bond_index: number;
   signer: string;
@@ -1667,7 +1687,10 @@ export interface DbBondRegistrationInsertValues extends DbTxLocation {
   first_reward_cycle: number;
   unlock_burn_height: number;
   unlock_cycle: number;
-  is_l1_lock: boolean;
+  /** `DbBondLockupType` stored as a smallint. */
+  btc_lockup_type: DbBondLockupType;
+  /** JSON-encoded array of `{ txid, output_index }`, or null for an sBTC lockup. */
+  btc_lockup_txs: string | null;
 }
 
 export interface DbBondAllowlistEntryInsertValues extends DbTxLocation {

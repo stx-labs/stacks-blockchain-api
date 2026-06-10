@@ -1,5 +1,6 @@
 import { TransactionCursor } from '../../api/schemas/v3/cursors.js';
 import { I32_MAX } from '../../helpers.js';
+import { DbBondLockupTx } from './types.js';
 
 const MAX_TX_INDEX = 0x7fff;
 
@@ -40,3 +41,18 @@ export const resolveTransactionCursor = async (
 
 export const encodeTransactionCursor = (tx: TransactionCursorRow): TransactionCursor =>
   `${tx.block_height}:${tx.microblock_sequence}:${tx.tx_index}`;
+
+/**
+ * Normalizes a `bond_registrations.btc_lockup_txs` jsonb value into a parsed
+ * array. The pg driver returns jsonb columns as raw strings here, so a string
+ * is JSON-parsed; an already-parsed array (or null) is returned as-is.
+ */
+export function parseBondLockupTxs(value: unknown): DbBondLockupTx[] | null {
+  if (value == null) {
+    return null;
+  }
+  if (typeof value === 'string') {
+    return value.length > 0 ? (JSON.parse(value) as DbBondLockupTx[]) : null;
+  }
+  return value as DbBondLockupTx[];
+}
