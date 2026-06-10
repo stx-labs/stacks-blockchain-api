@@ -583,6 +583,8 @@ export class PgWriteStore extends PgStore {
             await this.updateBondRewardDistribution(sql, txLocation, poxEvent);
             break;
           case Pox5EventName.ClaimRewards:
+          case Pox5EventName.ClaimStakerRewardsForSigner:
+            // TODO: Implement
             break;
           case Pox5EventName.Stake:
           case Pox5EventName.StakeUpdate:
@@ -592,7 +594,12 @@ export class PgWriteStore extends PgStore {
             await this.clearStxLockedBalance(sql, poxEvent.data.staker);
             break;
           case Pox5EventName.RegisterSigner:
-            // No-op.
+          case Pox5EventName.AllowContractCaller:
+          case Pox5EventName.DisallowContractCaller:
+          case Pox5EventName.GrantSignerKey:
+          case Pox5EventName.RevokeSignerGrant:
+          case Pox5EventName.SetBondAdmin:
+            // TODO: Implement
             break;
         }
       }
@@ -612,7 +619,7 @@ export class PgWriteStore extends PgStore {
       stx_value_ratio: parseInt(event.data.stx_value_ratio),
       min_ustx_ratio: parseInt(event.data.min_ustx_ratio),
       early_unlock_bytes: event.data.early_unlock_bytes,
-      early_unlock_admin: event.data.early_unlock_admin,
+      early_unlock_admin: '', // TODO: Make nullable
       first_reward_cycle: parseInt(event.data.first_reward_cycle),
       bond_start_height: parseInt(event.data.bond_start_height),
       unlock_cycle: parseInt(event.data.unlock_cycle),
