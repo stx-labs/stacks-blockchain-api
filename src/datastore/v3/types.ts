@@ -171,18 +171,16 @@ export interface DbBondLockupTx {
   output_index: string;
 }
 
-export interface DbBondRegistration {
-  bond_index: number;
+export interface DbBondRegistrationSummary {
   signer: string;
   staker: string;
   amount_ustx: string;
   sats_total: string;
-  first_reward_cycle: number;
-  unlock_burn_height: number;
-  unlock_cycle: number;
-  /** `DbBondLockupType` stored as a smallint. */
   btc_lockup_type: DbBondLockupType;
-  /** Proven L1 lockup outputs (parsed from jsonb); null for an sBTC lockup. */
+}
+
+export interface DbBondRegistration extends DbBondRegistrationSummary {
+  tx_id: string;
   btc_lockup_txs: DbBondLockupTx[] | null;
 }
 

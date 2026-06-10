@@ -10,27 +10,30 @@ export type BondRegistrationBtcLockupTransaction = Static<
   typeof BondRegistrationBtcLockupTransactionSchema
 >;
 
-export const BondRegistrationBtcLockupSchema = Type.Object({
-  l1_lockup: Type.Object({
-    transactions: Type.Array(BondRegistrationBtcLockupTransactionSchema, {
-      description: 'The proven L1 lockup transactions',
+export const BondRegistrationBtcLockupSchema = Type.Composite([
+  BondRegistrationSummarySchema,
+  Type.Object({
+    l1_lockup: Type.Object({
+      transactions: Type.Array(BondRegistrationBtcLockupTransactionSchema, {
+        description: 'The proven L1 lockup transactions',
+      }),
     }),
   }),
-});
+]);
 export type BondRegistrationBtcLockup = Static<typeof BondRegistrationBtcLockupSchema>;
 
-export const BondRegistrationSbtcLockupSchema = Type.Object({
-  l2_lockup: Type.Object({
-    tx_id: TransactionIdSchema,
+export const BondRegistrationSbtcLockupSchema = Type.Composite([
+  BondRegistrationSummarySchema,
+  Type.Object({
+    l2_lockup: Type.Object({
+      tx_id: TransactionIdSchema,
+    }),
   }),
-});
+]);
 export type BondRegistrationSbtcLockup = Static<typeof BondRegistrationSbtcLockupSchema>;
 
-export const BondRegistrationSchema = Type.Composite(
-  [
-    BondRegistrationSummarySchema,
-    Type.Union([BondRegistrationBtcLockupSchema, BondRegistrationSbtcLockupSchema]),
-  ],
-  { title: 'BondRegistration' }
-);
+export const BondRegistrationSchema = Type.Union([
+  BondRegistrationBtcLockupSchema,
+  BondRegistrationSbtcLockupSchema,
+]);
 export type BondRegistration = Static<typeof BondRegistrationSchema>;

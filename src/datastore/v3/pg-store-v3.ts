@@ -2,8 +2,8 @@ import { BasePgStoreModule } from '@stacks/api-toolkit';
 import {
   DbBond,
   DbBondAllowlistEntry,
-  DbBondLockupTx,
   DbBondRegistration,
+  DbBondRegistrationSummary,
   DbBondSummary,
   DbCursorPaginatedResult,
   DbMempoolTransaction,
@@ -19,6 +19,7 @@ import {
   BOND_ALLOWLIST_ENTRY_COLUMNS,
   BOND_COLUMNS,
   BOND_REGISTRATION_COLUMNS,
+  BOND_REGISTRATION_SUMMARY_COLUMNS,
   BOND_SUMMARY_COLUMNS,
   MEMPOOL_TX_COLUMNS,
   MEMPOOL_TX_SUMMARY_COLUMNS,
@@ -37,23 +38,12 @@ import type {
   TransactionCursor,
   TransactionEventCursor,
 } from '../../api/schemas/v3/cursors.js';
-import { encodeTransactionCursor, resolveTransactionCursor } from './helpers.js';
+import {
+  encodeTransactionCursor,
+  parseBondLockupTxs,
+  resolveTransactionCursor,
+} from './helpers.js';
 import { DbEventTypeId } from '../common.js';
-
-/**
- * Normalizes a `bond_registrations.btc_lockup_txs` jsonb value into a parsed
- * array. The pg driver returns jsonb columns as raw strings here, so a string
- * is JSON-parsed; an already-parsed array (or null) is returned as-is.
- */
-function parseBondLockupTxs(value: unknown): DbBondLockupTx[] | null {
-  if (value == null) {
-    return null;
-  }
-  if (typeof value === 'string') {
-    return value.length > 0 ? (JSON.parse(value) as DbBondLockupTx[]) : null;
-  }
-  return value as DbBondLockupTx[];
-}
 
 export class PgStoreV3 extends BasePgStoreModule {
   /**
@@ -891,7 +881,7 @@ export class PgStoreV3 extends BasePgStoreModule {
     bondIndex: number;
     limit: number;
     cursor?: TransactionCursor;
-  }): Promise<DbCursorPaginatedResult<DbBondRegistration>> {
+  }): Promise<DbCursorPaginatedResult<DbBondRegistrationSummary>> {
     return await this.sqlTransaction(async sql => {
       const limit = args.limit;
       let cursorFilter = sql``;
@@ -926,7 +916,7 @@ export class PgStoreV3 extends BasePgStoreModule {
       `;
 
       const resultQuery = await sql<(DbBondRegistration & DbTransactionCursor)[]>`
-        SELECT ${sql(BOND_REGISTRATION_COLUMNS)}
+        SELECT ${sql(BOND_REGISTRATION_SUMMARY_COLUMNS)}
         FROM bond_registrations
         WHERE canonical = true
           AND microblock_canonical = true
