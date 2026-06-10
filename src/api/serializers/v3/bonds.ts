@@ -10,6 +10,7 @@ import { Bond, BondSummary } from '../../schemas/v3/entities/bonds.js';
 import { BondStatus } from '../../schemas/v3/entities/bonds.js';
 import { BondAllowlist } from '../../schemas/v3/entities/bond-allowlist-entries.js';
 import { BondRegistration } from '../../schemas/v3/entities/bond-registrations.js';
+import { BondRegistrationSummary } from '../../schemas/v3/entities/bond-registration-summaries.js';
 import {
   PrincipalBondPosition,
   PrincipalBondPositionStatus,
@@ -153,7 +154,9 @@ export function serializeDbPrincipalBondPosition(
   };
 }
 
-export function serializeDbBondRegistration(entry: DbBondRegistration): BondRegistration {
+export function serializeDbBondRegistrationSummary(
+  entry: DbBondRegistration
+): BondRegistrationSummary {
   return {
     bond_index: entry.bond_index,
     signer: entry.signer,
@@ -163,6 +166,15 @@ export function serializeDbBondRegistration(entry: DbBondRegistration): BondRegi
     first_reward_cycle: entry.first_reward_cycle,
     unlock_burn_height: entry.unlock_burn_height,
     unlock_cycle: entry.unlock_cycle,
+    btc_lockup: {
+      type: getBondLockupType(entry.btc_lockup_type),
+    },
+  };
+}
+
+export function serializeDbBondRegistration(entry: DbBondRegistration): BondRegistration {
+  return {
+    ...serializeDbBondRegistrationSummary(entry),
     btc_lockup: {
       type: getBondLockupType(entry.btc_lockup_type),
       txs: entry.btc_lockup_txs ?? [],

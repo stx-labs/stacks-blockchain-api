@@ -78,12 +78,15 @@ interface BondAllowlistEntry {
   staker: string;
   max_sats: string;
 }
-interface BondRegistration {
+interface BondRegistrationSummary {
   bond_index: number;
   signer: string;
   staker: string;
   amount_ustx: string;
   sats_total: string;
+  btc_lockup: { type: string };
+}
+interface BondRegistration extends Omit<BondRegistrationSummary, 'btc_lockup'> {
   btc_lockup: { type: string; txs: { txid: string; output_index: string }[] | null };
 }
 interface CursorPaginated<T> {
@@ -222,7 +225,7 @@ describe('pox-5 bonds (simulated ingestion)', () => {
   });
 
   test("alice's registration appears in GET .../registrations", async () => {
-    const list = await getJson<CursorPaginated<BondRegistration>>(
+    const list = await getJson<CursorPaginated<BondRegistrationSummary>>(
       `/extended/v3/staking/bonds/${BOND_INDEX}/registrations?limit=50`
     );
     const reg = list.results.find(r => r.staker === ALICE);
@@ -231,8 +234,8 @@ describe('pox-5 bonds (simulated ingestion)', () => {
     assert.equal(reg.signer, SIGNER);
     assert.equal(BigInt(reg.amount_ustx), AMOUNT_USTX);
     assert.equal(BigInt(reg.sats_total), SBTC_SATS);
-    // An sBTC ('l2') lockup carries no L1 outputs.
-    assert.deepEqual(reg.btc_lockup, { type: 'l2', txs: [] });
+    // The list endpoint returns the lockup summary — type only, no L1 tx list.
+    assert.deepEqual(reg.btc_lockup, { type: 'l2' });
   });
 
   test('alice appears in GET .../registrations/:principal', async () => {

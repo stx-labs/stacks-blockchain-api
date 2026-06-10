@@ -22,7 +22,8 @@ export const BondBtcLockupSchema = Type.Object(
   { title: 'BondBtcLockup' }
 );
 
-export const BondRegistrationSchema = Type.Object({
+/** Registration fields shared by the full and summary schemas. */
+export const bondRegistrationBaseProperties = {
   bond_index: Type.Integer(),
   signer: Type.String(),
   staker: Type.String(),
@@ -31,6 +32,14 @@ export const BondRegistrationSchema = Type.Object({
   first_reward_cycle: Type.Integer(),
   unlock_burn_height: Type.Integer(),
   unlock_cycle: Type.Integer(),
-  btc_lockup: BondBtcLockupSchema,
-});
+};
+
+/** A bond registration including the proven L1 lockup transactions. */
+export const BondRegistrationSchema = Type.Object(
+  {
+    ...bondRegistrationBaseProperties,
+    btc_lockup: BondBtcLockupSchema,
+  },
+  { title: 'BondRegistration' }
+);
 export type BondRegistration = Static<typeof BondRegistrationSchema>;
