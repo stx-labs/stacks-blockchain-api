@@ -181,7 +181,7 @@ export const StakingBondsRoutes: FastifyPluginAsync<
       },
     },
     async (req, reply) => {
-      const results = await fastify.db.v3.getBondRegistrations({
+      const results = await fastify.db.v3.getBondRegistrationSummaries({
         bondIndex: req.params.bond_index,
         limit: req.query.limit ?? getPagingQueryLimit(ResourceType.Tx),
         cursor: req.query.cursor,

@@ -877,7 +877,7 @@ export class PgStoreV3 extends BasePgStoreModule {
    * @param args - The arguments for the query.
    * @returns The registrations for a bond.
    */
-  async getBondRegistrations(args: {
+  async getBondRegistrationSummaries(args: {
     bondIndex: number;
     limit: number;
     cursor?: TransactionCursor;
@@ -915,8 +915,8 @@ export class PgStoreV3 extends BasePgStoreModule {
         LIMIT 1
       `;
 
-      const resultQuery = await sql<(DbBondRegistration & DbTransactionCursor)[]>`
-        SELECT ${sql(BOND_REGISTRATION_SUMMARY_COLUMNS)}
+      const resultQuery = await sql<(DbBondRegistrationSummary & DbTransactionCursor)[]>`
+        SELECT ${sql(BOND_REGISTRATION_SUMMARY_COLUMNS)}, block_height, microblock_sequence, tx_index
         FROM bond_registrations
         WHERE canonical = true
           AND microblock_canonical = true
@@ -960,7 +960,7 @@ export class PgStoreV3 extends BasePgStoreModule {
         prev_cursor: prevCursor,
         current_cursor: firstResult ? encodeTransactionCursor(firstResult) : null,
         total: totalQuery[0]?.total ?? 0,
-        results: results.map(r => ({ ...r, btc_lockup_txs: parseBondLockupTxs(r.btc_lockup_txs) })),
+        results,
       };
     });
   }

@@ -79,15 +79,14 @@ interface BondAllowlistEntry {
   max_sats: string;
 }
 interface BondRegistrationSummary {
-  bond_index: number;
   signer: string;
   staker: string;
-  amount_ustx: string;
-  sats_total: string;
-  btc_lockup: { type: string };
+  type: 'l1' | 'l2';
+  balances: { btc: string; stx: string };
 }
-interface BondRegistration extends Omit<BondRegistrationSummary, 'btc_lockup'> {
-  btc_lockup: { type: string; txs: { txid: string; output_index: string }[] | null };
+interface BondRegistration extends BondRegistrationSummary {
+  l1_lockup?: { transactions: { tx_id: string; output_index: number }[] };
+  l2_lockup?: { tx_id: string };
 }
 interface CursorPaginated<T> {
   total: number;
@@ -230,12 +229,13 @@ describe('pox-5 bonds (simulated ingestion)', () => {
     );
     const reg = list.results.find(r => r.staker === ALICE);
     assert.ok(reg, 'alice present in registrations');
-    assert.equal(reg.bond_index, BOND_INDEX);
-    assert.equal(reg.signer, SIGNER);
-    assert.equal(BigInt(reg.amount_ustx), AMOUNT_USTX);
-    assert.equal(BigInt(reg.sats_total), SBTC_SATS);
-    // The list endpoint returns the lockup summary — type only, no L1 tx list.
-    assert.deepEqual(reg.btc_lockup, { type: 'l2' });
+    // The list endpoint returns the lockup summary — no per-lockup tx details.
+    assert.deepEqual(reg, {
+      signer: SIGNER,
+      staker: ALICE,
+      type: 'l2',
+      balances: { btc: SBTC_SATS.toString(), stx: AMOUNT_USTX.toString() },
+    });
   });
 
   test('alice appears in GET .../registrations/:principal', async () => {
@@ -243,17 +243,20 @@ describe('pox-5 bonds (simulated ingestion)', () => {
       `/extended/v3/staking/bonds/${BOND_INDEX}/registrations/${ALICE}`
     );
     assert.equal(reg.staker, ALICE);
-    assert.equal(reg.bond_index, BOND_INDEX);
-    assert.equal(BigInt(reg.amount_ustx), AMOUNT_USTX);
-    assert.deepEqual(reg.btc_lockup, { type: 'l2', txs: [] });
+    assert.equal(reg.signer, SIGNER);
+    assert.equal(reg.type, 'l2');
+    assert.equal(BigInt(reg.balances.stx), AMOUNT_USTX);
+    assert.equal(BigInt(reg.balances.btc), SBTC_SATS);
+    // An sBTC ('l2') lockup links to its registration tx, not L1 outputs.
+    assert.equal(reg.l1_lockup, undefined);
+    assert.ok(reg.l2_lockup, 'l2_lockup present');
+    assert.equal(normalizeTxId(reg.l2_lockup.tx_id), normalizeTxId(REGISTER_TX_ID));
   });
 
   test('an L1 lockup registration captures its proven Bitcoin outputs', async () => {
     // Register bob with a proven Bitcoin L1 lockup (two outputs).
-    const l1Txs = [
-      { txid: '0x' + 'ab'.repeat(32), output_index: '0' },
-      { txid: '0x' + 'cd'.repeat(32), output_index: '3' },
-    ];
+    const txid1 = '0x' + 'ab'.repeat(32);
+    const txid2 = '0x' + 'cd'.repeat(32);
     await db.update(
       new TestBlockBuilder({
         block_height: 2,
@@ -275,7 +278,13 @@ describe('pox-5 bonds (simulated ingestion)', () => {
             unlock_burn_height: String(UNLOCK_BURN_HEIGHT),
             unlock_cycle: String(UNLOCK_CYCLE),
             is_l1_lock: true,
-            btc_lockup: { type: 'l1', txs: l1Txs },
+            btc_lockup: {
+              type: 'l1',
+              txs: [
+                { txid: txid1, output_index: '0' },
+                { txid: txid2, output_index: '3' },
+              ],
+            },
           },
         })
         .build()
@@ -284,7 +293,14 @@ describe('pox-5 bonds (simulated ingestion)', () => {
       `/extended/v3/staking/bonds/${BOND_INDEX}/registrations/${BOB}`
     );
     assert.equal(reg.staker, BOB);
-    assert.deepEqual(reg.btc_lockup, { type: 'l1', txs: l1Txs });
+    assert.equal(reg.type, 'l1');
+    assert.equal(reg.l2_lockup, undefined);
+    assert.deepEqual(reg.l1_lockup, {
+      transactions: [
+        { tx_id: txid1, output_index: 0 },
+        { tx_id: txid2, output_index: 3 },
+      ],
+    });
   });
 
   test("alice's position appears in GET .../principals/:principal/balances/staking", async () => {
@@ -409,8 +425,8 @@ describe('pox-5 bonds lifecycle (multi-block)', () => {
 
     const reg = await getRegistration();
     assert.equal(reg.signer, SIGNER);
-    assert.equal(BigInt(reg.amount_ustx), AMOUNT_USTX);
-    assert.equal(BigInt(reg.sats_total), SBTC_SATS);
+    assert.equal(BigInt(reg.balances.stx), AMOUNT_USTX);
+    assert.equal(BigInt(reg.balances.btc), SBTC_SATS);
 
     // --- Block 3: alice update-bond-registration ---
     await db.update(
@@ -438,8 +454,8 @@ describe('pox-5 bonds lifecycle (multi-block)', () => {
 
     const updated = await getRegistration();
     assert.equal(updated.signer, NEW_SIGNER, 'signer updated');
-    assert.equal(BigInt(updated.amount_ustx), UPDATED_AMOUNT_USTX, 'amount_ustx updated');
-    assert.equal(BigInt(updated.sats_total), UPDATED_SATS, 'sats_total updated');
+    assert.equal(BigInt(updated.balances.stx), UPDATED_AMOUNT_USTX, 'amount_ustx updated');
+    assert.equal(BigInt(updated.balances.btc), UPDATED_SATS, 'sats_total updated');
     // Still a single registration for alice (update, not a new row).
     const regs = await getJson<CursorPaginated<BondRegistration>>(
       `/extended/v3/staking/bonds/${BOND_INDEX}/registrations?limit=50`
