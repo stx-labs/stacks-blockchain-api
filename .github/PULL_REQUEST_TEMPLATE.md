@@ -54,10 +54,3 @@ Provide context on how tests should be performed.
 3. Briefly mention affected code paths
 4. List other affected projects if possible
 5. Things to watch out for when testing
-
-## Checklist
-- [ ] Code is commented where needed
-- [ ] Unit test coverage for new or modified code paths
-- [ ] `npm run test` passes
-- [ ] Changelog is updated
-- [ ] Tag 1 of @rafaelcr or @zone117x for review
