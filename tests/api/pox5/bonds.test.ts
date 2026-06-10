@@ -84,7 +84,7 @@ interface BondRegistration {
   staker: string;
   amount_ustx: string;
   sats_total: string;
-  is_l1_lock: boolean;
+  btc_lockup: { type: string; txs: { txid: string; output_index: string }[] | null };
 }
 interface CursorPaginated<T> {
   total: number;
@@ -149,6 +149,7 @@ describe('pox-5 bonds (simulated ingestion)', () => {
           unlock_burn_height: String(UNLOCK_BURN_HEIGHT),
           unlock_cycle: String(UNLOCK_CYCLE),
           is_l1_lock: false,
+          btc_lockup: { type: 'l2', txs: [] },
         },
       })
       .build();
@@ -230,7 +231,8 @@ describe('pox-5 bonds (simulated ingestion)', () => {
     assert.equal(reg.signer, SIGNER);
     assert.equal(BigInt(reg.amount_ustx), AMOUNT_USTX);
     assert.equal(BigInt(reg.sats_total), SBTC_SATS);
-    assert.equal(reg.is_l1_lock, false);
+    // An sBTC ('l2') lockup carries no L1 outputs.
+    assert.deepEqual(reg.btc_lockup, { type: 'l2', txs: [] });
   });
 
   test('alice appears in GET .../registrations/:principal', async () => {
@@ -240,7 +242,46 @@ describe('pox-5 bonds (simulated ingestion)', () => {
     assert.equal(reg.staker, ALICE);
     assert.equal(reg.bond_index, BOND_INDEX);
     assert.equal(BigInt(reg.amount_ustx), AMOUNT_USTX);
-    assert.equal(reg.is_l1_lock, false);
+    assert.deepEqual(reg.btc_lockup, { type: 'l2', txs: [] });
+  });
+
+  test('an L1 lockup registration captures its proven Bitcoin outputs', async () => {
+    // Register bob with a proven Bitcoin L1 lockup (two outputs).
+    const l1Txs = [
+      { txid: '0x' + 'ab'.repeat(32), output_index: '0' },
+      { txid: '0x' + 'cd'.repeat(32), output_index: '3' },
+    ];
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 2,
+        block_hash: '0xb2',
+        index_block_hash: '0xb2',
+        parent_block_hash: '0xb1',
+        parent_index_block_hash: '0xb1',
+      })
+        .addTx({ tx_id: '0x' + '33'.repeat(32) })
+        .addTxPox5Event({
+          name: Pox5EventName.RegisterForBond,
+          data: {
+            bond_index: String(BOND_INDEX),
+            signer: SIGNER,
+            staker: BOB,
+            amount_ustx: AMOUNT_USTX.toString(),
+            sats_total: BOB_MAX_SATS.toString(),
+            first_reward_cycle: String(FIRST_REWARD_CYCLE),
+            unlock_burn_height: String(UNLOCK_BURN_HEIGHT),
+            unlock_cycle: String(UNLOCK_CYCLE),
+            is_l1_lock: true,
+            btc_lockup: { type: 'l1', txs: l1Txs },
+          },
+        })
+        .build()
+    );
+    const reg = await getJson<BondRegistration>(
+      `/extended/v3/staking/bonds/${BOND_INDEX}/registrations/${BOB}`
+    );
+    assert.equal(reg.staker, BOB);
+    assert.deepEqual(reg.btc_lockup, { type: 'l1', txs: l1Txs });
   });
 
   test("alice's position appears in GET .../principals/:principal/balances/staking", async () => {
@@ -357,6 +398,7 @@ describe('pox-5 bonds lifecycle (multi-block)', () => {
             unlock_burn_height: String(UNLOCK_BURN_HEIGHT),
             unlock_cycle: String(UNLOCK_CYCLE),
             is_l1_lock: false,
+            btc_lockup: { type: 'l2', txs: [] },
           },
         })
         .build()
@@ -483,6 +525,7 @@ describe('pox-5 bonds reorg handling', () => {
           unlock_burn_height: String(UNLOCK_BURN_HEIGHT),
           unlock_cycle: String(UNLOCK_CYCLE),
           is_l1_lock: false,
+          btc_lockup: { type: 'l2', txs: [] },
         },
       })
       .build();
@@ -611,6 +654,7 @@ describe('pox-5 bonds reorg handling', () => {
             unlock_burn_height: String(UNLOCK_BURN_HEIGHT),
             unlock_cycle: String(UNLOCK_CYCLE),
             is_l1_lock: false,
+            btc_lockup: { type: 'l2', txs: [] },
           },
         })
         .build()
@@ -723,6 +767,7 @@ describe('pox-5 bonds unstake / early-exit', () => {
             unlock_burn_height: String(UNLOCK_BURN_HEIGHT),
             unlock_cycle: String(UNLOCK_CYCLE),
             is_l1_lock: false,
+            btc_lockup: { type: 'l2', txs: [] },
           },
         })
         .build()
@@ -859,6 +904,7 @@ describe('pox-5 bonds reward accrual', () => {
       unlock_burn_height: String(UNLOCK_BURN_HEIGHT),
       unlock_cycle: String(UNLOCK_CYCLE),
       is_l1_lock: false,
+      btc_lockup: { type: 'l2', txs: [] },
     };
   }
   function distributionBlock(args: {

@@ -5,7 +5,7 @@ import {
   DbBondSummary,
   DbPrincipalBondPosition,
 } from '../../../datastore/v3/types.js';
-import { DbPrincipalBondPositionStatus } from '../../../datastore/common.js';
+import { DbBondLockupType, DbPrincipalBondPositionStatus } from '../../../datastore/common.js';
 import { Bond, BondSummary } from '../../schemas/v3/entities/bonds.js';
 import { BondStatus } from '../../schemas/v3/entities/bonds.js';
 import { BondAllowlist } from '../../schemas/v3/entities/bond-allowlist-entries.js';
@@ -117,6 +117,15 @@ function getPrincipalBondPositionStatus(
   }
 }
 
+function getBondLockupType(type: DbBondLockupType): 'l1' | 'l2' {
+  switch (type) {
+    case DbBondLockupType.L1:
+      return 'l1';
+    case DbBondLockupType.L2:
+      return 'l2';
+  }
+}
+
 export function serializeDbPrincipalBondPosition(
   position: DbPrincipalBondPosition
 ): PrincipalBondPosition {
@@ -154,6 +163,9 @@ export function serializeDbBondRegistration(entry: DbBondRegistration): BondRegi
     first_reward_cycle: entry.first_reward_cycle,
     unlock_burn_height: entry.unlock_burn_height,
     unlock_cycle: entry.unlock_cycle,
-    is_l1_lock: entry.is_l1_lock,
+    btc_lockup: {
+      type: getBondLockupType(entry.btc_lockup_type),
+      txs: entry.btc_lockup_txs ?? [],
+    },
   };
 }

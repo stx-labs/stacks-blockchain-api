@@ -91,9 +91,16 @@ export const up = (pgm: MigrationBuilder) => {
       type: 'integer',
       notNull: true,
     },
-    is_l1_lock: {
-      type: 'boolean',
+    // How the BTC backing this registration was locked, as a `DbBondLockupType`
+    // smallint (0 = proven Bitcoin L1 lockup, 1 = sBTC lockup).
+    btc_lockup_type: {
+      type: 'smallint',
       notNull: true,
+    },
+    // The proven L1 lockup outputs (array of `{ txid, output_index }`) for an
+    // 'l1' lockup; null for an 'l2' (sBTC) lockup.
+    btc_lockup_txs: {
+      type: 'jsonb',
     },
   });
 

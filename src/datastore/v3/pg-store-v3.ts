@@ -2,6 +2,7 @@ import { BasePgStoreModule } from '@stacks/api-toolkit';
 import {
   DbBond,
   DbBondAllowlistEntry,
+  DbBondLockupTx,
   DbBondRegistration,
   DbBondSummary,
   DbCursorPaginatedResult,
@@ -38,6 +39,21 @@ import type {
 } from '../../api/schemas/v3/cursors.js';
 import { encodeTransactionCursor, resolveTransactionCursor } from './helpers.js';
 import { DbEventTypeId } from '../common.js';
+
+/**
+ * Normalizes a `bond_registrations.btc_lockup_txs` jsonb value into a parsed
+ * array. The pg driver returns jsonb columns as raw strings here, so a string
+ * is JSON-parsed; an already-parsed array (or null) is returned as-is.
+ */
+function parseBondLockupTxs(value: unknown): DbBondLockupTx[] | null {
+  if (value == null) {
+    return null;
+  }
+  if (typeof value === 'string') {
+    return value.length > 0 ? (JSON.parse(value) as DbBondLockupTx[]) : null;
+  }
+  return value as DbBondLockupTx[];
+}
 
 export class PgStoreV3 extends BasePgStoreModule {
   /**
@@ -954,7 +970,7 @@ export class PgStoreV3 extends BasePgStoreModule {
         prev_cursor: prevCursor,
         current_cursor: firstResult ? encodeTransactionCursor(firstResult) : null,
         total: totalQuery[0]?.total ?? 0,
-        results,
+        results: results.map(r => ({ ...r, btc_lockup_txs: parseBondLockupTxs(r.btc_lockup_txs) })),
       };
     });
   }
@@ -978,7 +994,10 @@ export class PgStoreV3 extends BasePgStoreModule {
           AND staker = ${args.principal}
         LIMIT 1
       `;
-      return result[0] ?? null;
+      if (!result[0]) {
+        return null;
+      }
+      return { ...result[0], btc_lockup_txs: parseBondLockupTxs(result[0].btc_lockup_txs) };
     });
   }
 
