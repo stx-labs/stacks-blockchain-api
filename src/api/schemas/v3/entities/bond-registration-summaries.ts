@@ -1,26 +1,21 @@
 import { Static, Type } from '@sinclair/typebox';
-import { bondRegistrationBaseProperties } from './bond-registrations.js';
+import { AmountSchema } from './common.js';
 
-/** The lockup type without the (potentially large) list of proven L1 outputs. */
-export const BondBtcLockupSummarySchema = Type.Object(
-  {
-    type: Type.String({
-      description: "'l1' for a proven Bitcoin L1 lockup, 'l2' for an sBTC lockup",
-    }),
-  },
-  { title: 'BondBtcLockupSummary' }
-);
+export const BondRegistrationTypeSchema = Type.Union([Type.Literal('l1'), Type.Literal('l2')]);
+export type BondRegistrationType = Static<typeof BondRegistrationTypeSchema>;
 
 /**
  * A bond registration without the full list of L1 lockup transactions. Used by
  * the bond registrations list endpoint; the proven L1 outputs are available on
  * the per-principal registration endpoint.
  */
-export const BondRegistrationSummarySchema = Type.Object(
-  {
-    ...bondRegistrationBaseProperties,
-    btc_lockup: BondBtcLockupSummarySchema,
-  },
-  { title: 'BondRegistrationSummary' }
-);
+export const BondRegistrationSummarySchema = Type.Object({
+  staker: Type.String(),
+  signer: Type.String(),
+  type: BondRegistrationTypeSchema,
+  balances: Type.Object({
+    btc: AmountSchema,
+    stx: AmountSchema,
+  }),
+});
 export type BondRegistrationSummary = Static<typeof BondRegistrationSummarySchema>;
