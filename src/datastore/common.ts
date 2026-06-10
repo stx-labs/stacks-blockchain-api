@@ -1655,7 +1655,6 @@ export interface DbBondInsertValues extends DbTxLocation {
   unlock_cycle: number;
   unlock_burn_height: number;
   early_unlock_bytes: string;
-  early_unlock_admin: string;
 }
 
 /** How the BTC backing a bond registration was locked. */

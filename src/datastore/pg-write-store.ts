@@ -617,7 +617,6 @@ export class PgWriteStore extends PgStore {
       stx_value_ratio: parseInt(event.data.stx_value_ratio),
       min_ustx_ratio: parseInt(event.data.min_ustx_ratio),
       early_unlock_bytes: event.data.early_unlock_bytes,
-      early_unlock_admin: '', // TODO: Make nullable
       first_reward_cycle: parseInt(event.data.first_reward_cycle),
       bond_start_height: parseInt(event.data.bond_start_height),
       unlock_cycle: parseInt(event.data.unlock_cycle),

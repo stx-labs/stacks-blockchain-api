@@ -156,7 +156,7 @@ export interface DbBondSummary {
 
 export interface DbBond extends DbBondSummary, DbTxLocation {
   early_unlock_bytes: string;
-  early_unlock_admin: string;
+  early_unlock_admin: string | null;
 }
 
 export interface DbBondAllowlistEntry {
