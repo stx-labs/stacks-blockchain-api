@@ -33213,15 +33213,23 @@ export interface operations {
                             current: string | null;
                         };
                         results: {
-                            bond_index: number;
-                            signer: string;
                             staker: string;
-                            amount_ustx: string;
-                            sats_total: string;
-                            first_reward_cycle: number;
-                            unlock_burn_height: number;
-                            unlock_cycle: number;
-                            is_l1_lock: boolean;
+                            signer: string;
+                            type: "l1" | "l2";
+                            balances: {
+                                /**
+                                 * Amount
+                                 * @description Amount
+                                 * @example 1000000
+                                 */
+                                btc: string;
+                                /**
+                                 * Amount
+                                 * @description Amount
+                                 * @example 1000000
+                                 */
+                                stx: string;
+                            };
                         }[];
                     };
                 };
@@ -33262,15 +33270,56 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        bond_index: number;
-                        signer: string;
                         staker: string;
-                        amount_ustx: string;
-                        sats_total: string;
-                        first_reward_cycle: number;
-                        unlock_burn_height: number;
-                        unlock_cycle: number;
-                        is_l1_lock: boolean;
+                        signer: string;
+                        type: "l1" | "l2";
+                        balances: {
+                            /**
+                             * Amount
+                             * @description Amount
+                             */
+                            btc: string;
+                            /**
+                             * Amount
+                             * @description Amount
+                             */
+                            stx: string;
+                        };
+                        l1_lockup: {
+                            /** @description The proven L1 lockup transactions */
+                            transactions: {
+                                /**
+                                 * Transaction ID
+                                 * @description Transaction ID
+                                 */
+                                tx_id: string;
+                                /** @description The output index of the proven L1 lockup */
+                                output_index: number;
+                            }[];
+                        };
+                    } | {
+                        staker: string;
+                        signer: string;
+                        type: "l1" | "l2";
+                        balances: {
+                            /**
+                             * Amount
+                             * @description Amount
+                             */
+                            btc: string;
+                            /**
+                             * Amount
+                             * @description Amount
+                             */
+                            stx: string;
+                        };
+                        l2_lockup: {
+                            /**
+                             * Transaction ID
+                             * @description Transaction ID
+                             */
+                            tx_id: string;
+                        };
                     };
                 };
             };
