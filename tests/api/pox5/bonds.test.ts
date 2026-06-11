@@ -52,7 +52,6 @@ const SETUP_BOND_DATA = {
   stx_value_ratio: String(STX_VALUE_RATIO),
   min_ustx_ratio: String(MIN_USTX_RATIO),
   early_unlock_bytes: '',
-  early_unlock_admin: ADMIN,
   first_reward_cycle: String(FIRST_REWARD_CYCLE),
   bond_start_height: String(BOND_START_HEIGHT),
   unlock_cycle: String(UNLOCK_CYCLE),
