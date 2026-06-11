@@ -4,6 +4,7 @@ import {
   TransactionCursor,
 } from '../../api/schemas/v3/cursors.js';
 import { I32_MAX } from '../../helpers.js';
+import { DbBondLockupTx } from './types.js';
 
 const MAX_TX_INDEX = 0x7fff;
 
@@ -87,3 +88,18 @@ export const parseNftBalanceCursor = (cursor: NftBalanceCursor): NftBalanceCurso
 
 export const encodeNftBalanceCursor = (row: NftBalanceCursorRow): NftBalanceCursor =>
   `${row.value}:${row.asset_identifier}`;
+
+/**
+ * Normalizes a `bond_registrations.btc_lockup_txs` jsonb value into a parsed
+ * array. The pg driver returns jsonb columns as raw strings here, so a string
+ * is JSON-parsed; an already-parsed array (or null) is returned as-is.
+ */
+export function parseBondLockupTxs(value: unknown): DbBondLockupTx[] | null {
+  if (value == null) {
+    return null;
+  }
+  if (typeof value === 'string') {
+    return value.length > 0 ? (JSON.parse(value) as DbBondLockupTx[]) : null;
+  }
+  return value as DbBondLockupTx[];
+}

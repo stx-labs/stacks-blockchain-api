@@ -2,14 +2,16 @@ import {
   DbBond,
   DbBondAllowlistEntry,
   DbBondRegistration,
+  DbBondRegistrationSummary,
   DbBondSummary,
   DbPrincipalBondPosition,
 } from '../../../datastore/v3/types.js';
-import { DbPrincipalBondPositionStatus } from '../../../datastore/common.js';
+import { DbBondLockupType, DbPrincipalBondPositionStatus } from '../../../datastore/common.js';
 import { Bond, BondSummary } from '../../schemas/v3/entities/bonds.js';
 import { BondStatus } from '../../schemas/v3/entities/bonds.js';
 import { BondAllowlist } from '../../schemas/v3/entities/bond-allowlist-entries.js';
 import { BondRegistration } from '../../schemas/v3/entities/bond-registrations.js';
+import { BondRegistrationSummary } from '../../schemas/v3/entities/bond-registration-summaries.js';
 import {
   PrincipalBondPosition,
   PrincipalBondPositionStatus,
@@ -117,6 +119,15 @@ function getPrincipalBondPositionStatus(
   }
 }
 
+function getBondLockupType(type: DbBondLockupType): 'l1' | 'l2' {
+  switch (type) {
+    case DbBondLockupType.L1:
+      return 'l1';
+    case DbBondLockupType.L2:
+      return 'l2';
+  }
+}
+
 export function serializeDbPrincipalBondPosition(
   position: DbPrincipalBondPosition
 ): PrincipalBondPosition {
@@ -144,16 +155,40 @@ export function serializeDbPrincipalBondPosition(
   };
 }
 
-export function serializeDbBondRegistration(entry: DbBondRegistration): BondRegistration {
+export function serializeDbBondRegistrationSummary(
+  entry: DbBondRegistrationSummary
+): BondRegistrationSummary {
   return {
-    bond_index: entry.bond_index,
     signer: entry.signer,
     staker: entry.staker,
-    amount_ustx: entry.amount_ustx,
-    sats_total: entry.sats_total,
-    first_reward_cycle: entry.first_reward_cycle,
-    unlock_burn_height: entry.unlock_burn_height,
-    unlock_cycle: entry.unlock_cycle,
-    is_l1_lock: entry.is_l1_lock,
+    type: getBondLockupType(entry.btc_lockup_type),
+    balances: {
+      btc: entry.sats_total,
+      stx: entry.amount_ustx,
+    },
   };
+}
+
+export function serializeDbBondRegistration(entry: DbBondRegistration): BondRegistration {
+  const summary = serializeDbBondRegistrationSummary(entry);
+  switch (summary.type) {
+    case 'l1':
+      return {
+        ...summary,
+        l1_lockup: {
+          transactions:
+            entry.btc_lockup_txs?.map(tx => ({
+              tx_id: tx.txid,
+              output_index: parseInt(tx.output_index),
+            })) ?? [],
+        },
+      };
+    case 'l2':
+      return {
+        ...summary,
+        l2_lockup: {
+          tx_id: entry.tx_id,
+        },
+      };
+  }
 }

@@ -133,19 +133,18 @@ export const BOND_ALLOWLIST_ENTRY_COLUMNS = [
   'tx_index',
 ];
 
-export const BOND_REGISTRATION_COLUMNS = [
-  'bond_index',
+export const BOND_REGISTRATION_SUMMARY_COLUMNS = [
   'signer',
   'staker',
   'amount_ustx',
   'sats_total',
-  'first_reward_cycle',
-  'unlock_burn_height',
-  'unlock_cycle',
-  'is_l1_lock',
-  'block_height',
-  'microblock_sequence',
-  'tx_index',
+  'btc_lockup_type',
+];
+
+export const BOND_REGISTRATION_COLUMNS = [
+  ...BOND_REGISTRATION_SUMMARY_COLUMNS,
+  'btc_lockup_txs',
+  'tx_id',
 ];
 
 export const PRINCIPAL_BOND_POSITION_COLUMNS = [

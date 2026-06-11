@@ -86,7 +86,6 @@ export const up = (pgm: MigrationBuilder) => {
     },
     early_unlock_admin: {
       type: 'text',
-      notNull: true,
     },
     first_reward_cycle: {
       type: 'integer',

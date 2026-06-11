@@ -1,4 +1,10 @@
-import { DbAssetEventTypeId, DbEventTypeId, DbTxStatus, DbTxTypeId } from '../common.js';
+import {
+  DbAssetEventTypeId,
+  DbBondLockupType,
+  DbEventTypeId,
+  DbTxStatus,
+  DbTxTypeId,
+} from '../common.js';
 
 export type DbCursorPaginatedResult<T> = {
   limit: number;
@@ -150,7 +156,7 @@ export interface DbBondSummary {
 
 export interface DbBond extends DbBondSummary, DbTxLocation {
   early_unlock_bytes: string;
-  early_unlock_admin: string;
+  early_unlock_admin: string | null;
 }
 
 export interface DbBondAllowlistEntry {
@@ -158,16 +164,24 @@ export interface DbBondAllowlistEntry {
   max_sats: string;
 }
 
-export interface DbBondRegistration {
-  bond_index: number;
+export interface DbBondLockupTx {
+  /** Reversed (big-endian) txid as a `0x`-prefixed hex string. */
+  txid: string;
+  /** String-quoted unsigned integer. */
+  output_index: string;
+}
+
+export interface DbBondRegistrationSummary {
   signer: string;
   staker: string;
   amount_ustx: string;
   sats_total: string;
-  first_reward_cycle: number;
-  unlock_burn_height: number;
-  unlock_cycle: number;
-  is_l1_lock: boolean;
+  btc_lockup_type: DbBondLockupType;
+}
+
+export interface DbBondRegistration extends DbBondRegistrationSummary {
+  tx_id: string;
+  btc_lockup_txs: DbBondLockupTx[] | null;
 }
 
 export interface DbPrincipalBondPosition {
