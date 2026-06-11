@@ -90,6 +90,7 @@ import {
   newReOrgUpdatedEntities,
   PgWriteQueue,
   removeNullBytes,
+  poxVersionFromContractName,
 } from './helpers.js';
 import { PgNotifier } from './pg-notifier.js';
 import { MIGRATIONS_DIR, PgStore } from './pg-store.js';
@@ -117,6 +118,8 @@ import {
   Pox5EventName,
   Pox5EventRegisterForBond,
   Pox5EventSetupBond,
+  Pox5EventStake,
+  Pox5EventStakeUpdate,
   Pox5EventUnstakeSbtc,
   Pox5EventUpdateBondRegistration,
 } from '@stacks/codec';
@@ -586,10 +589,10 @@ export class PgWriteStore extends PgStore {
             break;
           case Pox5EventName.Stake:
           case Pox5EventName.StakeUpdate:
-            // TODO: Implement
+            await this.upsertStxLockedBalance(sql, txLocation, poxEvent);
             break;
           case Pox5EventName.Unstake:
-            // TODO: Implement
+            await this.clearStxLockedBalance(sql, poxEvent.data.staker);
             break;
           case Pox5EventName.RegisterSigner:
           case Pox5EventName.AllowContractCaller:
@@ -924,6 +927,178 @@ export class PgWriteStore extends PgStore {
     await sql`
       INSERT INTO bond_reward_calculations ${sql(rewardCalculation)}
     `;
+  }
+
+  /**
+   * Materialize a principal's current STX lock state (latest lock wins). Called
+   * for pox-5 `stake`/`stake-update` events, which carry the absolute locked
+   * amount and unlock height.
+   */
+  /** Low-level upsert of a principal's materialized STX lock (latest lock wins). */
+  private async setStxLockedBalance(
+    sql: PgSqlClient,
+    values: {
+      principal: string;
+      lockedAmount: string;
+      unlockBurnHeight: string | number;
+      poxVersion: number;
+      lockTxId: string;
+      lockBlockHeight: number;
+      burnchainLockHeight: string | number;
+    }
+  ) {
+    const insertValues = {
+      principal: values.principal,
+      locked_amount: values.lockedAmount,
+      unlock_burn_height: values.unlockBurnHeight,
+      pox_version: values.poxVersion,
+      lock_tx_id: values.lockTxId,
+      lock_block_height: values.lockBlockHeight,
+      burnchain_lock_height: values.burnchainLockHeight,
+    };
+    await sql`
+      INSERT INTO stx_locked_balances ${sql(insertValues)}
+      ON CONFLICT (principal) DO UPDATE SET
+        locked_amount = EXCLUDED.locked_amount,
+        unlock_burn_height = EXCLUDED.unlock_burn_height,
+        pox_version = EXCLUDED.pox_version,
+        lock_tx_id = EXCLUDED.lock_tx_id,
+        lock_block_height = EXCLUDED.lock_block_height,
+        burnchain_lock_height = EXCLUDED.burnchain_lock_height
+    `;
+  }
+
+  private async upsertStxLockedBalance(
+    sql: PgSqlClient,
+    txLocation: DbTxLocation,
+    event: Pox5EventStake | Pox5EventStakeUpdate
+  ) {
+    await this.setStxLockedBalance(sql, {
+      principal: event.data.staker,
+      lockedAmount: event.data.amount_ustx,
+      unlockBurnHeight: event.data.unlock_burn_height,
+      poxVersion: 5,
+      lockTxId: txLocation.tx_id,
+      lockBlockHeight: txLocation.block_height,
+      burnchainLockHeight: txLocation.burn_block_height,
+    });
+  }
+
+  /** Clear a principal's materialized STX lock (e.g. on pox-5 `unstake`). */
+  private async clearStxLockedBalance(sql: PgSqlClient, principal: string) {
+    await sql`DELETE FROM stx_locked_balances WHERE principal = ${principal}`;
+  }
+
+  /**
+   * Recompute the materialized `stx_locked_balances` rows for every principal
+   * touched by a block whose canonical flag just flipped during a reorg.
+   *
+   * Locked STX is a SET/latest-wins value (not additive like ft_balances), so a
+   * reorg can't be handled with signed deltas — instead we re-derive each
+   * affected principal's current lock from the latest applicable canonical
+   * lock-changing event across all blocks: pox-1..4 `stx_lock_events` and the
+   * synthetic pox-5 `stake`/`stake-update` (lock) and `unstake` (clear) events.
+   *
+   * Must run AFTER the `stx_lock_events` and `pox5_events` canonical flips for
+   * this block have completed (i.e. after the reorg queue drains), so the
+   * "latest canonical event" reflects the post-flip state. Because the recompute
+   * reads global canonical state, the last-flipped block touching a principal
+   * always produces that principal's final, correct value.
+   */
+  private async recomputeStxLockedBalances(sql: PgSqlClient, indexBlockHash: string) {
+    // Principals whose lock state may have changed in this block.
+    const affectedRows = await sql<{ principal: string }[]>`
+      SELECT locked_address AS principal
+      FROM stx_lock_events
+      WHERE index_block_hash = ${indexBlockHash} AND contract_name <> 'pox-5'
+      UNION
+      SELECT data->>'staker' AS principal
+      FROM pox5_events
+      WHERE index_block_hash = ${indexBlockHash}
+        AND name IN ('stake', 'stake-update', 'unstake')
+    `;
+    const principals = affectedRows.map(r => r.principal);
+    if (principals.length === 0) {
+      return;
+    }
+    // Process affected principals in chunks (same approach as other batched
+    // write paths). For each chunk: drop their current materialized rows, then
+    // re-insert the correct rows (if any) derived from the latest canonical
+    // lock-changing event.
+    for (const batch of batchIterate(principals, INSERT_BATCH_SIZE)) {
+      await sql`
+        DELETE FROM stx_locked_balances
+        WHERE principal IN ${sql(batch)}
+      `;
+      await sql`
+        INSERT INTO stx_locked_balances (
+          principal, locked_amount, unlock_burn_height, pox_version,
+          lock_tx_id, lock_block_height, burnchain_lock_height
+        )
+        SELECT principal, locked_amount, unlock_burn_height, pox_version,
+          lock_tx_id, lock_block_height, burnchain_lock_height
+        FROM (
+          SELECT DISTINCT ON (principal)
+            principal, is_set, locked_amount, unlock_burn_height, pox_version,
+            lock_tx_id, lock_block_height, burnchain_lock_height
+          FROM (
+            -- pox-1..4 lock events (locked_amount = 0 means the lock was cleared)
+            SELECT
+              e.locked_address AS principal,
+              e.block_height, e.microblock_sequence, e.tx_index, e.event_index,
+              (e.locked_amount > 0) AS is_set,
+              e.locked_amount,
+              e.unlock_height AS unlock_burn_height,
+              CASE e.contract_name
+                WHEN 'pox' THEN 1 WHEN 'pox-2' THEN 2 WHEN 'pox-3' THEN 3 WHEN 'pox-4' THEN 4 ELSE 0
+              END AS pox_version,
+              e.tx_id AS lock_tx_id,
+              e.block_height AS lock_block_height,
+              b.burn_block_height AS burnchain_lock_height
+            FROM stx_lock_events e
+            JOIN blocks b ON b.index_block_hash = e.index_block_hash
+            WHERE e.canonical = true AND e.microblock_canonical = true
+              AND e.contract_name <> 'pox-5'
+              AND e.locked_address IN ${sql(batch)}
+            UNION ALL
+            -- pox-5 stake / stake-update (sets the lock)
+            SELECT
+              p.data->>'staker' AS principal,
+              p.block_height, p.microblock_sequence, p.tx_index, p.event_index,
+              true AS is_set,
+              (p.data->>'amount_ustx')::numeric AS locked_amount,
+              (p.data->>'unlock_burn_height')::bigint AS unlock_burn_height,
+              5 AS pox_version,
+              p.tx_id AS lock_tx_id,
+              p.block_height AS lock_block_height,
+              p.burn_block_height AS burnchain_lock_height
+            FROM pox5_events p
+            WHERE p.canonical = true AND p.microblock_canonical = true
+              AND p.name IN ('stake', 'stake-update')
+              AND p.data->>'staker' IN ${sql(batch)}
+            UNION ALL
+            -- pox-5 unstake (clears the lock)
+            SELECT
+              p.data->>'staker' AS principal,
+              p.block_height, p.microblock_sequence, p.tx_index, p.event_index,
+              false AS is_set,
+              0::numeric AS locked_amount,
+              0::bigint AS unlock_burn_height,
+              5 AS pox_version,
+              p.tx_id AS lock_tx_id,
+              p.block_height AS lock_block_height,
+              p.burn_block_height AS burnchain_lock_height
+            FROM pox5_events p
+            WHERE p.canonical = true AND p.microblock_canonical = true
+              AND p.name = 'unstake'
+              AND p.data->>'staker' IN ${sql(batch)}
+          ) candidates
+          ORDER BY principal,
+            block_height DESC, microblock_sequence DESC, tx_index DESC, event_index DESC
+        ) latest
+        WHERE latest.is_set
+      `;
+    }
   }
 
   private async updateBondAllowlistEntry(
@@ -1613,6 +1788,29 @@ export class PgWriteStore extends PgStore {
         INSERT INTO stx_lock_events ${sql(batch)}
       `;
       assert(res.count === batch.length, `Expecting ${batch.length} inserts, got ${res.count}`);
+    }
+
+    // Materialize the locked balance from these lock events. pox-5 locks are
+    // owned by the synthetic stake/stake-update/unstake handlers, so skip them
+    // here to avoid double-writes; pox-1..4 (and any future versions emitting
+    // stx_lock events) are inherited here. Applied in block order so the latest
+    // lock per principal wins.
+    for (const { tx, stxLockEvents } of entries) {
+      for (const event of stxLockEvents) {
+        const poxVersion = poxVersionFromContractName(event.contract_name);
+        if (poxVersion === undefined || poxVersion === 5) {
+          continue;
+        }
+        await this.setStxLockedBalance(sql, {
+          principal: event.locked_address,
+          lockedAmount: event.locked_amount.toString(),
+          unlockBurnHeight: event.unlock_height,
+          poxVersion,
+          lockTxId: event.tx_id,
+          lockBlockHeight: event.block_height,
+          burnchainLockHeight: tx.burn_block_height,
+        });
+      }
     }
   }
 
@@ -4365,6 +4563,11 @@ export class PgWriteStore extends PgStore {
     });
 
     await q.done();
+
+    // Recompute the materialized locked-STX balances for principals touched by
+    // this block. Must run after the queue drains so the `stx_lock_events` and
+    // `pox5_events` canonical flips above are visible to the recompute.
+    await this.recomputeStxLockedBalances(sql, indexBlockHash);
 
     return result;
   }

@@ -77,3 +77,17 @@ export const BondCursorSchema = Type.String({
   description: 'Cursor for paginating bonds. Format: bond_index',
 });
 export type BondCursor = Static<typeof BondCursorSchema>;
+
+export const FtBalanceCursorSchema = Type.String({
+  pattern: '^\\d+:.+$',
+  description:
+    'Cursor for paginating FT balances (sorted by balance, descending). Format: balance:asset_identifier',
+});
+export type FtBalanceCursor = Static<typeof FtBalanceCursorSchema>;
+
+export const NftBalanceCursorSchema = Type.String({
+  pattern: '^0x[0-9a-fA-F]*:.+$',
+  description:
+    'Cursor for paginating NFT balances (sorted by asset identifier then value). Format: value:asset_identifier',
+});
+export type NftBalanceCursor = Static<typeof NftBalanceCursorSchema>;
