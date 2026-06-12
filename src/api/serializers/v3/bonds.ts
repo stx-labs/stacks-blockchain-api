@@ -140,8 +140,14 @@ export function serializeDbPrincipalBondPosition(
         btc: position.btc_locked,
         stx: position.stx_locked,
       },
-      paid_out: {
-        btc: position.btc_paid_out,
+      rewards: {
+        btc: {
+          accrued: position.accrued_rewards,
+          claimed: position.claimed_rewards,
+          claimable: (
+            BigInt(position.accrued_rewards) - BigInt(position.claimed_rewards)
+          ).toString(),
+        },
       },
     },
     enrollment: {
@@ -151,7 +157,6 @@ export function serializeDbPrincipalBondPosition(
       },
     },
     amount: position.stx_locked,
-    accrued_rewards: position.accrued_rewards,
   };
 }
 

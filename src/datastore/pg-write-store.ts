@@ -75,6 +75,7 @@ import {
   DbBondRewardCalculationInsertValues,
   DbBondRewardDistributionInsertValues,
   DbPrincipalBondRewardDistributionInsertValues,
+  DbPrincipalBondRewardClaimInsertValues,
 } from './common.js';
 import {
   BLOCK_COLUMNS,
@@ -115,6 +116,7 @@ import {
   Pox5EventAnnounceL1EarlyExit,
   Pox5EventBondDistribution,
   Pox5EventCalculateRewards,
+  Pox5EventClaimStakerRewardsForSigner,
   Pox5EventName,
   Pox5EventRegisterForBond,
   Pox5EventSetupBond,
@@ -583,9 +585,11 @@ export class PgWriteStore extends PgStore {
           case Pox5EventName.BondDistribution:
             await this.updateBondRewardDistribution(sql, txLocation, poxEvent);
             break;
-          case Pox5EventName.ClaimRewards:
           case Pox5EventName.ClaimStakerRewardsForSigner:
-            // TODO: Implement
+            await this.updatePrincipalBondRewardClaim(sql, txLocation, poxEvent);
+            break;
+          case Pox5EventName.ClaimRewards:
+            // TODO: Implement (per-signer claim aggregate)
             break;
           case Pox5EventName.Stake:
           case Pox5EventName.StakeUpdate:
@@ -903,6 +907,42 @@ export class PgWriteStore extends PgStore {
           AND microblock_canonical = true
       `;
     }
+  }
+
+  /**
+   * Record a per-staker reward claim (pox-5 `claim-staker-rewards-for-signer`)
+   * and, for bond claims, roll the claimed amount into the position's running
+   * `claimed_rewards` total. Claims with a null `bond_index` are STX-staking
+   * reward claims — they only get a source row (no bond position to update).
+   */
+  private async updatePrincipalBondRewardClaim(
+    sql: PgSqlClient,
+    txLocation: DbTxLocation,
+    event: Pox5EventClaimStakerRewardsForSigner
+  ) {
+    const bondIndex = event.data.bond_index === null ? null : parseInt(event.data.bond_index);
+    const claim: DbPrincipalBondRewardClaimInsertValues = {
+      ...txLocation,
+      principal: event.data.staker,
+      signer_manager: event.data.signer_manager,
+      reward_cycle: parseInt(event.data.reward_cycle),
+      bond_index: bondIndex,
+      rewards_claimed: event.data.rewards_claimed,
+    };
+    await sql`
+      INSERT INTO principal_bond_reward_claims ${sql(claim)}
+    `;
+    if (bondIndex === null) {
+      return;
+    }
+    await sql`
+      UPDATE principal_bond_positions
+      SET claimed_rewards = claimed_rewards + ${event.data.rewards_claimed}::numeric
+      WHERE principal = ${event.data.staker}
+        AND bond_index = ${bondIndex}
+        AND canonical = true
+        AND microblock_canonical = true
+    `;
   }
 
   /** Cycle-level reward aggregate, from the pox-5 `calculate-rewards` event. */
@@ -4435,6 +4475,30 @@ export class PgWriteStore extends PgStore {
         )
         UPDATE principal_bond_positions p
         SET accrued_rewards = p.accrued_rewards + c.reward_change
+        FROM changes c
+        WHERE p.principal = c.principal AND p.bond_index = c.bond_index
+      `;
+    });
+    q.enqueue(async () => {
+      // Flip the per-staker reward claim source rows and apply the signed delta
+      // to each position's running claimed_rewards total. STX-staking claims
+      // (NULL bond_index) have no position to update — the flip alone suffices.
+      await sql`
+        WITH updated AS (
+          UPDATE principal_bond_reward_claims
+          SET canonical = ${canonical}
+          WHERE index_block_hash = ${indexBlockHash} AND canonical != ${canonical}
+          RETURNING principal, bond_index, rewards_claimed, canonical
+        ),
+        changes AS (
+          SELECT principal, bond_index,
+            SUM(CASE WHEN canonical THEN rewards_claimed::numeric ELSE -rewards_claimed::numeric END) AS claim_change
+          FROM updated
+          WHERE bond_index IS NOT NULL
+          GROUP BY principal, bond_index
+        )
+        UPDATE principal_bond_positions p
+        SET claimed_rewards = p.claimed_rewards + c.claim_change
         FROM changes c
         WHERE p.principal = c.principal AND p.bond_index = c.bond_index
       `;

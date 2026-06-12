@@ -95,6 +95,15 @@ export function up(pgm: MigrationBuilder): void {
       notNull: true,
       default: 0,
     },
+    // Running sBTC reward sats already claimed against this position, from
+    // pox-5 `claim-staker-rewards-for-signer` events. Claimable rewards are
+    // `accrued_rewards - claimed_rewards`. Maintained incrementally on write
+    // (and via signed deltas on reorg).
+    claimed_rewards: {
+      type: 'numeric',
+      notNull: true,
+      default: 0,
+    },
   });
 
   pgm.createIndex('principal_bond_positions', ['principal', 'bond_index'], {

@@ -1,5 +1,4 @@
 import { Static, Type } from '@sinclair/typebox';
-import { BondBalancesSchema } from './bonds.js';
 import { BondIndexSchema, TransactionIdSchema } from './common.js';
 
 export const PrincipalBondPositionStatusSchema = Type.Union([
@@ -10,13 +9,38 @@ export const PrincipalBondPositionStatusSchema = Type.Union([
 ]);
 export type PrincipalBondPositionStatus = Static<typeof PrincipalBondPositionStatusSchema>;
 
+export const PrincipalBondPositionBalancesSchema = Type.Object({
+  locked: Type.Object({
+    btc: Type.String({
+      description: 'The amount of BTC that is locked up for this position',
+    }),
+    stx: Type.String({
+      description: 'The amount of STX that is locked up for this position',
+    }),
+  }),
+  rewards: Type.Object({
+    btc: Type.Object({
+      accrued: Type.String({
+        description: 'The lifetime sBTC reward sats accrued to this position',
+      }),
+      claimed: Type.String({
+        description: 'The lifetime sBTC reward sats already claimed against this position',
+      }),
+      claimable: Type.String({
+        description: 'The sBTC reward sats currently claimable (accrued minus claimed)',
+      }),
+    }),
+  }),
+});
+export type PrincipalBondPositionBalances = Static<typeof PrincipalBondPositionBalancesSchema>;
+
 export const PrincipalBondPositionSchema = Type.Object({
   bond_index: BondIndexSchema,
   status: PrincipalBondPositionStatusSchema,
   active: Type.Boolean({
     description: 'Whether the position is active',
   }),
-  balances: BondBalancesSchema,
+  balances: PrincipalBondPositionBalancesSchema,
   enrollment: Type.Object({
     tx_id: TransactionIdSchema,
     btc_lockup: Type.Object({
@@ -27,9 +51,6 @@ export const PrincipalBondPositionSchema = Type.Object({
   }),
   amount: Type.String({
     description: 'The amount of STX that is locked up for this principal',
-  }),
-  accrued_rewards: Type.String({
-    description: "The sBTC reward sats accrued to this participant's position",
   }),
 });
 export type PrincipalBondPosition = Static<typeof PrincipalBondPositionSchema>;

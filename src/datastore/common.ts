@@ -1727,6 +1727,20 @@ export interface DbPrincipalBondRewardDistributionInsertValues extends DbTxLocat
   reward_amount: string;
 }
 
+/**
+ * Per-staker reward claim source row, from the pox-5
+ * `claim-staker-rewards-for-signer` event. Claims with a `bond_index` back the
+ * running `principal_bond_positions.claimed_rewards` total under reorgs; claims
+ * with a null `bond_index` are STX-staking reward claims.
+ */
+export interface DbPrincipalBondRewardClaimInsertValues extends DbTxLocation {
+  principal: string;
+  signer_manager: string;
+  reward_cycle: number;
+  bond_index: number | null;
+  rewards_claimed: string;
+}
+
 /** Per-bond reward distribution, from the pox-5 `bond-distribution` event. */
 export interface DbBondRewardDistributionInsertValues extends DbTxLocation {
   bond_index: number;

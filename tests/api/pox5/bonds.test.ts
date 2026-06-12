@@ -95,10 +95,12 @@ interface PrincipalBondPositionItem {
   bond_index: number;
   status: string;
   active: boolean;
-  balances: { locked: { btc: string; stx: string }; paid_out: { btc: string } };
+  balances: {
+    locked: { btc: string; stx: string };
+    rewards: { btc: { accrued: string; claimed: string; claimable: string } };
+  };
   enrollment: { tx_id: string; btc_lockup: { amount: string } };
   amount: string;
-  accrued_rewards: string;
 }
 
 const normalizeTxId = (txid: string) => txid.replace(/^0x/, '').toLowerCase();
@@ -313,7 +315,7 @@ describe('pox-5 bonds (simulated ingestion)', () => {
     // locked STX = registered amount_ustx; locked BTC = registered sats_total.
     assert.equal(BigInt(pos.balances.locked.stx), AMOUNT_USTX);
     assert.equal(BigInt(pos.balances.locked.btc), SBTC_SATS);
-    assert.equal(BigInt(pos.balances.paid_out.btc), 0n);
+    assert.equal(BigInt(pos.balances.rewards.btc.accrued), 0n);
     assert.equal(BigInt(pos.amount), AMOUNT_USTX);
     assert.equal(BigInt(pos.enrollment.btc_lockup.amount), SBTC_SATS);
     // The position links back to the register-for-bond transaction.
@@ -903,13 +905,22 @@ describe('pox-5 bonds reward accrual', () => {
     assert.equal(res.status, 200, `GET ${path} -> ${res.status}: ${res.text}`);
     return JSON.parse(res.text) as T;
   }
-  async function accruedFor(principal: string): Promise<bigint> {
+  async function rewardsFor(
+    principal: string
+  ): Promise<{ accrued: bigint; claimed: bigint; claimable: bigint }> {
     const positions = await getJson<PrincipalBondPositionItem[]>(
       `/extended/v3/principals/${principal}/balances/staking`
     );
     const pos = positions.find(p => p.bond_index === BOND_INDEX);
     assert.ok(pos, `position for ${principal}`);
-    return BigInt(pos.accrued_rewards);
+    return {
+      accrued: BigInt(pos.balances.rewards.btc.accrued),
+      claimed: BigInt(pos.balances.rewards.btc.claimed),
+      claimable: BigInt(pos.balances.rewards.btc.claimable),
+    };
+  }
+  async function accruedFor(principal: string): Promise<bigint> {
+    return (await rewardsFor(principal)).accrued;
   }
   function registerEvent(staker: string, sats: bigint) {
     return {
@@ -1036,5 +1047,129 @@ describe('pox-5 bonds reward accrual', () => {
 
     assert.equal(await accruedFor(ALICE), 0n, 'alice accrual reverted');
     assert.equal(await accruedFor(BOB), 0n, 'bob accrual reverted');
+  });
+
+  const CLAIM_TX_ID = '0x' + 'c1'.repeat(32);
+  const ALICE_CLAIM = 1_500n;
+  function claimBlock(args: {
+    block_height: number;
+    block_hash: string;
+    index_block_hash: string;
+    parent_block_hash: string;
+    parent_index_block_hash: string;
+  }) {
+    return new TestBlockBuilder(args)
+      .addTx({ tx_id: CLAIM_TX_ID })
+      .addTxPox5Event({
+        name: Pox5EventName.ClaimStakerRewardsForSigner,
+        data: {
+          signer_manager: SIGNER,
+          staker: ALICE,
+          reward_cycle: String(FIRST_REWARD_CYCLE),
+          bond_index: String(BOND_INDEX),
+          rewards_claimed: ALICE_CLAIM.toString(),
+        },
+      })
+      .addTxPox5Event({
+        // An STX-staking claim (no bond) for bob: recorded as a claim row but
+        // must NOT touch his bond position.
+        name: Pox5EventName.ClaimStakerRewardsForSigner,
+        data: {
+          signer_manager: SIGNER,
+          staker: BOB,
+          reward_cycle: String(FIRST_REWARD_CYCLE),
+          bond_index: null,
+          rewards_claimed: '999',
+        },
+      })
+      .build();
+  }
+
+  test('a claim rolls into the position claimed total and reduces claimable', async () => {
+    await db.update(
+      distributionBlock({
+        block_height: 2,
+        block_hash: '0x02',
+        index_block_hash: '0x02',
+        parent_block_hash: '0x01',
+        parent_index_block_hash: '0x01',
+      })
+    );
+    await db.update(
+      claimBlock({
+        block_height: 3,
+        block_hash: '0x03',
+        index_block_hash: '0x03',
+        parent_block_hash: '0x02',
+        parent_index_block_hash: '0x02',
+      })
+    );
+
+    const alice = await rewardsFor(ALICE);
+    assert.equal(alice.accrued, ALICE_EXPECTED, 'accrued untouched by the claim');
+    assert.equal(alice.claimed, ALICE_CLAIM);
+    assert.equal(alice.claimable, ALICE_EXPECTED - ALICE_CLAIM);
+
+    // Bob's claim was an STX-staking claim (null bond_index): his bond position
+    // is unaffected, but the claim row exists.
+    const bob = await rewardsFor(BOB);
+    assert.equal(bob.accrued, BOB_EXPECTED);
+    assert.equal(bob.claimed, 0n);
+    assert.equal(bob.claimable, BOB_EXPECTED);
+    const bobClaims = await db.sql<{ bond_index: number | null; rewards_claimed: string }[]>`
+      SELECT bond_index, rewards_claimed FROM principal_bond_reward_claims
+      WHERE principal = ${BOB} AND canonical = true
+    `;
+    assert.equal(bobClaims.length, 1);
+    assert.equal(bobClaims[0].bond_index, null);
+    assert.equal(bobClaims[0].rewards_claimed, '999');
+  });
+
+  test('orphaning the claim block reverts the claimed total', async () => {
+    await db.update(
+      distributionBlock({
+        block_height: 2,
+        block_hash: '0x02',
+        index_block_hash: '0x02',
+        parent_block_hash: '0x01',
+        parent_index_block_hash: '0x01',
+      })
+    );
+    await db.update(
+      claimBlock({
+        block_height: 3,
+        block_hash: '0x03',
+        index_block_hash: '0x03',
+        parent_block_hash: '0x02',
+        parent_index_block_hash: '0x02',
+      })
+    );
+    assert.equal((await rewardsFor(ALICE)).claimed, ALICE_CLAIM);
+
+    // Fork B branches from the distribution block and overtakes, orphaning ONLY
+    // the claim block — accrual survives, the claim reverts.
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 3,
+        block_hash: '0xb3',
+        index_block_hash: '0xb3',
+        parent_block_hash: '0x02',
+        parent_index_block_hash: '0x02',
+      }).build()
+    );
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 4,
+        block_hash: '0xb4',
+        index_block_hash: '0xb4',
+        parent_block_hash: '0xb3',
+        parent_index_block_hash: '0xb3',
+      }).build()
+    );
+
+    const alice = await rewardsFor(ALICE);
+    assert.equal(alice.accrued, ALICE_EXPECTED, 'accrual survives the claim reorg');
+    assert.equal(alice.claimed, 0n, 'claim reverted');
+    assert.equal(alice.claimable, ALICE_EXPECTED);
   });
 });
