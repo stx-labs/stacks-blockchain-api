@@ -211,6 +211,23 @@ const schema = Type.Object({
   /** Enable the STX faucet endpoints on Stacks testnet. */
   TESTNET_STX_FAUCET_ENABLED: Type.Boolean({ default: true }),
   /**
+   * Enable the sBTC faucet endpoints on Stacks testnet. Requires the first key in
+   * `FAUCET_PRIVATE_KEY` to hold a balance of the token configured in
+   * `TESTNET_SBTC_FAUCET_ASSET_IDENTIFIER`.
+   */
+  TESTNET_SBTC_FAUCET_ENABLED: Type.Boolean({ default: false }),
+  /**
+   * Fully qualified asset identifier for the testnet sBTC SIP-010 token which the sBTC faucet
+   * will send via its `transfer` function, in the form
+   * `{contract_address}.{contract_name}::{asset_name}`.
+   */
+  TESTNET_SBTC_FAUCET_ASSET_IDENTIFIER: Type.String({
+    default: 'ST1F7QA2MDF17S807EPA36TSS8AMEFY4KA9TVGWXT.sbtc-token::sbtc-token',
+    pattern: '^[A-Z0-9]+\\.[a-zA-Z]([a-zA-Z0-9]|[-_])*::[a-zA-Z]([a-zA-Z0-9]|[-_])*$',
+  }),
+  /** Amount of sBTC (in satoshis) sent per sBTC faucet request. */
+  TESTNET_SBTC_FAUCET_AMOUNT: Type.Integer({ default: 10_000, minimum: 1 }),
+  /**
    * A comma-separated list of STX private keys which will send faucet transactions to accounts that
    * request them. Attempts will always be made from the first account, only once transaction
    * chaining gets too long the faucet will start using the next one.

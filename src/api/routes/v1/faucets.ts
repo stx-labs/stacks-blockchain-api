@@ -2,12 +2,19 @@ import * as btc from 'bitcoinjs-lib';
 import PQueue from 'p-queue';
 import { BigNumber } from 'bignumber.js';
 import {
+  ContractIdString,
   getAddressFromPrivateKey,
+  makeContractCall,
   makeSTXTokenTransfer,
+  noneCV,
+  Pc,
+  principalCV,
   privateKeyToPublic,
   publicKeyToHex,
+  SignedContractCallOptions,
   SignedTokenTransferOptions,
   StacksTransactionWire,
+  uintCV,
 } from '@stacks/transactions';
 import type { StacksNetwork } from '@stacks/network';
 import {
@@ -105,6 +112,16 @@ export const FaucetRoutes: FastifyPluginAsync<
     if (!ENV.TESTNET_STX_FAUCET_ENABLED) {
       return reply.status(403).send({
         error: 'STX faucet is not enabled',
+        success: false,
+      });
+    }
+    done();
+  };
+
+  const sbtcFaucetEnabledMiddleware: preHandlerHookHandler = (_req, reply, done) => {
+    if (!ENV.TESTNET_SBTC_FAUCET_ENABLED) {
+      return reply.status(403).send({
+        error: 'sBTC faucet is not enabled',
         success: false,
       });
     }
@@ -535,6 +552,161 @@ export const FaucetRoutes: FastifyPluginAsync<
           success: true,
           txId: sendSuccess.txId,
           txRaw: sendSuccess.txRaw,
+        });
+      });
+    }
+  );
+
+  const sbtcFaucetRequestQueue = new PQueue({ concurrency: 1 });
+
+  async function buildSBTCFaucetTx(
+    recipient: string,
+    amount: bigint,
+    network: StacksNetwork,
+    senderKey: string,
+    nonce: bigint,
+    fee?: bigint
+  ): Promise<StacksTransactionWire> {
+    const [contractId, assetName] = ENV.TESTNET_SBTC_FAUCET_ASSET_IDENTIFIER.split('::') as [
+      ContractIdString,
+      string,
+    ];
+    const [contractAddress, contractName] = contractId.split('.');
+    const senderAddress = getAddressFromPrivateKey(senderKey, 'testnet');
+    try {
+      const options: SignedContractCallOptions = {
+        contractAddress,
+        contractName,
+        functionName: 'transfer',
+        functionArgs: [
+          uintCV(amount),
+          principalCV(senderAddress),
+          principalCV(recipient),
+          noneCV(),
+        ],
+        senderKey,
+        network,
+        nonce,
+        postConditions: [Pc.principal(senderAddress).willSendEq(amount).ft(contractId, assetName)],
+      };
+      if (fee) options.fee = fee;
+
+      // Detect possible custom network chain ID
+      network.chainId = await fetchNetworkChainID(network);
+
+      return await makeContractCall(options);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      if (
+        fee === undefined &&
+        (error as Error).message &&
+        /estimating transaction fee|NoEstimateAvailable/.test(error.message)
+      ) {
+        return await buildSBTCFaucetTx(recipient, amount, network, senderKey, nonce, 1000n);
+      }
+      throw error;
+    }
+  }
+
+  fastify.post(
+    '/sbtc',
+    {
+      preHandler: sbtcFaucetEnabledMiddleware,
+      schema: {
+        operationId: 'run_faucet_sbtc',
+        summary: 'Get sBTC testnet tokens',
+        description: `Add sBTC tokens to the specified testnet address. The endpoint performs a SIP-010 \`transfer\`
+        contract call on the configured testnet sBTC token contract. Testnet STX addresses begin with \`ST\`.
+
+        The endpoint returns the transaction ID, which you can use to view the transaction in the
+        [Stacks Explorer](https://explorer.hiro.so/?chain=testnet). The tokens are delivered once the transaction has
+        been included in a block.
+
+        **Note:** This is a testnet only endpoint. This endpoint will not work on mainnet.`,
+        tags: ['Faucets'],
+        querystring: Type.Object({
+          address: Type.Optional(
+            Type.String({
+              description: 'A valid testnet STX address',
+              examples: ['ST3M7N9Q9HDRM7RVP1Q26P0EE69358PZZAZD7KMXQ'],
+            })
+          ),
+        }),
+        response: {
+          200: RunFaucetResponseSchema,
+          '4xx': Type.Object({
+            success: Type.Literal(false, {
+              description: 'Indicates if the faucet call was successful',
+            }),
+            error: Type.String({ description: 'Error message' }),
+          }),
+        },
+      },
+    },
+    async (req, reply) => {
+      const recipientAddress = req.query.address;
+      if (!recipientAddress) {
+        return await reply.status(400).send({
+          error: 'address required',
+          success: false,
+        });
+      }
+
+      await sbtcFaucetRequestQueue.add(async () => {
+        // Guard condition: requests are limited to x times per y minutes.
+        // Only based on address for now, but we're keeping the IP in case
+        // we want to escalate and implement a per IP policy
+        const forwardedFor = req.headers['x-forwarded-for'];
+        const ip =
+          (Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor?.split(',')[0])?.trim() ??
+          req.ip;
+        const now = Date.now();
+
+        if (isProdEnv) {
+          const lastRequests = await fastify.db.getSBTCFaucetRequests(recipientAddress);
+          const requestsInWindow = lastRequests.results
+            .map(r => now - r.occurred_at)
+            .filter(r => r <= FAUCET_DEFAULT_WINDOW);
+          if (requestsInWindow.length >= FAUCET_DEFAULT_TRIGGER_COUNT) {
+            logger.warn(`SbtcFaucet rate limit hit for address ${recipientAddress}`);
+            return await reply.status(429).send({
+              error: 'Too many requests',
+              success: false,
+            });
+          }
+        }
+
+        const senderKey = STX_FAUCET_KEYS[0];
+        const senderAddress = getAddressFromPrivateKey(senderKey, 'testnet');
+        const sbtcAmount = BigInt(ENV.TESTNET_SBTC_FAUCET_AMOUNT);
+        const network = STX_FAUCET_NETWORK();
+        const rpcClient = clientFromNetwork(network);
+
+        logger.debug(`SbtcFaucet attempting faucet transaction from sender: ${senderAddress}`);
+        const nonces = await fastify.db.getAddressNonces({ stxAddress: senderAddress });
+        const tx = await buildSBTCFaucetTx(
+          recipientAddress,
+          sbtcAmount,
+          network,
+          senderKey,
+          BigInt(nonces.possibleNextNonce)
+        );
+        const rawTxHex = tx.serialize();
+        const res = await rpcClient.sendTransaction(Buffer.from(rawTxHex, 'hex'));
+        logger.info(
+          `SbtcFaucet success. Sent ${sbtcAmount} sBTC sats from ${senderAddress} to ${recipientAddress} (txId: ${res.txId}).`
+        );
+
+        await fastify.writeDb?.insertFaucetRequest({
+          ip: `${ip}`,
+          address: recipientAddress,
+          currency: DbFaucetRequestCurrency.SBTC,
+          occurred_at: now,
+        });
+        await reply.send({
+          success: true,
+          txId: res.txId,
+          txRaw: rawTxHex,
         });
       });
     }
