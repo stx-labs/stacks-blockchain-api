@@ -75,6 +75,7 @@ jobs:
             api:pox5,
             # krypton:bns-e2e,
             # krypton:faucet-btc,
+            # krypton:faucet-sbtc,
             # krypton:faucet-stx,
             # krypton:pox-4-btc-address-formats,
             # krypton:pox-4-burnchain-delegate-stx,
