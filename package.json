@@ -27,6 +27,7 @@
     "test:snp": "NODE_ENV=test node --import tsx --test --test-global-setup=./tests/snp/setup.ts --test-concurrency=1 ./tests/snp/**/*.test.ts",
     "test:krypton:bns-e2e": "NODE_ENV=test node --import tsx --test --test-global-setup=./tests/krypton/setup.ts --test-concurrency=1 ./tests/krypton/bns-e2e/**/*.test.ts",
     "test:krypton:faucet-btc": "NODE_ENV=test node --import tsx --test --test-global-setup=./tests/krypton/setup.ts --test-concurrency=1 ./tests/krypton/faucet-btc/**/*.test.ts",
+    "test:krypton:faucet-sbtc": "NODE_ENV=test node --import tsx --test --test-global-setup=./tests/krypton/setup.ts --test-concurrency=1 ./tests/krypton/faucet-sbtc/**/*.test.ts",
     "test:krypton:faucet-stx": "NODE_ENV=test node --import tsx --test --test-global-setup=./tests/krypton/setup.ts --test-concurrency=1 ./tests/krypton/faucet-stx/**/*.test.ts",
     "test:krypton:pox-4-btc-address-formats": "NODE_ENV=test node --import tsx --test --test-global-setup=./tests/krypton/setup.ts --test-concurrency=1 ./tests/krypton/pox-4-btc-address-formats/**/*.test.ts",
     "test:krypton:pox-4-burnchain-delegate-stx": "NODE_ENV=test node --import tsx --test --test-global-setup=./tests/krypton/setup.ts --test-concurrency=1 ./tests/krypton/pox-4-burnchain-delegate-stx/**/*.test.ts",

@@ -362,6 +362,7 @@ export interface DbSmartContract {
 export enum DbFaucetRequestCurrency {
   BTC = 'btc',
   STX = 'stx',
+  SBTC = 'sbtc',
 }
 
 export interface DbFaucetRequest {

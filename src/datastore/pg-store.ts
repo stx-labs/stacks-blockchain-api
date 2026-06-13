@@ -3336,6 +3336,18 @@ export class PgStore extends BasePgStore {
     return { results };
   }
 
+  async getSBTCFaucetRequests(address: string) {
+    const queryResult = await this.sql<FaucetRequestQueryResult[]>`
+      SELECT ip, address, currency, occurred_at
+      FROM faucet_requests
+      WHERE address = ${address} AND currency = 'sbtc'
+      ORDER BY occurred_at DESC
+      LIMIT 5
+    `;
+    const results = queryResult.map(r => parseFaucetRequestQueryResult(r));
+    return { results };
+  }
+
   async getRawTx(txId: string) {
     // Note the extra "limit 1" statements are only query hints
     const result = await this.sql<RawTxQueryResult[]>`
