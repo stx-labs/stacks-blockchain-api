@@ -35,6 +35,7 @@ import {
   decodeClarityValueList,
   decodeClarityValueToRepr,
   decodePostConditions,
+  memoToString,
 } from '@stacks/codec';
 import { serializePostCondition } from './post-conditions.js';
 import { serializeDbMempoolTransaction } from './mempool-transactions.js';
@@ -131,14 +132,15 @@ export function serializeDbTransactionSummary(summary: DbTransactionSummary): Tr
           memo: summary.token_transfer_memo
             ? {
                 hex: summary.token_transfer_memo,
-                repr: decodeClarityValueToRepr(summary.token_transfer_memo),
+                repr: memoToString(summary.token_transfer_memo),
               }
             : null,
         },
       };
       return tokenTransfer;
     }
-    case DbTxTypeId.SmartContract: {
+    case DbTxTypeId.SmartContract:
+    case DbTxTypeId.VersionedSmartContract: {
       const smartContract: SmartContractTransactionSummary = {
         ...result,
         type: 'smart_contract',
@@ -167,7 +169,9 @@ export function serializeDbTransactionSummary(summary: DbTransactionSummary): Tr
       };
       return poisonMicroblock;
     }
-    case DbTxTypeId.Coinbase: {
+    case DbTxTypeId.Coinbase:
+    case DbTxTypeId.CoinbaseToAltRecipient:
+    case DbTxTypeId.NakamotoCoinbase: {
       const coinbase: CoinbaseTransactionSummary = {
         ...result,
         type: 'coinbase',
@@ -268,12 +272,18 @@ export function serializeDbTransaction(
         token_transfer: {
           recipient: transaction.token_transfer_recipient_address!,
           amount: transaction.token_transfer_amount!,
-          memo: transaction.token_transfer_memo,
+          memo: transaction.token_transfer_memo
+            ? {
+                hex: transaction.token_transfer_memo,
+                repr: memoToString(transaction.token_transfer_memo),
+              }
+            : null,
         },
       };
       return tokenTransfer;
     }
-    case DbTxTypeId.SmartContract: {
+    case DbTxTypeId.SmartContract:
+    case DbTxTypeId.VersionedSmartContract: {
       const smartContract: SmartContractTransaction = {
         ...result,
         type: 'smart_contract',
@@ -312,7 +322,9 @@ export function serializeDbTransaction(
       };
       return poisonMicroblock;
     }
-    case DbTxTypeId.Coinbase: {
+    case DbTxTypeId.Coinbase:
+    case DbTxTypeId.CoinbaseToAltRecipient:
+    case DbTxTypeId.NakamotoCoinbase: {
       const coinbase: CoinbaseTransaction = {
         ...result,
         type: 'coinbase',

@@ -23,7 +23,7 @@ import {
 } from '../../schemas/v3/entities/mempool-transactions.js';
 import { TransactionIncludeField } from '../../schemas/v3/entities/transactions.js';
 import { serializePostCondition } from './post-conditions.js';
-import { decodeClarityValueList, decodePostConditions } from '@stacks/codec';
+import { decodeClarityValueList, decodePostConditions, memoToString } from '@stacks/codec';
 
 /**
  * Parses a database mempool transaction summary status into a mempool transaction summary status.
@@ -83,12 +83,18 @@ export function serializeDbMempoolTransactionSummary(
         token_transfer: {
           recipient: summary.token_transfer_recipient_address!,
           amount: summary.token_transfer_amount!,
-          memo: summary.token_transfer_memo,
+          memo: summary.token_transfer_memo
+            ? {
+                hex: summary.token_transfer_memo,
+                repr: memoToString(summary.token_transfer_memo),
+              }
+            : null,
         },
       };
       return tokenTransfer;
     }
-    case DbTxTypeId.SmartContract: {
+    case DbTxTypeId.SmartContract:
+    case DbTxTypeId.VersionedSmartContract: {
       const smartContract: SmartContractMempoolTransactionSummary = {
         ...result,
         type: 'smart_contract',
@@ -117,7 +123,9 @@ export function serializeDbMempoolTransactionSummary(
       };
       return poisonMicroblock;
     }
-    case DbTxTypeId.Coinbase: {
+    case DbTxTypeId.Coinbase:
+    case DbTxTypeId.CoinbaseToAltRecipient:
+    case DbTxTypeId.NakamotoCoinbase: {
       const coinbase: CoinbaseMempoolTransactionSummary = {
         ...result,
         type: 'coinbase',
@@ -166,12 +174,18 @@ export function serializeDbMempoolTransaction(
         token_transfer: {
           recipient: transaction.token_transfer_recipient_address!,
           amount: transaction.token_transfer_amount!,
-          memo: transaction.token_transfer_memo,
+          memo: transaction.token_transfer_memo
+            ? {
+                hex: transaction.token_transfer_memo,
+                repr: memoToString(transaction.token_transfer_memo),
+              }
+            : null,
         },
       };
       return tokenTransfer;
     }
-    case DbTxTypeId.SmartContract: {
+    case DbTxTypeId.SmartContract:
+    case DbTxTypeId.VersionedSmartContract: {
       const smartContract: SmartContractMempoolTransaction = {
         ...result,
         type: 'smart_contract',
@@ -210,7 +224,9 @@ export function serializeDbMempoolTransaction(
       };
       return poisonMicroblock;
     }
-    case DbTxTypeId.Coinbase: {
+    case DbTxTypeId.Coinbase:
+    case DbTxTypeId.CoinbaseToAltRecipient:
+    case DbTxTypeId.NakamotoCoinbase: {
       const coinbase: CoinbaseMempoolTransaction = {
         ...result,
         type: 'coinbase',
