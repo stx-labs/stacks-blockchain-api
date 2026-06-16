@@ -1755,6 +1755,21 @@ export interface DbPrincipalStxRewardDistributionInsertValues extends DbTxLocati
   reward_amount: string;
 }
 
+/**
+ * Per-signer reward claim aggregate, from a pox-5 `claim-rewards` event. Pure
+ * bookkeeping/audit data (no running totals are derived from it).
+ */
+export interface DbSignerRewardClaimInsertValues extends DbTxLocation {
+  signer_manager: string;
+  reward_cycle: number;
+  stx_earned: string;
+  stx_rewards_per_token: string;
+  /** JSON-encoded array of `{ bond_index, earned, rewards_per_token }`. */
+  bond_rewards: string;
+  bond_totals: string;
+  total_rewards: string;
+}
+
 /** Per-bond reward distribution, from the pox-5 `bond-distribution` event. */
 export interface DbBondRewardDistributionInsertValues extends DbTxLocation {
   bond_index: number;

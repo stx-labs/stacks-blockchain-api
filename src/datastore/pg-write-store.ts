@@ -77,6 +77,7 @@ import {
   DbPrincipalBondRewardDistributionInsertValues,
   DbPrincipalBondRewardClaimInsertValues,
   DbPrincipalStxRewardDistributionInsertValues,
+  DbSignerRewardClaimInsertValues,
 } from './common.js';
 import {
   BLOCK_COLUMNS,
@@ -117,6 +118,7 @@ import {
   Pox5EventAnnounceL1EarlyExit,
   Pox5EventBondDistribution,
   Pox5EventCalculateRewards,
+  Pox5EventClaimRewards,
   Pox5EventClaimStakerRewardsForSigner,
   Pox5EventName,
   Pox5EventRegisterForBond,
@@ -590,7 +592,7 @@ export class PgWriteStore extends PgStore {
             await this.updatePrincipalBondRewardClaim(sql, txLocation, poxEvent);
             break;
           case Pox5EventName.ClaimRewards:
-            // TODO: Implement (per-signer claim aggregate)
+            await this.updateSignerRewardClaim(sql, txLocation, poxEvent);
             break;
           case Pox5EventName.Stake:
           case Pox5EventName.StakeUpdate:
@@ -951,6 +953,31 @@ export class PgWriteStore extends PgStore {
         AND bond_index = ${bondIndex}
         AND canonical = true
         AND microblock_canonical = true
+    `;
+  }
+
+  /**
+   * Record a per-signer reward claim aggregate (pox-5 `claim-rewards`). This is
+   * audit/bookkeeping only — the per-staker effects are handled by the
+   * `claim-staker-rewards-for-signer` events — so no running totals are touched.
+   */
+  private async updateSignerRewardClaim(
+    sql: PgSqlClient,
+    txLocation: DbTxLocation,
+    event: Pox5EventClaimRewards
+  ) {
+    const claim: DbSignerRewardClaimInsertValues = {
+      ...txLocation,
+      signer_manager: event.data.signer_manager,
+      reward_cycle: parseInt(event.data.reward_cycle),
+      stx_earned: event.data.stx_rewards.earned,
+      stx_rewards_per_token: event.data.stx_rewards.rewards_per_token,
+      bond_rewards: JSON.stringify(event.data.bond_rewards),
+      bond_totals: event.data.bond_totals,
+      total_rewards: event.data.total_rewards,
+    };
+    await sql`
+      INSERT INTO signer_reward_claims ${sql(claim)}
     `;
   }
 
@@ -4421,6 +4448,7 @@ export class PgWriteStore extends PgStore {
       'bonds',
       'bond_reward_distributions',
       'bond_reward_calculations',
+      'signer_reward_claims',
     ]) {
       q.enqueue(async () => {
         await sql`

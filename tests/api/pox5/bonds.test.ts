@@ -1387,3 +1387,129 @@ describe('pox-5 STX-staking reward accrual', () => {
     assert.equal(alice.claimable, 0n);
   });
 });
+
+/**
+ * Per-signer reward claim aggregate (pox-5 `claim-rewards`): recorded as
+ * audit/bookkeeping in `signer_reward_claims` with no running-total math; reorgs
+ * only flip its canonical flag.
+ */
+describe('pox-5 signer reward claims', () => {
+  let db: PgWriteStore;
+  let api: ApiServer;
+
+  const CLAIM_TX_ID = '0x' + 'f1'.repeat(32);
+  const REWARD_CYCLE = 8;
+
+  const claimData = {
+    signer_manager: SIGNER,
+    reward_cycle: String(REWARD_CYCLE),
+    stx_rewards: { earned: '2000', rewards_per_token: '100' },
+    bond_rewards: [
+      { bond_index: '0', earned: '8000', rewards_per_token: '200' },
+      { bond_index: '1', earned: '5000', rewards_per_token: '150' },
+    ],
+    bond_totals: '13000',
+    total_rewards: '15000',
+  };
+
+  async function claimRow() {
+    const rows = await db.sql<
+      {
+        signer_manager: string;
+        reward_cycle: number;
+        stx_earned: string;
+        stx_rewards_per_token: string;
+        bond_rewards: string;
+        bond_totals: string;
+        total_rewards: string;
+        canonical: boolean;
+      }[]
+    >`
+      SELECT signer_manager, reward_cycle, stx_earned, stx_rewards_per_token,
+        bond_rewards, bond_totals, total_rewards, canonical
+      FROM signer_reward_claims
+      WHERE signer_manager = ${SIGNER} AND reward_cycle = ${REWARD_CYCLE}
+    `;
+    return rows[0];
+  }
+
+  beforeEach(async () => {
+    await migrate('up');
+    db = await PgWriteStore.connect({ usageName: 'tests', withNotifier: false, skipMigrations: true });
+    api = await startApiServer({ datastore: db, chainId: STACKS_TESTNET.chainId });
+    await db.update(
+      new TestBlockBuilder({ block_height: 1, block_hash: '0x01', index_block_hash: '0x01' }).build()
+    );
+  });
+
+  afterEach(async () => {
+    await api.terminate();
+    await db?.close();
+    await migrate('down');
+  });
+
+  test('a claim-rewards event is recorded as a signer claim aggregate', async () => {
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 2,
+        block_hash: '0x02',
+        index_block_hash: '0x02',
+        parent_block_hash: '0x01',
+        parent_index_block_hash: '0x01',
+      })
+        .addTx({ tx_id: CLAIM_TX_ID })
+        .addTxPox5Event({ name: Pox5EventName.ClaimRewards, data: claimData })
+        .build()
+    );
+
+    const row = await claimRow();
+    assert.ok(row, 'signer claim recorded');
+    assert.equal(row.signer_manager, SIGNER);
+    assert.equal(BigInt(row.stx_earned), 2000n);
+    assert.equal(BigInt(row.stx_rewards_per_token), 100n);
+    assert.equal(BigInt(row.bond_totals), 13000n);
+    assert.equal(BigInt(row.total_rewards), 15000n);
+    // The per-bond breakdown round-trips through the jsonb column (stored as
+    // JSON text, like `bond_registrations.btc_lockup_txs`).
+    assert.deepEqual(JSON.parse(row.bond_rewards), claimData.bond_rewards);
+    assert.equal(row.canonical, true);
+  });
+
+  test('orphaning the claim block flips the signer claim non-canonical', async () => {
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 2,
+        block_hash: '0x02',
+        index_block_hash: '0x02',
+        parent_block_hash: '0x01',
+        parent_index_block_hash: '0x01',
+      })
+        .addTx({ tx_id: CLAIM_TX_ID })
+        .addTxPox5Event({ name: Pox5EventName.ClaimRewards, data: claimData })
+        .build()
+    );
+    assert.equal((await claimRow()).canonical, true);
+
+    // Fork B branches from genesis and overtakes, orphaning the claim block.
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 2,
+        block_hash: '0xb2',
+        index_block_hash: '0xb2',
+        parent_block_hash: '0x01',
+        parent_index_block_hash: '0x01',
+      }).build()
+    );
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 3,
+        block_hash: '0xb3',
+        index_block_hash: '0xb3',
+        parent_block_hash: '0xb2',
+        parent_index_block_hash: '0xb2',
+      }).build()
+    );
+
+    assert.equal((await claimRow()).canonical, false, 'signer claim flipped non-canonical');
+  });
+});
