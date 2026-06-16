@@ -1228,7 +1228,9 @@ describe('pox-5 STX-staking reward accrual', () => {
       amount_ustx: ustx.toString(),
       num_cycles: '2',
       first_reward_cycle: String(STX_CYCLE),
-      unlock_burn_height: '500',
+      // Above the TestBlockBuilder default burn height (713000) so the lock is
+      // still active at the chain tip and resolves as locked (not expired).
+      unlock_burn_height: '1000000',
       unlock_cycle: '20',
     };
   }
@@ -1308,6 +1310,31 @@ describe('pox-5 STX-staking reward accrual', () => {
       `/extended/v3/principals/${ALICE}/balances/staking`
     );
     assert.equal(staking.bonds.length, 0, 'STX staking has no bond positions');
+  });
+
+  test('an expired pox-5 lock resolves to zero locked STX', async () => {
+    const CAROL = 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5';
+    // Stake with an unlock height below the chain-tip burn height (the
+    // TestBlockBuilder default, 713000), so the lock is already expired.
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 2,
+        block_hash: '0x02',
+        index_block_hash: '0x02',
+        parent_block_hash: '0x01',
+        parent_index_block_hash: '0x01',
+      })
+        .addTx({ tx_id: '0x' + 'ee'.repeat(32) })
+        .addTxPox5Event({
+          name: Pox5EventName.Stake,
+          data: { ...stakeData(CAROL, 1_000n), unlock_burn_height: '100' },
+        })
+        .build()
+    );
+    // The materialized lock row exists, but it has expired — so `locked` reads
+    // as 0, consistent with /balances/stx.
+    const carol = await stxRewardsFor(CAROL);
+    assert.equal(carol.locked, 0n, 'expired lock reads as zero locked');
   });
 
   test('an STX-staking claim rolls into claimed and reduces claimable', async () => {

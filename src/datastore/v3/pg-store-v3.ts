@@ -30,7 +30,7 @@ import {
   TX_COLUMNS,
   TX_SUMMARY_COLUMNS,
 } from './constants.js';
-import { prefixedCols } from '../helpers.js';
+import { MaterializedStxLockRow, prefixedCols, resolveMaterializedStxLock } from '../helpers.js';
 import { Principal } from '../../api/schemas/v3/entities/common.js';
 import { normalizeHashString } from '../../helpers.js';
 import { BlockIdParam } from '../../api/routes/v2/schemas.js';
@@ -1176,13 +1176,21 @@ export class PgStoreV3 extends BasePgStoreModule {
           AND principal = ${args.principal}
         ORDER BY bond_index ASC
       `;
-      // The pox-5 STX staking lock (latest-wins materialized row) and the
-      // running STX-staking reward totals.
-      const [locked] = await sql<{ locked_amount: string }[]>`
-        SELECT locked_amount FROM stx_locked_balances
+      // The pox-5 STX staking lock (latest-wins materialized row), resolved
+      // against the current burn tip so an expired-but-not-unstaked lock reads
+      // as 0 — consistent with `/balances/stx`. pox-5 has no force-unlock
+      // height, so only natural expiry applies (forceUnlockHeights = null).
+      const [tip] = await sql<{ burn_block_height: number }[]>`
+        SELECT burn_block_height FROM chain_tip
+      `;
+      const [lockRow] = await sql<MaterializedStxLockRow[]>`
+        SELECT locked_amount, unlock_burn_height, pox_version, lock_tx_id,
+          lock_block_height, burnchain_lock_height
+        FROM stx_locked_balances
         WHERE principal = ${args.principal} AND pox_version = 5
         LIMIT 1
       `;
+      const resolvedLock = resolveMaterializedStxLock(lockRow, tip?.burn_block_height ?? 0, null);
       const [rewards] = await sql<{ accrued_rewards: string; claimed_rewards: string }[]>`
         SELECT accrued_rewards, claimed_rewards FROM principal_stx_staking_rewards
         WHERE principal = ${args.principal}
@@ -1191,7 +1199,7 @@ export class PgStoreV3 extends BasePgStoreModule {
       return {
         bonds,
         stx: {
-          locked: locked?.locked_amount ?? '0',
+          locked: resolvedLock.locked.toString(),
           accrued_rewards: rewards?.accrued_rewards ?? '0',
           claimed_rewards: rewards?.claimed_rewards ?? '0',
         },
