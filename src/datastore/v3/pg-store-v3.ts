@@ -11,6 +11,7 @@ import {
   DbPrincipalBondPosition,
   DbPrincipalFtBalance,
   DbPrincipalNftBalance,
+  DbPrincipalStakingBalances,
   DbPrincipalTransactionSummary,
   DbTransaction,
   DbTransactionCursor,
@@ -1163,11 +1164,11 @@ export class PgStoreV3 extends BasePgStoreModule {
    * @param args - The arguments for the query.
    * @returns The principal's bond positions.
    */
-  async getPrincipalStakingPositions(args: {
+  async getPrincipalStakingBalances(args: {
     principal: Principal;
-  }): Promise<DbPrincipalBondPosition[]> {
+  }): Promise<DbPrincipalStakingBalances> {
     return await this.sqlTransaction(async sql => {
-      return await sql<DbPrincipalBondPosition[]>`
+      const bonds = await sql<DbPrincipalBondPosition[]>`
         SELECT ${sql(PRINCIPAL_BOND_POSITION_COLUMNS)}
         FROM principal_bond_positions
         WHERE canonical = true
@@ -1175,6 +1176,26 @@ export class PgStoreV3 extends BasePgStoreModule {
           AND principal = ${args.principal}
         ORDER BY bond_index ASC
       `;
+      // The pox-5 STX staking lock (latest-wins materialized row) and the
+      // running STX-staking reward totals.
+      const [locked] = await sql<{ locked_amount: string }[]>`
+        SELECT locked_amount FROM stx_locked_balances
+        WHERE principal = ${args.principal} AND pox_version = 5
+        LIMIT 1
+      `;
+      const [rewards] = await sql<{ accrued_rewards: string; claimed_rewards: string }[]>`
+        SELECT accrued_rewards, claimed_rewards FROM principal_stx_staking_rewards
+        WHERE principal = ${args.principal}
+        LIMIT 1
+      `;
+      return {
+        bonds,
+        stx: {
+          locked: locked?.locked_amount ?? '0',
+          accrued_rewards: rewards?.accrued_rewards ?? '0',
+          claimed_rewards: rewards?.claimed_rewards ?? '0',
+        },
+      };
     });
   }
 }

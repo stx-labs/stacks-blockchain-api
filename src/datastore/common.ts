@@ -1742,6 +1742,19 @@ export interface DbPrincipalBondRewardClaimInsertValues extends DbTxLocation {
   rewards_claimed: string;
 }
 
+/**
+ * Per-staker STX-staking reward distribution source row, from a pox-5
+ * `calculate-rewards` event: the sBTC reward sats a single STX locker accrued
+ * from one calculation (its share of `total_stx_staker_rewards` by locked
+ * weight). Backs the running `principal_stx_staking_rewards.accrued_rewards`
+ * total under reorgs.
+ */
+export interface DbPrincipalStxRewardDistributionInsertValues extends DbTxLocation {
+  principal: string;
+  reward_cycle: number;
+  reward_amount: string;
+}
+
 /** Per-bond reward distribution, from the pox-5 `bond-distribution` event. */
 export interface DbBondRewardDistributionInsertValues extends DbTxLocation {
   bond_index: number;

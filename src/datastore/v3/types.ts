@@ -197,6 +197,20 @@ export interface DbPrincipalBondPosition {
   tx_id: string;
 }
 
+/** A principal's pox-5 STX-staking position: locked uSTX plus running sBTC reward totals. */
+export interface DbPrincipalStxStaking {
+  /** Current uSTX locked in pox-5 STX staking. */
+  locked: string;
+  accrued_rewards: string;
+  claimed_rewards: string;
+}
+
+/** A principal's full staking picture: its bond positions plus its STX-staking position. */
+export interface DbPrincipalStakingBalances {
+  bonds: DbPrincipalBondPosition[];
+  stx: DbPrincipalStxStaking;
+}
+
 export interface DbTransactionCursor {
   block_height: number;
   microblock_sequence: number;

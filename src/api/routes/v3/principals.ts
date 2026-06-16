@@ -17,8 +17,8 @@ import {
 import { decodeClarityValueToRepr } from '@stacks/codec';
 import { PrincipalTransactionSummarySchema } from '../../schemas/v3/entities/principal-transactions.js';
 import { serializePrincipalTransactionSummary } from '../../serializers/v3/transactions.js';
-import { PrincipalBondPositionSchema } from '../../schemas/v3/entities/principal-bond-positions.js';
-import { serializeDbPrincipalBondPosition } from '../../serializers/v3/bonds.js';
+import { PrincipalStakingBalancesSchema } from '../../schemas/v3/entities/principal-bond-positions.js';
+import { serializeDbPrincipalStakingBalances } from '../../serializers/v3/bonds.js';
 import { handleChainTipCache } from '../../controllers/cache-controller.js';
 import {
   PrincipalFtPositionSchema,
@@ -79,19 +79,19 @@ export const PrincipalsRoutes: FastifyPluginAsync<
         operationId: 'get_principal_staking_balances',
         summary: 'Get principal staking balances',
         description:
-          "Get a principal's staking balances: its bond positions (staked amounts and accrued rewards) across all bonds it is enrolled in",
+          "Get a principal's staking balances: its bond positions (staked amounts and sBTC rewards) across all bonds it is enrolled in, plus its pox-5 STX-staking position (locked STX and its sBTC rewards)",
         tags: ['Staking'],
         params: Type.Object({ principal: PrincipalSchema }),
         response: {
-          200: Type.Array(PrincipalBondPositionSchema),
+          200: PrincipalStakingBalancesSchema,
         },
       },
     },
     async (req, reply) => {
-      const positions = await fastify.db.v3.getPrincipalStakingPositions({
+      const balances = await fastify.db.v3.getPrincipalStakingBalances({
         principal: req.params.principal,
       });
-      await reply.send(positions.map(serializeDbPrincipalBondPosition));
+      await reply.send(serializeDbPrincipalStakingBalances(balances));
     }
   );
 

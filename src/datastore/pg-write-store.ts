@@ -76,6 +76,7 @@ import {
   DbBondRewardDistributionInsertValues,
   DbPrincipalBondRewardDistributionInsertValues,
   DbPrincipalBondRewardClaimInsertValues,
+  DbPrincipalStxRewardDistributionInsertValues,
 } from './common.js';
 import {
   BLOCK_COLUMNS,
@@ -933,6 +934,14 @@ export class PgWriteStore extends PgStore {
       INSERT INTO principal_bond_reward_claims ${sql(claim)}
     `;
     if (bondIndex === null) {
+      // STX-staking reward claim (no bond): roll into the staker's running
+      // STX-staking claimed total.
+      await sql`
+        INSERT INTO principal_stx_staking_rewards (principal, claimed_rewards)
+        VALUES (${event.data.staker}, ${event.data.rewards_claimed}::numeric)
+        ON CONFLICT (principal) DO UPDATE
+        SET claimed_rewards = principal_stx_staking_rewards.claimed_rewards + EXCLUDED.claimed_rewards
+      `;
       return;
     }
     await sql`
@@ -967,6 +976,42 @@ export class PgWriteStore extends PgStore {
     await sql`
       INSERT INTO bond_reward_calculations ${sql(rewardCalculation)}
     `;
+
+    // Split the STX-staker reward pool across the current pox-5 STX lockers by
+    // their locked weight: each staker accrues `floor(locked_ustx * per_ustx /
+    // PRECISION)` (PRECISION = 1e18). The per-uSTX rate is uniform, so this is
+    // the staker's share of `total_stx_staker_rewards` (modulo rounding dust).
+    const perUstx = event.data.accrued_rewards_per_ustx;
+    const rewardCycle = parseInt(event.data.stx_cycle);
+    const stakerRewards = await sql<{ principal: string; reward_amount: string }[]>`
+      SELECT principal,
+        floor(locked_amount::numeric * ${perUstx}::numeric / 1000000000000000000)::text AS reward_amount
+      FROM stx_locked_balances
+      WHERE pox_version = 5
+        AND floor(locked_amount::numeric * ${perUstx}::numeric / 1000000000000000000) > 0
+    `;
+    if (stakerRewards.length === 0) {
+      return;
+    }
+    const rewardRows: DbPrincipalStxRewardDistributionInsertValues[] = stakerRewards.map(s => ({
+      ...txLocation,
+      principal: s.principal,
+      reward_cycle: rewardCycle,
+      reward_amount: s.reward_amount,
+    }));
+    for (const batch of batchIterate(rewardRows, INSERT_BATCH_SIZE)) {
+      await sql`
+        INSERT INTO principal_stx_reward_distributions ${sql(batch)}
+      `;
+    }
+    for (const s of stakerRewards) {
+      await sql`
+        INSERT INTO principal_stx_staking_rewards (principal, accrued_rewards)
+        VALUES (${s.principal}, ${s.reward_amount}::numeric)
+        ON CONFLICT (principal) DO UPDATE
+        SET accrued_rewards = principal_stx_staking_rewards.accrued_rewards + EXCLUDED.accrued_rewards
+      `;
+    }
   }
 
   /**
@@ -4481,8 +4526,7 @@ export class PgWriteStore extends PgStore {
     });
     q.enqueue(async () => {
       // Flip the per-staker reward claim source rows and apply the signed delta
-      // to each position's running claimed_rewards total. STX-staking claims
-      // (NULL bond_index) have no position to update — the flip alone suffices.
+      // to each bond position's running claimed_rewards total (bond claims).
       await sql`
         WITH updated AS (
           UPDATE principal_bond_reward_claims
@@ -4501,6 +4545,47 @@ export class PgWriteStore extends PgStore {
         SET claimed_rewards = p.claimed_rewards + c.claim_change
         FROM changes c
         WHERE p.principal = c.principal AND p.bond_index = c.bond_index
+      `;
+      // The flip above also settled the STX-staking claims (NULL bond_index);
+      // apply their signed delta to the STX-staking claimed_rewards total. The
+      // rows are now at `canonical`, so the direction follows that flag.
+      await sql`
+        WITH changes AS (
+          SELECT principal, SUM(rewards_claimed::numeric) AS total
+          FROM principal_bond_reward_claims
+          WHERE index_block_hash = ${indexBlockHash}
+            AND canonical = ${canonical}
+            AND bond_index IS NULL
+          GROUP BY principal
+        )
+        UPDATE principal_stx_staking_rewards p
+        SET claimed_rewards = ${
+          canonical ? sql`p.claimed_rewards + c.total` : sql`p.claimed_rewards - c.total`
+        }
+        FROM changes c
+        WHERE p.principal = c.principal
+      `;
+    });
+    q.enqueue(async () => {
+      // Flip the per-staker STX reward distribution source rows and apply the
+      // signed delta to each staker's running STX-staking accrued_rewards total.
+      await sql`
+        WITH updated AS (
+          UPDATE principal_stx_reward_distributions
+          SET canonical = ${canonical}
+          WHERE index_block_hash = ${indexBlockHash} AND canonical != ${canonical}
+          RETURNING principal, reward_amount, canonical
+        ),
+        changes AS (
+          SELECT principal,
+            SUM(CASE WHEN canonical THEN reward_amount::numeric ELSE -reward_amount::numeric END) AS reward_change
+          FROM updated
+          GROUP BY principal
+        )
+        UPDATE principal_stx_staking_rewards p
+        SET accrued_rewards = p.accrued_rewards + c.reward_change
+        FROM changes c
+        WHERE p.principal = c.principal
       `;
     });
     q.enqueue(async () => {

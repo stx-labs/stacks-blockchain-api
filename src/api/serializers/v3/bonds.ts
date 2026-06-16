@@ -5,6 +5,7 @@ import {
   DbBondRegistrationSummary,
   DbBondSummary,
   DbPrincipalBondPosition,
+  DbPrincipalStakingBalances,
 } from '../../../datastore/v3/types.js';
 import { DbBondLockupType, DbPrincipalBondPositionStatus } from '../../../datastore/common.js';
 import { Bond, BondSummary } from '../../schemas/v3/entities/bonds.js';
@@ -13,9 +14,20 @@ import { BondAllowlist } from '../../schemas/v3/entities/bond-allowlist-entries.
 import { BondRegistration } from '../../schemas/v3/entities/bond-registrations.js';
 import { BondRegistrationSummary } from '../../schemas/v3/entities/bond-registration-summaries.js';
 import {
+  BtcRewards,
   PrincipalBondPosition,
   PrincipalBondPositionStatus,
+  PrincipalStakingBalances,
 } from '../../schemas/v3/entities/principal-bond-positions.js';
+
+/** Build the `{ accrued, claimed, claimable }` sBTC reward triple from running totals. */
+function btcRewards(accrued: string, claimed: string): BtcRewards {
+  return {
+    accrued,
+    claimed,
+    claimable: (BigInt(accrued) - BigInt(claimed)).toString(),
+  };
+}
 
 function getBondStatus(summary: DbBondSummary, currentBurnBlockHeight: number): BondStatus {
   if (currentBurnBlockHeight < summary.bond_start_height) {
@@ -141,13 +153,7 @@ export function serializeDbPrincipalBondPosition(
         stx: position.stx_locked,
       },
       rewards: {
-        btc: {
-          accrued: position.accrued_rewards,
-          claimed: position.claimed_rewards,
-          claimable: (
-            BigInt(position.accrued_rewards) - BigInt(position.claimed_rewards)
-          ).toString(),
-        },
+        btc: btcRewards(position.accrued_rewards, position.claimed_rewards),
       },
     },
     enrollment: {
@@ -157,6 +163,20 @@ export function serializeDbPrincipalBondPosition(
       },
     },
     amount: position.stx_locked,
+  };
+}
+
+export function serializeDbPrincipalStakingBalances(
+  balances: DbPrincipalStakingBalances
+): PrincipalStakingBalances {
+  return {
+    bonds: balances.bonds.map(serializeDbPrincipalBondPosition),
+    stx: {
+      locked: balances.stx.locked,
+      rewards: {
+        btc: btcRewards(balances.stx.accrued_rewards, balances.stx.claimed_rewards),
+      },
+    },
   };
 }
 
