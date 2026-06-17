@@ -122,6 +122,7 @@ import {
   Pox5EventClaimStakerRewardsForSigner,
   Pox5EventName,
   Pox5EventRegisterForBond,
+  Pox5EventRegisterSigner,
   Pox5EventSetupBond,
   Pox5EventStake,
   Pox5EventStakeUpdate,
@@ -602,6 +603,8 @@ export class PgWriteStore extends PgStore {
             await this.clearStxLockedBalance(sql, poxEvent.data.staker);
             break;
           case Pox5EventName.RegisterSigner:
+            await this.upsertStakingSigner(sql, txLocation, poxEvent);
+            break;
           case Pox5EventName.AllowContractCaller:
           case Pox5EventName.DisallowContractCaller:
           case Pox5EventName.GrantSignerKey:
@@ -1133,6 +1136,70 @@ export class PgWriteStore extends PgStore {
   /** Clear a principal's materialized STX lock (e.g. on pox-5 `unstake`). */
   private async clearStxLockedBalance(sql: PgSqlClient, principal: string) {
     await sql`DELETE FROM stx_locked_balances WHERE principal = ${principal}`;
+  }
+
+  /**
+   * Materialize a pox-5 signer's currently-registered key (pox-5
+   * `register-signer`). The contract keys its `signers` map by the signer
+   * principal and overwrites on re-registration, so this is a latest-wins
+   * upsert keyed by `signer`.
+   */
+  private async upsertStakingSigner(
+    sql: PgSqlClient,
+    txLocation: DbTxLocation,
+    event: Pox5EventRegisterSigner
+  ) {
+    await sql`
+      INSERT INTO staking_signers (signer, signer_key, tx_id, block_height, burn_block_height)
+      VALUES (
+        ${event.data.signer}, ${event.data.signer_key}, ${txLocation.tx_id},
+        ${txLocation.block_height}, ${txLocation.burn_block_height}
+      )
+      ON CONFLICT (signer) DO UPDATE SET
+        signer_key = EXCLUDED.signer_key,
+        tx_id = EXCLUDED.tx_id,
+        block_height = EXCLUDED.block_height,
+        burn_block_height = EXCLUDED.burn_block_height
+    `;
+  }
+
+  /**
+   * Recompute the materialized `staking_signers` rows for every signer touched
+   * by a block whose canonical flag just flipped during a reorg. A signer's
+   * registered key is a latest-wins value (not additive), so we re-derive it
+   * from the latest canonical `register-signer` event in `pox5_events`. Must run
+   * after the `pox5_events` canonical flips for this block have completed.
+   */
+  private async recomputeStakingSigners(sql: PgSqlClient, indexBlockHash: string) {
+    const affectedRows = await sql<{ signer: string }[]>`
+      SELECT data->>'signer' AS signer
+      FROM pox5_events
+      WHERE index_block_hash = ${indexBlockHash} AND name = 'register-signer'
+    `;
+    const signers = affectedRows.map(r => r.signer);
+    if (signers.length === 0) {
+      return;
+    }
+    for (const batch of batchIterate(signers, INSERT_BATCH_SIZE)) {
+      await sql`
+        DELETE FROM staking_signers WHERE signer IN ${sql(batch)}
+      `;
+      await sql`
+        INSERT INTO staking_signers (signer, signer_key, tx_id, block_height, burn_block_height)
+        SELECT DISTINCT ON (signer)
+          data->>'signer' AS signer,
+          decode(substr(data->>'signer_key', 3), 'hex') AS signer_key,
+          tx_id,
+          block_height,
+          burn_block_height
+        FROM pox5_events
+        WHERE canonical = true AND microblock_canonical = true
+          AND name = 'register-signer'
+          AND data->>'signer' IN ${sql(batch)}
+        ORDER BY signer,
+          block_height DESC, microblock_sequence DESC, tx_index DESC, event_index DESC
+      `;
+    }
   }
 
   /**
@@ -4817,10 +4884,11 @@ export class PgWriteStore extends PgStore {
 
     await q.done();
 
-    // Recompute the materialized locked-STX balances for principals touched by
-    // this block. Must run after the queue drains so the `stx_lock_events` and
-    // `pox5_events` canonical flips above are visible to the recompute.
+    // Recompute the materialized locked-STX balances and staking signer registry
+    // for entities touched by this block. Must run after the queue drains so the
+    // `stx_lock_events` / `pox5_events` canonical flips above are visible.
     await this.recomputeStxLockedBalances(sql, indexBlockHash);
+    await this.recomputeStakingSigners(sql, indexBlockHash);
 
     return result;
   }

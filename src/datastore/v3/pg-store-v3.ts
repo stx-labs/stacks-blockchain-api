@@ -13,6 +13,7 @@ import {
   DbPrincipalNftBalance,
   DbPrincipalStakingSummary,
   DbPrincipalTransactionSummary,
+  DbStakingSigner,
   DbTransaction,
   DbTransactionCursor,
   DbTransactionEvent,
@@ -27,6 +28,7 @@ import {
   MEMPOOL_TX_COLUMNS,
   MEMPOOL_TX_SUMMARY_COLUMNS,
   PRINCIPAL_BOND_POSITION_COLUMNS,
+  STAKING_SIGNER_COLUMNS,
   TX_COLUMNS,
   TX_SUMMARY_COLUMNS,
 } from './constants.js';
@@ -40,6 +42,7 @@ import type {
   BondCursor,
   FtBalanceCursor,
   NftBalanceCursor,
+  SignerCursor,
   TransactionCursor,
   TransactionEventCursor,
 } from '../../api/schemas/v3/cursors.js';
@@ -1279,6 +1282,66 @@ export class PgStoreV3 extends BasePgStoreModule {
         current_cursor: currentCursor,
         total,
         results,
+      };
+    });
+  }
+
+  /**
+   * Gets the registered pox-5 staking signers, cursor-paginated by `signer`.
+   * @param args - The arguments for the query.
+   * @returns The registered signers.
+   */
+  async getStakingSigners(args: {
+    limit: number;
+    cursor?: SignerCursor;
+  }): Promise<DbCursorPaginatedResult<DbStakingSigner>> {
+    return await this.sqlTransaction(async sql => {
+      const cursorFilter = args.cursor ? sql`WHERE signer >= ${args.cursor}` : sql``;
+      const resultQuery = await sql<(DbStakingSigner & { total: number })[]>`
+        SELECT
+          ${sql(STAKING_SIGNER_COLUMNS)},
+          (SELECT COUNT(*)::int FROM staking_signers) AS total
+        FROM staking_signers
+        ${cursorFilter}
+        ORDER BY signer ASC
+        LIMIT ${args.limit + 1}
+      `;
+
+      const hasNextPage = resultQuery.count > args.limit;
+      const results = hasNextPage ? resultQuery.slice(0, args.limit) : resultQuery;
+      const total = resultQuery.count > 0 ? resultQuery[0].total : 0;
+
+      const nextResult = resultQuery[resultQuery.length - 1];
+      const nextCursor = hasNextPage && nextResult ? nextResult.signer : null;
+      const firstResult = results[0];
+      const currentCursor = firstResult ? firstResult.signer : null;
+
+      let prevCursor: string | null = null;
+      if (firstResult) {
+        const prevPageQuery = await sql<{ signer: string }[]>`
+          SELECT signer FROM staking_signers
+          WHERE signer < ${firstResult.signer}
+          ORDER BY signer DESC
+          LIMIT ${args.limit}
+        `;
+        if (prevPageQuery.length > 0) {
+          prevCursor = prevPageQuery[prevPageQuery.length - 1].signer;
+        }
+      }
+
+      return {
+        limit: args.limit,
+        next_cursor: nextCursor,
+        prev_cursor: prevCursor,
+        current_cursor: currentCursor,
+        total,
+        results: results.map(r => ({
+          signer: r.signer,
+          signer_key: r.signer_key,
+          tx_id: r.tx_id,
+          block_height: r.block_height,
+          burn_block_height: r.burn_block_height,
+        })),
       };
     });
   }
