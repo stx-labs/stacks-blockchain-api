@@ -8,6 +8,7 @@ import { Server } from 'node:http';
 import { getPagingQueryLimit, ResourceType } from '../../pagination.js';
 import { PrincipalSchema } from '../../schemas/v3/entities/common.js';
 import {
+  BondCursorSchema,
   CursorPaginationQuerystring,
   CursorPaginatedResponse,
   FtBalanceCursorSchema,
@@ -17,8 +18,14 @@ import {
 import { decodeClarityValueToRepr } from '@stacks/codec';
 import { PrincipalTransactionSummarySchema } from '../../schemas/v3/entities/principal-transactions.js';
 import { serializePrincipalTransactionSummary } from '../../serializers/v3/transactions.js';
-import { PrincipalStakingBalancesSchema } from '../../schemas/v3/entities/principal-bond-positions.js';
-import { serializeDbPrincipalStakingBalances } from '../../serializers/v3/bonds.js';
+import {
+  PrincipalBondPositionSchema,
+  PrincipalStakingSummarySchema,
+} from '../../schemas/v3/entities/principal-bond-positions.js';
+import {
+  serializeDbPrincipalBondPosition,
+  serializeDbPrincipalStakingSummary,
+} from '../../serializers/v3/bonds.js';
 import { handleChainTipCache } from '../../controllers/cache-controller.js';
 import {
   PrincipalFtPositionSchema,
@@ -72,26 +79,66 @@ export const PrincipalsRoutes: FastifyPluginAsync<
   );
 
   fastify.get(
-    '/principals/:principal/balances/staking',
+    '/principals/:principal/staking',
     {
       preHandler: handleChainTipCache,
       schema: {
-        operationId: 'get_principal_staking_balances',
-        summary: 'Get principal staking balances',
+        operationId: 'get_principal_staking_summary',
+        summary: 'Get principal staking summary',
         description:
-          "Get a principal's staking balances: its bond positions (staked amounts and sBTC rewards) across all bonds it is enrolled in, plus its pox-5 STX-staking position (locked STX and its sBTC rewards)",
+          "A one-call overview of a principal's staking: its pox-5 STX-staking position (locked STX and its sBTC rewards) plus aggregate totals across all of its bond positions. The per-bond breakdown is paginated at `/principals/:principal/staking/bonds`.",
         tags: ['Staking'],
         params: Type.Object({ principal: PrincipalSchema }),
         response: {
-          200: PrincipalStakingBalancesSchema,
+          200: PrincipalStakingSummarySchema,
         },
       },
     },
     async (req, reply) => {
-      const balances = await fastify.db.v3.getPrincipalStakingBalances({
+      const summary = await fastify.db.v3.getPrincipalStakingSummary({
         principal: req.params.principal,
       });
-      await reply.send(serializeDbPrincipalStakingBalances(balances));
+      await reply.send(serializeDbPrincipalStakingSummary(summary));
+    }
+  );
+
+  fastify.get(
+    '/principals/:principal/staking/bonds',
+    {
+      preHandler: handleChainTipCache,
+      schema: {
+        operationId: 'get_principal_bond_positions',
+        summary: 'Get principal bond positions',
+        description:
+          "Get a principal's bond positions — its enrollment, lock, status, and sBTC rewards in each bond it participates in.",
+        tags: ['Staking'],
+        params: Type.Object({ principal: PrincipalSchema }),
+        querystring: CursorPaginationQuerystring(BondCursorSchema, ResourceType.Tx),
+        response: {
+          200: CursorPaginatedResponse(
+            PrincipalBondPositionSchema,
+            BondCursorSchema,
+            ResourceType.Tx
+          ),
+        },
+      },
+    },
+    async (req, reply) => {
+      const results = await fastify.db.v3.getPrincipalBondPositions({
+        principal: req.params.principal,
+        limit: req.query.limit ?? getPagingQueryLimit(ResourceType.Tx),
+        cursor: req.query.cursor,
+      });
+      await reply.send({
+        limit: results.limit,
+        total: results.total,
+        cursor: {
+          next: results.next_cursor,
+          previous: results.prev_cursor,
+          current: results.current_cursor,
+        },
+        results: results.results.map(serializeDbPrincipalBondPosition),
+      });
     }
   );
 

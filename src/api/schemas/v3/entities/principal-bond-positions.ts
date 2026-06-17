@@ -23,28 +23,13 @@ export const BtcRewardsSchema = Type.Object({
 });
 export type BtcRewards = Static<typeof BtcRewardsSchema>;
 
-export const PrincipalBondPositionBalancesSchema = Type.Object({
-  locked: Type.Object({
-    btc: Type.String({
-      description: 'The amount of BTC that is locked up for this position',
-    }),
-    stx: Type.String({
-      description: 'The amount of STX that is locked up for this position',
-    }),
-  }),
-  rewards: Type.Object({
-    btc: BtcRewardsSchema,
-  }),
-});
-export type PrincipalBondPositionBalances = Static<typeof PrincipalBondPositionBalancesSchema>;
-
+/** A principal's position in a single bond: its enrollment, lock, status, and rewards. */
 export const PrincipalBondPositionSchema = Type.Object({
   bond_index: BondIndexSchema,
   status: PrincipalBondPositionStatusSchema,
   active: Type.Boolean({
     description: 'Whether the position is active',
   }),
-  balances: PrincipalBondPositionBalancesSchema,
   enrollment: Type.Object({
     tx_id: TransactionIdSchema,
     btc_lockup: Type.Object({
@@ -53,8 +38,12 @@ export const PrincipalBondPositionSchema = Type.Object({
       }),
     }),
   }),
-  amount: Type.String({
-    description: 'The amount of STX that is locked up for this principal',
+  locked: Type.Object({
+    btc: Type.String({ description: 'The amount of BTC locked in this bond position' }),
+    stx: Type.String({ description: 'The amount of STX locked in this bond position' }),
+  }),
+  rewards: Type.Object({
+    btc: BtcRewardsSchema,
   }),
 });
 export type PrincipalBondPosition = Static<typeof PrincipalBondPositionSchema>;
@@ -74,9 +63,22 @@ export const PrincipalStxStakingPositionSchema = Type.Object({
 });
 export type PrincipalStxStakingPosition = Static<typeof PrincipalStxStakingPositionSchema>;
 
-/** A principal's full staking picture: its bond positions plus its STX-staking position. */
-export const PrincipalStakingBalancesSchema = Type.Object({
-  bonds: Type.Array(PrincipalBondPositionSchema),
+/**
+ * A one-call overview of a principal's staking: its (singleton) STX-staking
+ * position plus aggregate totals across all of its bond positions. The per-bond
+ * breakdown is paginated separately at `/principals/:principal/staking/bonds`.
+ */
+export const PrincipalStakingSummarySchema = Type.Object({
   stx: PrincipalStxStakingPositionSchema,
+  bonds: Type.Object({
+    count: Type.Integer({ description: 'Number of bonds this principal has a position in' }),
+    locked: Type.Object({
+      btc: Type.String({ description: 'Total BTC locked across all bond positions' }),
+      stx: Type.String({ description: 'Total STX locked across all bond positions' }),
+    }),
+    rewards: Type.Object({
+      btc: BtcRewardsSchema,
+    }),
+  }),
 });
-export type PrincipalStakingBalances = Static<typeof PrincipalStakingBalancesSchema>;
+export type PrincipalStakingSummary = Static<typeof PrincipalStakingSummarySchema>;

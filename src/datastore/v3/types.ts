@@ -205,10 +205,19 @@ export interface DbPrincipalStxStaking {
   claimed_rewards: string;
 }
 
-/** A principal's full staking picture: its bond positions plus its STX-staking position. */
-export interface DbPrincipalStakingBalances {
-  bonds: DbPrincipalBondPosition[];
+/** Aggregate of a principal's bond positions (counts + summed locks/rewards). */
+export interface DbPrincipalBondStakingAggregate {
+  count: number;
+  btc_locked: string;
+  stx_locked: string;
+  accrued_rewards: string;
+  claimed_rewards: string;
+}
+
+/** One-call staking overview: the STX-staking position plus the bond aggregate. */
+export interface DbPrincipalStakingSummary {
   stx: DbPrincipalStxStaking;
+  bonds: DbPrincipalBondStakingAggregate;
 }
 
 export interface DbTransactionCursor {

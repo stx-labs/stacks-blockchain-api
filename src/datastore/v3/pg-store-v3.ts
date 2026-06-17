@@ -11,7 +11,7 @@ import {
   DbPrincipalBondPosition,
   DbPrincipalFtBalance,
   DbPrincipalNftBalance,
-  DbPrincipalStakingBalances,
+  DbPrincipalStakingSummary,
   DbPrincipalTransactionSummary,
   DbTransaction,
   DbTransactionCursor,
@@ -1160,22 +1160,15 @@ export class PgStoreV3 extends BasePgStoreModule {
   }
 
   /**
-   * Gets all bond positions for a principal (across the bonds it is enrolled in).
+   * One-call staking overview for a principal: its (singleton) pox-5 STX-staking
+   * position plus aggregate totals across all of its bond positions.
    * @param args - The arguments for the query.
-   * @returns The principal's bond positions.
+   * @returns The staking summary.
    */
-  async getPrincipalStakingBalances(args: {
+  async getPrincipalStakingSummary(args: {
     principal: Principal;
-  }): Promise<DbPrincipalStakingBalances> {
+  }): Promise<DbPrincipalStakingSummary> {
     return await this.sqlTransaction(async sql => {
-      const bonds = await sql<DbPrincipalBondPosition[]>`
-        SELECT ${sql(PRINCIPAL_BOND_POSITION_COLUMNS)}
-        FROM principal_bond_positions
-        WHERE canonical = true
-          AND microblock_canonical = true
-          AND principal = ${args.principal}
-        ORDER BY bond_index ASC
-      `;
       // The pox-5 STX staking lock (latest-wins materialized row), resolved
       // against the current burn tip so an expired-but-not-unstaked lock reads
       // as 0 — consistent with `/balances/stx`. pox-5 has no force-unlock
@@ -1191,18 +1184,107 @@ export class PgStoreV3 extends BasePgStoreModule {
         LIMIT 1
       `;
       const resolvedLock = resolveMaterializedStxLock(lockRow, tip?.burn_block_height ?? 0, null);
-      const [rewards] = await sql<{ accrued_rewards: string; claimed_rewards: string }[]>`
+      const [stxRewards] = await sql<{ accrued_rewards: string; claimed_rewards: string }[]>`
         SELECT accrued_rewards, claimed_rewards FROM principal_stx_staking_rewards
         WHERE principal = ${args.principal}
         LIMIT 1
       `;
+      const [bondAgg] = await sql<
+        {
+          count: number;
+          btc_locked: string;
+          stx_locked: string;
+          accrued_rewards: string;
+          claimed_rewards: string;
+        }[]
+      >`
+        SELECT
+          COUNT(*)::int AS count,
+          COALESCE(SUM(btc_locked::numeric), 0)::text AS btc_locked,
+          COALESCE(SUM(stx_locked::numeric), 0)::text AS stx_locked,
+          COALESCE(SUM(accrued_rewards::numeric), 0)::text AS accrued_rewards,
+          COALESCE(SUM(claimed_rewards::numeric), 0)::text AS claimed_rewards
+        FROM principal_bond_positions
+        WHERE canonical = true
+          AND microblock_canonical = true
+          AND principal = ${args.principal}
+      `;
       return {
-        bonds,
         stx: {
           locked: resolvedLock.locked.toString(),
-          accrued_rewards: rewards?.accrued_rewards ?? '0',
-          claimed_rewards: rewards?.claimed_rewards ?? '0',
+          accrued_rewards: stxRewards?.accrued_rewards ?? '0',
+          claimed_rewards: stxRewards?.claimed_rewards ?? '0',
         },
+        bonds: {
+          count: bondAgg?.count ?? 0,
+          btc_locked: bondAgg?.btc_locked ?? '0',
+          stx_locked: bondAgg?.stx_locked ?? '0',
+          accrued_rewards: bondAgg?.accrued_rewards ?? '0',
+          claimed_rewards: bondAgg?.claimed_rewards ?? '0',
+        },
+      };
+    });
+  }
+
+  /**
+   * Gets a principal's bond positions, cursor-paginated by `bond_index` ascending.
+   * @param args - The arguments for the query.
+   * @returns The principal's bond positions.
+   */
+  async getPrincipalBondPositions(args: {
+    principal: Principal;
+    limit: number;
+    cursor?: BondCursor;
+  }): Promise<DbCursorPaginatedResult<DbPrincipalBondPosition>> {
+    return await this.sqlTransaction(async sql => {
+      const cursorFilter = args.cursor ? sql`AND bond_index >= ${parseInt(args.cursor)}` : sql``;
+      const resultQuery = await sql<(DbPrincipalBondPosition & { total: number })[]>`
+        SELECT
+          ${sql(prefixedCols(PRINCIPAL_BOND_POSITION_COLUMNS, 'p'))},
+          (
+            SELECT COUNT(*)::int FROM principal_bond_positions
+            WHERE canonical = true AND microblock_canonical = true AND principal = ${args.principal}
+          ) AS total
+        FROM principal_bond_positions p
+        WHERE p.canonical = true
+          AND p.microblock_canonical = true
+          AND p.principal = ${args.principal}
+          ${cursorFilter}
+        ORDER BY p.bond_index ASC
+        LIMIT ${args.limit + 1}
+      `;
+
+      const hasNextPage = resultQuery.count > args.limit;
+      const results = hasNextPage ? resultQuery.slice(0, args.limit) : resultQuery;
+      const total = resultQuery.count > 0 ? resultQuery[0].total : 0;
+
+      const nextResult = resultQuery[resultQuery.length - 1];
+      const nextCursor = hasNextPage && nextResult ? `${nextResult.bond_index}` : null;
+      const firstResult = results[0];
+      const currentCursor = firstResult ? `${firstResult.bond_index}` : null;
+
+      let prevCursor: string | null = null;
+      if (firstResult) {
+        const prevPageQuery = await sql<{ bond_index: number }[]>`
+          SELECT bond_index FROM principal_bond_positions
+          WHERE canonical = true AND microblock_canonical = true
+            AND principal = ${args.principal}
+            AND bond_index < ${firstResult.bond_index}
+          ORDER BY bond_index DESC
+          LIMIT ${args.limit}
+        `;
+        if (prevPageQuery.length > 0) {
+          prevCursor = `${prevPageQuery[prevPageQuery.length - 1].bond_index}`;
+        }
+      }
+
+      return {
+        limit: args.limit,
+        next_cursor: nextCursor,
+        prev_cursor: prevCursor,
+        current_cursor: currentCursor,
+        total,
+        results,
       };
     });
   }

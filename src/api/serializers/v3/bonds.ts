@@ -5,7 +5,7 @@ import {
   DbBondRegistrationSummary,
   DbBondSummary,
   DbPrincipalBondPosition,
-  DbPrincipalStakingBalances,
+  DbPrincipalStakingSummary,
 } from '../../../datastore/v3/types.js';
 import { DbBondLockupType, DbPrincipalBondPositionStatus } from '../../../datastore/common.js';
 import { Bond, BondSummary } from '../../schemas/v3/entities/bonds.js';
@@ -17,7 +17,7 @@ import {
   BtcRewards,
   PrincipalBondPosition,
   PrincipalBondPositionStatus,
-  PrincipalStakingBalances,
+  PrincipalStakingSummary,
 } from '../../schemas/v3/entities/principal-bond-positions.js';
 
 /** Build the `{ accrued, claimed, claimable }` sBTC reward triple from running totals. */
@@ -147,34 +147,40 @@ export function serializeDbPrincipalBondPosition(
     bond_index: position.bond_index,
     status: getPrincipalBondPositionStatus(position.status),
     active: position.active,
-    balances: {
-      locked: {
-        btc: position.btc_locked,
-        stx: position.stx_locked,
-      },
-      rewards: {
-        btc: btcRewards(position.accrued_rewards, position.claimed_rewards),
-      },
-    },
     enrollment: {
       tx_id: position.tx_id,
       btc_lockup: {
         amount: position.btc_locked,
       },
     },
-    amount: position.stx_locked,
+    locked: {
+      btc: position.btc_locked,
+      stx: position.stx_locked,
+    },
+    rewards: {
+      btc: btcRewards(position.accrued_rewards, position.claimed_rewards),
+    },
   };
 }
 
-export function serializeDbPrincipalStakingBalances(
-  balances: DbPrincipalStakingBalances
-): PrincipalStakingBalances {
+export function serializeDbPrincipalStakingSummary(
+  summary: DbPrincipalStakingSummary
+): PrincipalStakingSummary {
   return {
-    bonds: balances.bonds.map(serializeDbPrincipalBondPosition),
     stx: {
-      locked: balances.stx.locked,
+      locked: summary.stx.locked,
       rewards: {
-        btc: btcRewards(balances.stx.accrued_rewards, balances.stx.claimed_rewards),
+        btc: btcRewards(summary.stx.accrued_rewards, summary.stx.claimed_rewards),
+      },
+    },
+    bonds: {
+      count: summary.bonds.count,
+      locked: {
+        btc: summary.bonds.btc_locked,
+        stx: summary.bonds.stx_locked,
+      },
+      rewards: {
+        btc: btcRewards(summary.bonds.accrued_rewards, summary.bonds.claimed_rewards),
       },
     },
   };
