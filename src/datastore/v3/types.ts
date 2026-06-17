@@ -226,6 +226,24 @@ export interface DbTransactionCursor {
   tx_index: number;
 }
 
+export interface DbStakingSigner {
+  signer: string;
+  /** The registered compressed secp256k1 public key as a `0x`-prefixed hex string. */
+  signer_key: string;
+  tx_id: string;
+  block_height: number;
+  burn_block_height: number;
+}
+
+/** A signer joined with the block position of its registration transaction. */
+export interface DbStakingSignerDetail extends DbStakingSigner {
+  block_hash: string;
+  index_block_hash: string;
+  block_time: number;
+  tx_index: number;
+  burn_block_time: number;
+}
+
 export interface DbPrincipalFtBalance {
   /** The fungible token asset identifier (the `ft_balances.token` column). */
   token: string;

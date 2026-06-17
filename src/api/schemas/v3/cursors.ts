@@ -91,3 +91,10 @@ export const NftBalanceCursorSchema = Type.String({
     'Cursor for paginating NFT balances (sorted by asset identifier then value). Format: value:asset_identifier',
 });
 export type NftBalanceCursor = Static<typeof NftBalanceCursorSchema>;
+
+export const SignerCursorSchema = Type.String({
+  // A Stacks principal: a standard address, optionally followed by a contract name.
+  pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{28,41}(\\.[a-zA-Z]([a-zA-Z0-9]|[-_]){0,39})?$',
+  description: 'Cursor for paginating staking signers (sorted by signer). Format: signer principal',
+});
+export type SignerCursor = Static<typeof SignerCursorSchema>;

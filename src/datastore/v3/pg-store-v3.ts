@@ -13,6 +13,8 @@ import {
   DbPrincipalNftBalance,
   DbPrincipalStakingSummary,
   DbPrincipalTransactionSummary,
+  DbStakingSigner,
+  DbStakingSignerDetail,
   DbTransaction,
   DbTransactionCursor,
   DbTransactionEvent,
@@ -27,6 +29,7 @@ import {
   MEMPOOL_TX_COLUMNS,
   MEMPOOL_TX_SUMMARY_COLUMNS,
   PRINCIPAL_BOND_POSITION_COLUMNS,
+  STAKING_SIGNER_COLUMNS,
   TX_COLUMNS,
   TX_SUMMARY_COLUMNS,
 } from './constants.js';
@@ -40,6 +43,7 @@ import type {
   BondCursor,
   FtBalanceCursor,
   NftBalanceCursor,
+  SignerCursor,
   TransactionCursor,
   TransactionEventCursor,
 } from '../../api/schemas/v3/cursors.js';
@@ -1280,6 +1284,92 @@ export class PgStoreV3 extends BasePgStoreModule {
         total,
         results,
       };
+    });
+  }
+
+  /**
+   * Gets the registered pox-5 staking signers, cursor-paginated by `signer`.
+   * @param args - The arguments for the query.
+   * @returns The registered signers.
+   */
+  async getStakingSigners(args: {
+    limit: number;
+    cursor?: SignerCursor;
+  }): Promise<DbCursorPaginatedResult<DbStakingSigner>> {
+    return await this.sqlTransaction(async sql => {
+      const cursorFilter = args.cursor ? sql`WHERE signer >= ${args.cursor}` : sql``;
+      const resultQuery = await sql<(DbStakingSigner & { total: number })[]>`
+        SELECT
+          ${sql(STAKING_SIGNER_COLUMNS)},
+          (SELECT COUNT(*)::int FROM staking_signers) AS total
+        FROM staking_signers
+        ${cursorFilter}
+        ORDER BY signer ASC
+        LIMIT ${args.limit + 1}
+      `;
+
+      const hasNextPage = resultQuery.count > args.limit;
+      const results = hasNextPage ? resultQuery.slice(0, args.limit) : resultQuery;
+      const total = resultQuery.count > 0 ? resultQuery[0].total : 0;
+
+      const nextResult = resultQuery[resultQuery.length - 1];
+      const nextCursor = hasNextPage && nextResult ? nextResult.signer : null;
+      const firstResult = results[0];
+      const currentCursor = firstResult ? firstResult.signer : null;
+
+      let prevCursor: string | null = null;
+      if (firstResult) {
+        const prevPageQuery = await sql<{ signer: string }[]>`
+          SELECT signer FROM staking_signers
+          WHERE signer < ${firstResult.signer}
+          ORDER BY signer DESC
+          LIMIT ${args.limit}
+        `;
+        if (prevPageQuery.length > 0) {
+          prevCursor = prevPageQuery[prevPageQuery.length - 1].signer;
+        }
+      }
+
+      return {
+        limit: args.limit,
+        next_cursor: nextCursor,
+        prev_cursor: prevCursor,
+        current_cursor: currentCursor,
+        total,
+        results: results.map(r => ({
+          signer: r.signer,
+          signer_key: r.signer_key,
+          tx_id: r.tx_id,
+          block_height: r.block_height,
+          burn_block_height: r.burn_block_height,
+        })),
+      };
+    });
+  }
+
+  /**
+   * Gets a single registered pox-5 staking signer by its principal, joined with
+   * the block position of its registration transaction.
+   * @param args - The arguments for the query.
+   * @returns The signer, or null if not registered.
+   */
+  async getStakingSigner(args: { signer: Principal }): Promise<DbStakingSignerDetail | null> {
+    return await this.sqlTransaction(async sql => {
+      const [result] = await sql<DbStakingSignerDetail[]>`
+        SELECT
+          ${sql(prefixedCols(STAKING_SIGNER_COLUMNS, 's'))},
+          t.block_hash,
+          t.index_block_hash,
+          t.block_time,
+          t.tx_index,
+          t.burn_block_time
+        FROM staking_signers s
+        INNER JOIN txs t
+          ON t.tx_id = s.tx_id AND t.canonical = true AND t.microblock_canonical = true
+        WHERE s.signer = ${args.signer}
+        LIMIT 1
+      `;
+      return result ?? null;
     });
   }
 }

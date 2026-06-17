@@ -158,3 +158,11 @@ export const PRINCIPAL_BOND_POSITION_COLUMNS = [
   'claimed_rewards',
   'tx_id',
 ];
+
+export const STAKING_SIGNER_COLUMNS = [
+  'signer',
+  'signer_key',
+  'tx_id',
+  'block_height',
+  'burn_block_height',
+];
