@@ -14,6 +14,7 @@ import {
   DbPrincipalStakingSummary,
   DbPrincipalTransactionSummary,
   DbStakingSigner,
+  DbStakingSignerDetail,
   DbTransaction,
   DbTransactionCursor,
   DbTransactionEvent,
@@ -1343,6 +1344,32 @@ export class PgStoreV3 extends BasePgStoreModule {
           burn_block_height: r.burn_block_height,
         })),
       };
+    });
+  }
+
+  /**
+   * Gets a single registered pox-5 staking signer by its principal, joined with
+   * the block position of its registration transaction.
+   * @param args - The arguments for the query.
+   * @returns The signer, or null if not registered.
+   */
+  async getStakingSigner(args: { signer: Principal }): Promise<DbStakingSignerDetail | null> {
+    return await this.sqlTransaction(async sql => {
+      const [result] = await sql<DbStakingSignerDetail[]>`
+        SELECT
+          ${sql(prefixedCols(STAKING_SIGNER_COLUMNS, 's'))},
+          t.block_hash,
+          t.index_block_hash,
+          t.block_time,
+          t.tx_index,
+          t.burn_block_time
+        FROM staking_signers s
+        INNER JOIN txs t
+          ON t.tx_id = s.tx_id AND t.canonical = true AND t.microblock_canonical = true
+        WHERE s.signer = ${args.signer}
+        LIMIT 1
+      `;
+      return result ?? null;
     });
   }
 }

@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 import { Server } from 'node:http';
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
+import { Type, TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { handleChainTipCache } from '../../controllers/cache-controller.js';
 import { getPagingQueryLimit, ResourceType } from '../../pagination.js';
 import {
@@ -8,7 +8,16 @@ import {
   CursorPaginationQuerystring,
   SignerCursorSchema,
 } from '../../schemas/v3/cursors.js';
-import { StakingSignerSchema } from '../../schemas/v3/entities/staking-signers.js';
+import {
+  StakingSignerDetailSchema,
+  StakingSignerSchema,
+} from '../../schemas/v3/entities/staking-signers.js';
+import { PrincipalSchema } from '../../schemas/v3/entities/common.js';
+import {
+  serializeDbStakingSigner,
+  serializeDbStakingSignerDetail,
+} from '../../serializers/v3/signers.js';
+import { NotFoundError } from '../../../errors.js';
 
 export const StakingSignersRoutes: FastifyPluginAsync<
   Record<never, never>,
@@ -47,8 +56,33 @@ export const StakingSignersRoutes: FastifyPluginAsync<
           previous: results.prev_cursor,
           current: results.current_cursor,
         },
-        results: results.results,
+        results: results.results.map(serializeDbStakingSigner),
       });
+    }
+  );
+
+  fastify.get(
+    '/staking/signers/:principal',
+    {
+      preHandler: handleChainTipCache,
+      schema: {
+        operationId: 'get_staking_signer',
+        summary: 'Get staking signer',
+        description:
+          'Get a registered pox-5 staking signer along with the details of the transaction that registered its current key.',
+        tags: ['Staking'],
+        params: Type.Object({ principal: PrincipalSchema }),
+        response: {
+          200: StakingSignerDetailSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const signer = await fastify.db.v3.getStakingSigner({ signer: req.params.principal });
+      if (!signer) {
+        throw new NotFoundError('Staking signer not found');
+      }
+      await reply.send(serializeDbStakingSignerDetail(signer));
     }
   );
 

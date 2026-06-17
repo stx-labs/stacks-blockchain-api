@@ -1,5 +1,10 @@
 import { Static, Type } from '@sinclair/typebox';
-import { PrincipalSchema } from './common.js';
+import {
+  BitcoinBlockPositionSchema,
+  BlockPositionSchema,
+  PrincipalSchema,
+  TransactionIdSchema,
+} from './common.js';
 
 export const StakingSignerSchema = Type.Object(
   {
@@ -19,3 +24,19 @@ export const StakingSignerSchema = Type.Object(
   { title: 'StakingSigner' }
 );
 export type StakingSigner = Static<typeof StakingSignerSchema>;
+
+/** A single signer with the block position of the transaction that registered its key. */
+export const StakingSignerDetailSchema = Type.Composite(
+  [
+    StakingSignerSchema,
+    Type.Object({
+      transaction: Type.Object({
+        tx_id: TransactionIdSchema,
+        block: BlockPositionSchema,
+        bitcoin_block: BitcoinBlockPositionSchema,
+      }),
+    }),
+  ],
+  { title: 'StakingSignerDetail' }
+);
+export type StakingSignerDetail = Static<typeof StakingSignerDetailSchema>;

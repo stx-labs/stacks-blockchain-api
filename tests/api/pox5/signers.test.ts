@@ -238,4 +238,36 @@ describe('pox-5 staking signers', () => {
     assert.equal(page.total, 1, 'signer still registered');
     assert.equal(page.results[0].signer_key, KEY1, 'reverted to the prior canonical key');
   });
+
+  test('GET /staking/signers/:principal returns the signer with registration transaction details', async () => {
+    const txId = '0x' + 'a1'.repeat(32);
+    await db.update(
+      registerSignerBlock({
+        block_height: 1,
+        block_hash: '0x01',
+        index_block_hash: '0x01',
+        tx_id: txId,
+        signer: SIGNER_A,
+        signer_key: KEY1,
+      })
+    );
+    const res = await supertest(api.server).get(`/extended/v3/staking/signers/${SIGNER_A}`);
+    assert.equal(res.status, 200, res.text);
+    const body = JSON.parse(res.text);
+    assert.equal(body.signer, SIGNER_A);
+    assert.equal(body.signer_key, KEY1);
+    // The registration transaction's block position is joined in from `txs`.
+    assert.equal(body.transaction.tx_id, txId);
+    assert.equal(body.transaction.block.height, 1);
+    assert.equal(body.transaction.block.index_hash, '0x01');
+    assert.equal(typeof body.transaction.block.hash, 'string');
+    assert.equal(typeof body.transaction.block.tx_index, 'number');
+    assert.equal(typeof body.transaction.bitcoin_block.height, 'number');
+    assert.equal(typeof body.transaction.bitcoin_block.time, 'number');
+  });
+
+  test('GET /staking/signers/:principal returns 404 for an unregistered principal', async () => {
+    const res = await supertest(api.server).get(`/extended/v3/staking/signers/${SIGNER_A}`);
+    assert.equal(res.status, 404);
+  });
 });

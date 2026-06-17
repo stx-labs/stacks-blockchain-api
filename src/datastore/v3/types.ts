@@ -235,6 +235,15 @@ export interface DbStakingSigner {
   burn_block_height: number;
 }
 
+/** A signer joined with the block position of its registration transaction. */
+export interface DbStakingSignerDetail extends DbStakingSigner {
+  block_hash: string;
+  index_block_hash: string;
+  block_time: number;
+  tx_index: number;
+  burn_block_time: number;
+}
+
 export interface DbPrincipalFtBalance {
   /** The fungible token asset identifier (the `ft_balances.token` column). */
   token: string;
