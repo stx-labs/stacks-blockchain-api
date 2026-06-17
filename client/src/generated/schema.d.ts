@@ -1777,7 +1777,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/extended/v3/principals/{principal}/balances/staking": {
+    "/extended/v3/principals/{principal}/transactions/{tx_id}/balance-changes": {
         parameters: {
             query?: never;
             header?: never;
@@ -1785,10 +1785,70 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get principal staking balances
-         * @description Get a principal's staking balances: its bond positions (staked amounts and accrued rewards) across all bonds it is enrolled in
+         * Get principal transaction balance changes
+         * @description Returns the balance changes for a principal's transaction
          */
-        get: operations["get_principal_balances_staking"];
+        get: operations["get_principal_transaction_balance_changes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/extended/v3/principals/{principal}/balance-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get principal balance changes
+         * @description Returns the balance changes for a principal across one or more transactions, as a single paginated flat array ordered by chain position descending then by asset.
+         */
+        get: operations["get_principal_balance_changes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/extended/v3/principals/{principal}/staking": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get principal staking summary
+         * @description A one-call overview of a principal's staking: its pox-5 STX-staking position (locked STX and its sBTC rewards) plus aggregate totals across all of its bond positions. The per-bond breakdown is paginated at `/principals/:principal/staking/bonds`.
+         */
+        get: operations["get_principal_staking_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/extended/v3/principals/{principal}/staking/bonds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get principal bond positions
+         * @description Get a principal's bond positions — its enrollment, lock, status, and sBTC rewards in each bond it participates in.
+         */
+        get: operations["get_principal_bond_positions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1969,6 +2029,46 @@ export interface paths {
          * @description Get bond registration
          */
         get: operations["get_bond_registration"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/extended/v3/staking/signers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get staking signers
+         * @description Get the registered pox-5 staking signers and their current signing keys.
+         */
+        get: operations["get_staking_signers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/extended/v3/staking/signers/{principal}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get staking signer
+         * @description Get a registered pox-5 staking signer along with the details of the transaction that registered its current key.
+         */
+        get: operations["get_staking_signer"];
         put?: never;
         post?: never;
         delete?: never;
@@ -32938,7 +33038,166 @@ export interface operations {
             };
         };
     };
-    get_principal_balances_staking: {
+    get_principal_transaction_balance_changes: {
+        parameters: {
+            query?: {
+                /** @description Number of results per page */
+                limit?: number;
+                /** @description Cursor for paginating principal transaction balance changes. Format: `<asset_type>:<asset_identifier>` where `asset_type` is a numeric tag (1=STX, 2=FT, 3=NFT) and `asset_identifier` is `<stx>` for STX or a fully-qualified Clarity asset id such as `SP000…contract-name::asset-name` for FT/NFT. */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                principal: string;
+                /**
+                 * @description Transaction ID
+                 * @example 0xf6bd5f4a7b26184a3466340b2e99fd003b4962c0e382a7e4b6a13df3dd7a91c6
+                 */
+                tx_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example 1 */
+                        total: number;
+                        /**
+                         * @description Number of results per page
+                         * @default 20
+                         */
+                        limit: number;
+                        cursor: {
+                            next: string | null;
+                            previous: string | null;
+                            current: string | null;
+                        };
+                        results: {
+                            asset: {
+                                /** @enum {string} */
+                                type: "stx";
+                            } | {
+                                /** @description The asset type that was affected by the balance change. */
+                                type: "ft" | "nft";
+                                /** @description The identifier of the asset that was affected by the balance change. */
+                                identifier: string;
+                            };
+                            balance_change: {
+                                /** @description Amount sent by the principal */
+                                sent: string;
+                                /** @description Amount received by the principal */
+                                received: string;
+                                /** @description Net balance change for the principal */
+                                net: string;
+                            };
+                        }[];
+                    };
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    get_principal_balance_changes: {
+        parameters: {
+            query: {
+                /** @description Number of results per page */
+                limit?: number;
+                /** @description Cursor for paginating principal balance changes across multiple transactions. Format: `<block_height>:<microblock_sequence>:<tx_index>:<asset_type>:<asset_identifier>`. */
+                cursor?: string;
+                /** @description Transaction IDs to query balance changes for. Provide as repeated querystring values (`?tx_id=A&tx_id=B`) or as a single comma-separated value (`?tx_id=A,B`). */
+                tx_id: string[];
+            };
+            header?: never;
+            path: {
+                principal: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example 1 */
+                        total: number;
+                        /**
+                         * @description Number of results per page
+                         * @default 20
+                         */
+                        limit: number;
+                        cursor: {
+                            next: string | null;
+                            previous: string | null;
+                            current: string | null;
+                        };
+                        results: {
+                            /**
+                             * Transaction ID
+                             * @description Transaction ID
+                             * @example 0xf6bd5f4a7b26184a3466340b2e99fd003b4962c0e382a7e4b6a13df3dd7a91c6
+                             */
+                            tx_id: string;
+                            asset: {
+                                /** @enum {string} */
+                                type: "stx";
+                            } | {
+                                /** @description The asset type that was affected by the balance change. */
+                                type: "ft" | "nft";
+                                /** @description The identifier of the asset that was affected by the balance change. */
+                                identifier: string;
+                            };
+                            balance_change: {
+                                /** @description Amount sent by the principal */
+                                sent: string;
+                                /** @description Amount received by the principal */
+                                received: string;
+                                /** @description Net balance change for the principal */
+                                net: string;
+                            };
+                        }[];
+                    };
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    get_principal_staking_summary: {
         parameters: {
             query?: never;
             header?: never;
@@ -32956,40 +33215,130 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @description The index of the bond in the PoX-5 bond list */
-                        bond_index: number;
-                        status: "enrolled" | "running" | "early_exit" | "unlocked";
-                        /** @description Whether the position is active */
-                        active: boolean;
-                        balances: {
+                        stx: {
+                            /** @description The amount of uSTX currently locked in pox-5 STX staking */
+                            locked: string;
+                            rewards: {
+                                btc: {
+                                    /** @description The lifetime sBTC reward sats accrued to this position */
+                                    accrued: string;
+                                    /** @description The lifetime sBTC reward sats already claimed against this position */
+                                    claimed: string;
+                                    /** @description The sBTC reward sats currently claimable (accrued minus claimed) */
+                                    claimable: string;
+                                };
+                            };
+                        };
+                        bonds: {
+                            /** @description Number of bonds this principal has a position in */
+                            count: number;
                             locked: {
-                                /** @description The total amount of BTC that is locked up for this bond */
+                                /** @description Total BTC locked across all bond positions */
                                 btc: string;
-                                /** @description The total amount of STX that is locked up for this bond */
+                                /** @description Total STX locked across all bond positions */
                                 stx: string;
                             };
-                            paid_out: {
-                                /** @description The total amount of BTC that has been paid out for this bond */
+                            rewards: {
+                                btc: {
+                                    /** @description The lifetime sBTC reward sats accrued to this position */
+                                    accrued: string;
+                                    /** @description The lifetime sBTC reward sats already claimed against this position */
+                                    claimed: string;
+                                    /** @description The sBTC reward sats currently claimable (accrued minus claimed) */
+                                    claimable: string;
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    get_principal_bond_positions: {
+        parameters: {
+            query?: {
+                /** @description Number of results per page */
+                limit?: number;
+                /** @description Cursor for paginating bonds. Format: bond_index */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                principal: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example 1 */
+                        total: number;
+                        /**
+                         * @description Number of results per page
+                         * @default 20
+                         */
+                        limit: number;
+                        cursor: {
+                            next: string | null;
+                            previous: string | null;
+                            current: string | null;
+                        };
+                        results: {
+                            /** @description The index of the bond in the PoX-5 bond list */
+                            bond_index: number;
+                            status: "enrolled" | "running" | "early_exit" | "unlocked";
+                            /** @description Whether the position is active */
+                            active: boolean;
+                            enrollment: {
+                                /**
+                                 * Transaction ID
+                                 * @description Transaction ID
+                                 * @example 0xf6bd5f4a7b26184a3466340b2e99fd003b4962c0e382a7e4b6a13df3dd7a91c6
+                                 */
+                                tx_id: string;
+                                btc_lockup: {
+                                    /** @description The amount of BTC that is locked up for this principal */
+                                    amount: string;
+                                };
+                            };
+                            locked: {
+                                /** @description The amount of BTC locked in this bond position */
                                 btc: string;
+                                /** @description The amount of STX locked in this bond position */
+                                stx: string;
                             };
-                        };
-                        enrollment: {
-                            /**
-                             * Transaction ID
-                             * @description Transaction ID
-                             * @example 0xf6bd5f4a7b26184a3466340b2e99fd003b4962c0e382a7e4b6a13df3dd7a91c6
-                             */
-                            tx_id: string;
-                            btc_lockup: {
-                                /** @description The amount of BTC that is locked up for this principal */
-                                amount: string;
+                            rewards: {
+                                btc: {
+                                    /** @description The lifetime sBTC reward sats accrued to this position */
+                                    accrued: string;
+                                    /** @description The lifetime sBTC reward sats already claimed against this position */
+                                    claimed: string;
+                                    /** @description The sBTC reward sats currently claimable (accrued minus claimed) */
+                                    claimable: string;
+                                };
                             };
-                        };
-                        /** @description The amount of STX that is locked up for this principal */
-                        amount: string;
-                        /** @description The sBTC reward sats accrued to this participant's position */
-                        accrued_rewards: string;
-                    }[];
+                        }[];
+                    };
                 };
             };
             /** @description Default Response */
@@ -33654,6 +34003,135 @@ export interface operations {
                              * @description Transaction ID
                              */
                             tx_id: string;
+                        };
+                    };
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    get_staking_signers: {
+        parameters: {
+            query?: {
+                /** @description Number of results per page */
+                limit?: number;
+                /** @description Cursor for paginating staking signers (sorted by signer). Format: signer principal */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example 1 */
+                        total: number;
+                        /**
+                         * @description Number of results per page
+                         * @default 100
+                         */
+                        limit: number;
+                        cursor: {
+                            next: string | null;
+                            previous: string | null;
+                            current: string | null;
+                        };
+                        results: {
+                            signer: string;
+                            /**
+                             * @description The registered compressed secp256k1 public key, as a `0x`-prefixed hex string
+                             * @example 0x03a0f9e1...
+                             */
+                            signer_key: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    get_staking_signer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                principal: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        signer: string;
+                        /**
+                         * @description The registered compressed secp256k1 public key, as a `0x`-prefixed hex string
+                         * @example 0x03a0f9e1...
+                         */
+                        signer_key: string;
+                        transaction: {
+                            /**
+                             * Transaction ID
+                             * @description Transaction ID
+                             * @example 0xf6bd5f4a7b26184a3466340b2e99fd003b4962c0e382a7e4b6a13df3dd7a91c6
+                             */
+                            tx_id: string;
+                            block: {
+                                /** @description Height of the block this transactions was associated with */
+                                height: number;
+                                /** @description Hash of the blocked this transactions was associated with */
+                                hash: string;
+                                /** @description Hash of the index block this transactions was associated with */
+                                index_hash: string;
+                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
+                                time: number;
+                                /** @description Index of the transaction, indicating the order. Starts at `0` and increases with each transaction */
+                                tx_index: number;
+                            };
+                            bitcoin_block: {
+                                /** @description Height of the anchor burn block. */
+                                height: number;
+                                /** @description Unix timestamp (in seconds) indicating when this block was mined. */
+                                time: number;
+                            };
                         };
                     };
                 };
