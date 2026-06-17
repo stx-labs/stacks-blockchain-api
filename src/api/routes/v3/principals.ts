@@ -147,7 +147,7 @@ export const PrincipalsRoutes: FastifyPluginAsync<
     {
       preHandler: handlePrincipalMempoolCache,
       schema: {
-        operationId: 'get_principal_stx_balance',
+        operationId: 'get_principal_balances_stx',
         summary: 'Get principal STX balance',
         description:
           "Get a principal's STX balance: its total and spendable (available) balance, any locked STX, and the projected balance from pending mempool transactions.",
@@ -206,7 +206,7 @@ export const PrincipalsRoutes: FastifyPluginAsync<
     {
       preHandler: handlePrincipalCache,
       schema: {
-        operationId: 'get_principal_ft_balances',
+        operationId: 'get_principal_balances_ft',
         summary: 'Get principal FT balances',
         description: "Get a principal's fungible-token balances, sorted by balance descending.",
         tags: ['Accounts'],
@@ -248,7 +248,7 @@ export const PrincipalsRoutes: FastifyPluginAsync<
     {
       preHandler: handlePrincipalCache,
       schema: {
-        operationId: 'get_principal_nft_balances',
+        operationId: 'get_principal_balances_nft',
         summary: 'Get principal NFT balances',
         description:
           'Get the non-fungible token instances currently owned by a principal, ordered by asset identifier and value.',
