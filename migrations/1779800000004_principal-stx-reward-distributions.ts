@@ -2,18 +2,32 @@ import type { ColumnDefinitions, MigrationBuilder } from 'node-pg-migrate';
 
 export const shorthands: ColumnDefinitions | undefined = undefined;
 
+/**
+ * Per-staker STX-staking reward distribution source rows. Each pox-5
+ * `calculate-rewards` event allocates `total_stx_staker_rewards` (sBTC sats) to
+ * STX stackers at a uniform `accrued_rewards_per_ustx` rate; we split that rate
+ * across the current pox-5 STX lockers by their locked uSTX and write one row
+ * here per staker per calculation. These rows back the running
+ * `principal_staking_totals.stx_accrued_rewards` total under reorgs — analogous
+ * to `principal_bond_reward_distributions` for bond rewards.
+ */
 export function up(pgm: MigrationBuilder): void {
-  pgm.createTable('principal_bond_positions', {
+  pgm.createTable('principal_stx_reward_distributions', {
     id: {
       type: 'bigserial',
       primaryKey: true,
     },
     principal: {
-      type: 'string',
+      type: 'text',
       notNull: true,
     },
-    bond_index: {
+    reward_cycle: {
       type: 'integer',
+      notNull: true,
+    },
+    // sBTC reward sats this staker accrued from this calculation.
+    reward_amount: {
+      type: 'numeric',
       notNull: true,
     },
     tx_id: {
@@ -67,50 +81,13 @@ export function up(pgm: MigrationBuilder): void {
       type: 'boolean',
       notNull: true,
     },
-    status: {
-      type: 'smallint',
-      notNull: true,
-    },
-    active: {
-      type: 'boolean',
-      notNull: true,
-    },
-    btc_locked: {
-      type: 'numeric',
-      notNull: true,
-    },
-    stx_locked: {
-      type: 'numeric',
-      notNull: true,
-    },
-    btc_paid_out: {
-      type: 'numeric',
-      notNull: true,
-    },
-    // Running sBTC reward sats accrued to this position, distributed from the
-    // bond's per-sat reward rate by this participant's staked weight. Maintained
-    // incrementally on write (and via signed deltas on reorg).
-    accrued_rewards: {
-      type: 'numeric',
-      notNull: true,
-      default: 0,
-    },
-    // Running sBTC reward sats already claimed against this position, from
-    // pox-5 `claim-staker-rewards-for-signer` events. Claimable rewards are
-    // `accrued_rewards - claimed_rewards`. Maintained incrementally on write
-    // (and via signed deltas on reorg).
-    claimed_rewards: {
-      type: 'numeric',
-      notNull: true,
-      default: 0,
-    },
   });
 
-  pgm.createIndex('principal_bond_positions', ['principal', 'bond_index'], {
-    unique: true,
-  });
+  pgm.createIndex('principal_stx_reward_distributions', 'tx_id');
+  pgm.createIndex('principal_stx_reward_distributions', ['index_block_hash', 'canonical']);
+  pgm.createIndex('principal_stx_reward_distributions', 'principal');
 }
 
 export function down(pgm: MigrationBuilder): void {
-  pgm.dropTable('principal_bond_positions');
+  pgm.dropTable('principal_stx_reward_distributions');
 }

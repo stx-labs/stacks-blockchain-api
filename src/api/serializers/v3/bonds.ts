@@ -5,6 +5,7 @@ import {
   DbBondRegistrationSummary,
   DbBondSummary,
   DbPrincipalBondPosition,
+  DbPrincipalStakingSummary,
 } from '../../../datastore/v3/types.js';
 import { DbBondLockupType, DbPrincipalBondPositionStatus } from '../../../datastore/common.js';
 import { Bond, BondSummary } from '../../schemas/v3/entities/bonds.js';
@@ -13,11 +14,22 @@ import { BondAllowlist } from '../../schemas/v3/entities/bond-allowlist-entries.
 import { BondRegistration } from '../../schemas/v3/entities/bond-registrations.js';
 import { BondRegistrationSummary } from '../../schemas/v3/entities/bond-registration-summaries.js';
 import {
+  BtcRewards,
   PrincipalBondPosition,
   PrincipalBondPositionStatus,
+  PrincipalStakingSummary,
 } from '../../schemas/v3/entities/principal-bond-positions.js';
 
-function getBondStatus(summary: DbBondSummary, currentBurnBlockHeight: number): BondStatus {
+/** Build the `{ accrued, claimed, claimable }` sBTC reward triple from running totals. */
+function serializeBtcRewards(accrued: string, claimed: string): BtcRewards {
+  return {
+    accrued,
+    claimed,
+    claimable: (BigInt(accrued) - BigInt(claimed)).toString(),
+  };
+}
+
+function serializeBondStatus(summary: DbBondSummary, currentBurnBlockHeight: number): BondStatus {
   if (currentBurnBlockHeight < summary.bond_start_height) {
     return 'upcoming';
   }
@@ -39,7 +51,7 @@ export function serializeDbBondSummary(
   return {
     index: summary.bond_index,
     pox_version: 'pox5',
-    status: getBondStatus(summary, currentBurnBlockHeight),
+    status: serializeBondStatus(summary, currentBurnBlockHeight),
     parameters: {
       target_rate_bps: summary.target_rate,
       stx_value_ratio: summary.stx_value_ratio,
@@ -104,7 +116,7 @@ export function serializeDbBondAllowlistEntry(entry: DbBondAllowlistEntry): Bond
   };
 }
 
-function getPrincipalBondPositionStatus(
+function serializePrincipalBondPositionStatus(
   status: DbPrincipalBondPositionStatus
 ): PrincipalBondPositionStatus {
   switch (status) {
@@ -119,7 +131,7 @@ function getPrincipalBondPositionStatus(
   }
 }
 
-function getBondLockupType(type: DbBondLockupType): 'l1' | 'l2' {
+function serializeBondLockupType(type: DbBondLockupType): 'l1' | 'l2' {
   switch (type) {
     case DbBondLockupType.L1:
       return 'l1';
@@ -133,25 +145,44 @@ export function serializeDbPrincipalBondPosition(
 ): PrincipalBondPosition {
   return {
     bond_index: position.bond_index,
-    status: getPrincipalBondPositionStatus(position.status),
+    status: serializePrincipalBondPositionStatus(position.status),
     active: position.active,
-    balances: {
-      locked: {
-        btc: position.btc_locked,
-        stx: position.stx_locked,
-      },
-      paid_out: {
-        btc: position.btc_paid_out,
-      },
-    },
     enrollment: {
       tx_id: position.tx_id,
       btc_lockup: {
         amount: position.btc_locked,
       },
     },
-    amount: position.stx_locked,
-    accrued_rewards: position.accrued_rewards,
+    locked: {
+      btc: position.btc_locked,
+      stx: position.stx_locked,
+    },
+    rewards: {
+      btc: serializeBtcRewards(position.accrued_rewards, position.claimed_rewards),
+    },
+  };
+}
+
+export function serializeDbPrincipalStakingSummary(
+  summary: DbPrincipalStakingSummary
+): PrincipalStakingSummary {
+  return {
+    stx: {
+      locked: summary.stx.locked,
+      rewards: {
+        btc: serializeBtcRewards(summary.stx.accrued_rewards, summary.stx.claimed_rewards),
+      },
+    },
+    bonds: {
+      count: summary.bonds.count,
+      locked: {
+        btc: summary.bonds.btc_locked,
+        stx: summary.bonds.stx_locked,
+      },
+      rewards: {
+        btc: serializeBtcRewards(summary.bonds.accrued_rewards, summary.bonds.claimed_rewards),
+      },
+    },
   };
 }
 
@@ -161,7 +192,7 @@ export function serializeDbBondRegistrationSummary(
   return {
     signer: entry.signer,
     staker: entry.staker,
-    type: getBondLockupType(entry.btc_lockup_type),
+    type: serializeBondLockupType(entry.btc_lockup_type),
     balances: {
       btc: entry.sats_total,
       stx: entry.amount_ustx,

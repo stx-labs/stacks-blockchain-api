@@ -75,6 +75,9 @@ import {
   DbBondRewardCalculationInsertValues,
   DbBondRewardDistributionInsertValues,
   DbPrincipalBondRewardDistributionInsertValues,
+  DbPrincipalBondRewardClaimInsertValues,
+  DbPrincipalStxRewardDistributionInsertValues,
+  DbSignerRewardClaimInsertValues,
 } from './common.js';
 import {
   BLOCK_COLUMNS,
@@ -115,6 +118,8 @@ import {
   Pox5EventAnnounceL1EarlyExit,
   Pox5EventBondDistribution,
   Pox5EventCalculateRewards,
+  Pox5EventClaimRewards,
+  Pox5EventClaimStakerRewardsForSigner,
   Pox5EventName,
   Pox5EventRegisterForBond,
   Pox5EventSetupBond,
@@ -583,9 +588,11 @@ export class PgWriteStore extends PgStore {
           case Pox5EventName.BondDistribution:
             await this.updateBondRewardDistribution(sql, txLocation, poxEvent);
             break;
-          case Pox5EventName.ClaimRewards:
           case Pox5EventName.ClaimStakerRewardsForSigner:
-            // TODO: Implement
+            await this.updatePrincipalBondRewardClaim(sql, txLocation, poxEvent);
+            break;
+          case Pox5EventName.ClaimRewards:
+            await this.updateSignerRewardClaim(sql, txLocation, poxEvent);
             break;
           case Pox5EventName.Stake:
           case Pox5EventName.StakeUpdate:
@@ -747,18 +754,31 @@ export class PgWriteStore extends PgStore {
               upserted_position.btc_locked::numeric
                 - COALESCE(existing_position.btc_locked::numeric, 0) AS btc_delta,
               upserted_position.stx_locked::numeric
-                - COALESCE(existing_position.stx_locked::numeric, 0) AS stx_delta
+                - COALESCE(existing_position.stx_locked::numeric, 0) AS stx_delta,
+              -- A brand-new canonical position adds 1 to the principal's bond count.
+              CASE WHEN existing_position.btc_locked IS NULL THEN 1 ELSE 0 END AS count_delta
             FROM upserted_position
             LEFT JOIN existing_position ON true
+          ),
+          bond_update AS (
+            UPDATE bonds
+            SET
+              btc_locked = bonds.btc_locked + delta.btc_delta,
+              stx_locked = bonds.stx_locked + delta.stx_delta
+            FROM delta
+            WHERE bonds.bond_index = ${bondIndex}
+              AND bonds.canonical = true
+              AND bonds.microblock_canonical = true
+            RETURNING 1
           )
-          UPDATE bonds
-          SET
-            btc_locked = bonds.btc_locked + delta.btc_delta,
-            stx_locked = bonds.stx_locked + delta.stx_delta
+          INSERT INTO principal_staking_totals
+            (principal, bond_count, bond_btc_locked, bond_stx_locked)
+          SELECT ${position.principal}, delta.count_delta, delta.btc_delta, delta.stx_delta
           FROM delta
-          WHERE bonds.bond_index = ${bondIndex}
-            AND bonds.canonical = true
-            AND bonds.microblock_canonical = true
+          ON CONFLICT (principal) DO UPDATE SET
+            bond_count = principal_staking_totals.bond_count + EXCLUDED.bond_count,
+            bond_btc_locked = principal_staking_totals.bond_btc_locked + EXCLUDED.bond_btc_locked,
+            bond_stx_locked = principal_staking_totals.bond_stx_locked + EXCLUDED.bond_stx_locked
         `;
         break;
       }
@@ -829,15 +849,24 @@ export class PgWriteStore extends PgStore {
               updated_position.bond_index
             FROM updated_position
             INNER JOIN existing_position USING (bond_index)
+          ),
+          bond_update AS (
+            UPDATE bonds
+            SET
+              btc_locked = bonds.btc_locked + delta.btc_delta,
+              stx_locked = bonds.stx_locked + delta.stx_delta
+            FROM delta
+            WHERE bonds.bond_index = delta.bond_index
+              AND bonds.canonical = true
+              AND bonds.microblock_canonical = true
+            RETURNING 1
           )
-          UPDATE bonds
-          SET
-            btc_locked = bonds.btc_locked + delta.btc_delta,
-            stx_locked = bonds.stx_locked + delta.stx_delta
+          INSERT INTO principal_staking_totals (principal, bond_btc_locked, bond_stx_locked)
+          SELECT ${event.data.staker}, delta.btc_delta, delta.stx_delta
           FROM delta
-          WHERE bonds.bond_index = delta.bond_index
-            AND bonds.canonical = true
-            AND bonds.microblock_canonical = true
+          ON CONFLICT (principal) DO UPDATE SET
+            bond_btc_locked = principal_staking_totals.bond_btc_locked + EXCLUDED.bond_btc_locked,
+            bond_stx_locked = principal_staking_totals.bond_stx_locked + EXCLUDED.bond_stx_locked
         `;
         return;
     }
@@ -902,7 +931,88 @@ export class PgWriteStore extends PgStore {
           AND canonical = true
           AND microblock_canonical = true
       `;
+      await sql`
+        INSERT INTO principal_staking_totals (principal, bond_accrued_rewards)
+        VALUES (${p.principal}, ${p.reward_amount}::numeric)
+        ON CONFLICT (principal) DO UPDATE SET
+          bond_accrued_rewards = principal_staking_totals.bond_accrued_rewards + EXCLUDED.bond_accrued_rewards
+      `;
     }
+  }
+
+  /**
+   * Record a per-staker reward claim (pox-5 `claim-staker-rewards-for-signer`)
+   * and, for bond claims, roll the claimed amount into the position's running
+   * `claimed_rewards` total. Claims with a null `bond_index` are STX-staking
+   * reward claims — they only get a source row (no bond position to update).
+   */
+  private async updatePrincipalBondRewardClaim(
+    sql: PgSqlClient,
+    txLocation: DbTxLocation,
+    event: Pox5EventClaimStakerRewardsForSigner
+  ) {
+    const bondIndex = event.data.bond_index === null ? null : parseInt(event.data.bond_index);
+    const claim: DbPrincipalBondRewardClaimInsertValues = {
+      ...txLocation,
+      principal: event.data.staker,
+      signer_manager: event.data.signer_manager,
+      reward_cycle: parseInt(event.data.reward_cycle),
+      bond_index: bondIndex,
+      rewards_claimed: event.data.rewards_claimed,
+    };
+    await sql`
+      INSERT INTO principal_bond_reward_claims ${sql(claim)}
+    `;
+    if (bondIndex === null) {
+      // STX-staking reward claim (no bond): roll into the staker's running
+      // STX-staking claimed total.
+      await sql`
+        INSERT INTO principal_staking_totals (principal, stx_claimed_rewards)
+        VALUES (${event.data.staker}, ${event.data.rewards_claimed}::numeric)
+        ON CONFLICT (principal) DO UPDATE
+        SET stx_claimed_rewards = principal_staking_totals.stx_claimed_rewards + EXCLUDED.stx_claimed_rewards
+      `;
+      return;
+    }
+    await sql`
+      UPDATE principal_bond_positions
+      SET claimed_rewards = claimed_rewards + ${event.data.rewards_claimed}::numeric
+      WHERE principal = ${event.data.staker}
+        AND bond_index = ${bondIndex}
+        AND canonical = true
+        AND microblock_canonical = true
+    `;
+    await sql`
+      INSERT INTO principal_staking_totals (principal, bond_claimed_rewards)
+      VALUES (${event.data.staker}, ${event.data.rewards_claimed}::numeric)
+      ON CONFLICT (principal) DO UPDATE SET
+        bond_claimed_rewards = principal_staking_totals.bond_claimed_rewards + EXCLUDED.bond_claimed_rewards
+    `;
+  }
+
+  /**
+   * Record a per-signer reward claim aggregate (pox-5 `claim-rewards`). This is
+   * audit/bookkeeping only — the per-staker effects are handled by the
+   * `claim-staker-rewards-for-signer` events — so no running totals are touched.
+   */
+  private async updateSignerRewardClaim(
+    sql: PgSqlClient,
+    txLocation: DbTxLocation,
+    event: Pox5EventClaimRewards
+  ) {
+    const claim: DbSignerRewardClaimInsertValues = {
+      ...txLocation,
+      signer_manager: event.data.signer_manager,
+      reward_cycle: parseInt(event.data.reward_cycle),
+      stx_earned: event.data.stx_rewards.earned,
+      stx_rewards_per_token: event.data.stx_rewards.rewards_per_token,
+      bond_rewards: JSON.stringify(event.data.bond_rewards),
+      bond_totals: event.data.bond_totals,
+      total_rewards: event.data.total_rewards,
+    };
+    await sql`
+      INSERT INTO signer_reward_claims ${sql(claim)}
+    `;
   }
 
   /** Cycle-level reward aggregate, from the pox-5 `calculate-rewards` event. */
@@ -927,6 +1037,42 @@ export class PgWriteStore extends PgStore {
     await sql`
       INSERT INTO bond_reward_calculations ${sql(rewardCalculation)}
     `;
+
+    // Split the STX-staker reward pool across the current pox-5 STX lockers by
+    // their locked weight: each staker accrues `floor(locked_ustx * per_ustx /
+    // PRECISION)` (PRECISION = 1e18). The per-uSTX rate is uniform, so this is
+    // the staker's share of `total_stx_staker_rewards` (modulo rounding dust).
+    const perUstx = event.data.accrued_rewards_per_ustx;
+    const rewardCycle = parseInt(event.data.stx_cycle);
+    const stakerRewards = await sql<{ principal: string; reward_amount: string }[]>`
+      SELECT principal,
+        floor(locked_amount::numeric * ${perUstx}::numeric / 1000000000000000000)::text AS reward_amount
+      FROM stx_locked_balances
+      WHERE pox_version = 5
+        AND floor(locked_amount::numeric * ${perUstx}::numeric / 1000000000000000000) > 0
+    `;
+    if (stakerRewards.length === 0) {
+      return;
+    }
+    const rewardRows: DbPrincipalStxRewardDistributionInsertValues[] = stakerRewards.map(s => ({
+      ...txLocation,
+      principal: s.principal,
+      reward_cycle: rewardCycle,
+      reward_amount: s.reward_amount,
+    }));
+    for (const batch of batchIterate(rewardRows, INSERT_BATCH_SIZE)) {
+      await sql`
+        INSERT INTO principal_stx_reward_distributions ${sql(batch)}
+      `;
+    }
+    for (const s of stakerRewards) {
+      await sql`
+        INSERT INTO principal_staking_totals (principal, stx_accrued_rewards)
+        VALUES (${s.principal}, ${s.reward_amount}::numeric)
+        ON CONFLICT (principal) DO UPDATE
+        SET stx_accrued_rewards = principal_staking_totals.stx_accrued_rewards + EXCLUDED.stx_accrued_rewards
+      `;
+    }
   }
 
   /**
@@ -4336,6 +4482,7 @@ export class PgWriteStore extends PgStore {
       'bonds',
       'bond_reward_distributions',
       'bond_reward_calculations',
+      'signer_reward_claims',
     ]) {
       q.enqueue(async () => {
         await sql`
@@ -4399,22 +4546,40 @@ export class PgWriteStore extends PgStore {
           UPDATE principal_bond_positions
           SET canonical = ${canonical}
           WHERE index_block_hash = ${indexBlockHash} AND canonical != ${canonical}
-          RETURNING bond_index, btc_locked, stx_locked, btc_paid_out, canonical
+          RETURNING principal, bond_index, btc_locked, stx_locked, btc_paid_out, canonical
         ),
-        changes AS (
+        bond_changes AS (
           SELECT bond_index,
             SUM(CASE WHEN canonical THEN btc_locked::numeric ELSE -btc_locked::numeric END) AS btc_change,
             SUM(CASE WHEN canonical THEN stx_locked::numeric ELSE -stx_locked::numeric END) AS stx_change,
             SUM(CASE WHEN canonical THEN btc_paid_out::numeric ELSE -btc_paid_out::numeric END) AS paid_change
           FROM updated
           GROUP BY bond_index
+        ),
+        bond_update AS (
+          UPDATE bonds AS b
+          SET btc_locked = b.btc_locked + c.btc_change,
+              stx_locked = b.stx_locked + c.stx_change,
+              btc_paid_out = b.btc_paid_out + c.paid_change
+          FROM bond_changes c
+          WHERE b.bond_index = c.bond_index
+          RETURNING 1
+        ),
+        principal_changes AS (
+          SELECT principal,
+            SUM(CASE WHEN canonical THEN 1 ELSE -1 END) AS count_change,
+            SUM(CASE WHEN canonical THEN btc_locked::numeric ELSE -btc_locked::numeric END) AS btc_change,
+            SUM(CASE WHEN canonical THEN stx_locked::numeric ELSE -stx_locked::numeric END) AS stx_change
+          FROM updated
+          GROUP BY principal
         )
-        UPDATE bonds AS b
-        SET btc_locked = b.btc_locked + c.btc_change,
-            stx_locked = b.stx_locked + c.stx_change,
-            btc_paid_out = b.btc_paid_out + c.paid_change
-        FROM changes c
-        WHERE b.bond_index = c.bond_index
+        INSERT INTO principal_staking_totals
+          (principal, bond_count, bond_btc_locked, bond_stx_locked)
+        SELECT principal, count_change, btc_change, stx_change FROM principal_changes
+        ON CONFLICT (principal) DO UPDATE SET
+          bond_count = principal_staking_totals.bond_count + EXCLUDED.bond_count,
+          bond_btc_locked = principal_staking_totals.bond_btc_locked + EXCLUDED.bond_btc_locked,
+          bond_stx_locked = principal_staking_totals.bond_stx_locked + EXCLUDED.bond_stx_locked
       `;
     });
     q.enqueue(async () => {
@@ -4432,11 +4597,99 @@ export class PgWriteStore extends PgStore {
             SUM(CASE WHEN canonical THEN reward_amount::numeric ELSE -reward_amount::numeric END) AS reward_change
           FROM updated
           GROUP BY principal, bond_index
+        ),
+        pos_update AS (
+          UPDATE principal_bond_positions p
+          SET accrued_rewards = p.accrued_rewards + c.reward_change
+          FROM changes c
+          WHERE p.principal = c.principal AND p.bond_index = c.bond_index
+          RETURNING 1
+        ),
+        principal_changes AS (
+          SELECT principal, SUM(reward_change) AS reward_change
+          FROM changes
+          GROUP BY principal
         )
-        UPDATE principal_bond_positions p
-        SET accrued_rewards = p.accrued_rewards + c.reward_change
+        INSERT INTO principal_staking_totals (principal, bond_accrued_rewards)
+        SELECT principal, reward_change FROM principal_changes
+        ON CONFLICT (principal) DO UPDATE SET
+          bond_accrued_rewards = principal_staking_totals.bond_accrued_rewards + EXCLUDED.bond_accrued_rewards
+      `;
+    });
+    q.enqueue(async () => {
+      // Flip the per-staker reward claim source rows and apply the signed delta
+      // to each bond position's running claimed_rewards total (bond claims).
+      await sql`
+        WITH updated AS (
+          UPDATE principal_bond_reward_claims
+          SET canonical = ${canonical}
+          WHERE index_block_hash = ${indexBlockHash} AND canonical != ${canonical}
+          RETURNING principal, bond_index, rewards_claimed, canonical
+        ),
+        changes AS (
+          SELECT principal, bond_index,
+            SUM(CASE WHEN canonical THEN rewards_claimed::numeric ELSE -rewards_claimed::numeric END) AS claim_change
+          FROM updated
+          WHERE bond_index IS NOT NULL
+          GROUP BY principal, bond_index
+        ),
+        pos_update AS (
+          UPDATE principal_bond_positions p
+          SET claimed_rewards = p.claimed_rewards + c.claim_change
+          FROM changes c
+          WHERE p.principal = c.principal AND p.bond_index = c.bond_index
+          RETURNING 1
+        ),
+        principal_changes AS (
+          SELECT principal, SUM(claim_change) AS claim_change
+          FROM changes
+          GROUP BY principal
+        )
+        INSERT INTO principal_staking_totals (principal, bond_claimed_rewards)
+        SELECT principal, claim_change FROM principal_changes
+        ON CONFLICT (principal) DO UPDATE SET
+          bond_claimed_rewards = principal_staking_totals.bond_claimed_rewards + EXCLUDED.bond_claimed_rewards
+      `;
+      // The flip above also settled the STX-staking claims (NULL bond_index);
+      // apply their signed delta to the STX-staking claimed total. The rows are
+      // now at `canonical`, so the direction follows that flag.
+      await sql`
+        WITH changes AS (
+          SELECT principal, SUM(rewards_claimed::numeric) AS total
+          FROM principal_bond_reward_claims
+          WHERE index_block_hash = ${indexBlockHash}
+            AND canonical = ${canonical}
+            AND bond_index IS NULL
+          GROUP BY principal
+        )
+        UPDATE principal_staking_totals p
+        SET stx_claimed_rewards = ${
+          canonical ? sql`p.stx_claimed_rewards + c.total` : sql`p.stx_claimed_rewards - c.total`
+        }
         FROM changes c
-        WHERE p.principal = c.principal AND p.bond_index = c.bond_index
+        WHERE p.principal = c.principal
+      `;
+    });
+    q.enqueue(async () => {
+      // Flip the per-staker STX reward distribution source rows and apply the
+      // signed delta to each staker's running STX-staking accrued_rewards total.
+      await sql`
+        WITH updated AS (
+          UPDATE principal_stx_reward_distributions
+          SET canonical = ${canonical}
+          WHERE index_block_hash = ${indexBlockHash} AND canonical != ${canonical}
+          RETURNING principal, reward_amount, canonical
+        ),
+        changes AS (
+          SELECT principal,
+            SUM(CASE WHEN canonical THEN reward_amount::numeric ELSE -reward_amount::numeric END) AS reward_change
+          FROM updated
+          GROUP BY principal
+        )
+        UPDATE principal_staking_totals p
+        SET stx_accrued_rewards = p.stx_accrued_rewards + c.reward_change
+        FROM changes c
+        WHERE p.principal = c.principal
       `;
     });
     q.enqueue(async () => {

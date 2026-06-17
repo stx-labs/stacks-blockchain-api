@@ -193,7 +193,31 @@ export interface DbPrincipalBondPosition {
   stx_locked: string;
   btc_paid_out: string;
   accrued_rewards: string;
+  claimed_rewards: string;
   tx_id: string;
+}
+
+/** A principal's pox-5 STX-staking position: locked uSTX plus running sBTC reward totals. */
+export interface DbPrincipalStxStaking {
+  /** Current uSTX locked in pox-5 STX staking. */
+  locked: string;
+  accrued_rewards: string;
+  claimed_rewards: string;
+}
+
+/** Aggregate of a principal's bond positions (counts + summed locks/rewards). */
+export interface DbPrincipalBondStakingAggregate {
+  count: number;
+  btc_locked: string;
+  stx_locked: string;
+  accrued_rewards: string;
+  claimed_rewards: string;
+}
+
+/** One-call staking overview: the STX-staking position plus the bond aggregate. */
+export interface DbPrincipalStakingSummary {
+  stx: DbPrincipalStxStaking;
+  bonds: DbPrincipalBondStakingAggregate;
 }
 
 export interface DbTransactionCursor {

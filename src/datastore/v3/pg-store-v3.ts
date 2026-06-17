@@ -11,6 +11,7 @@ import {
   DbPrincipalBondPosition,
   DbPrincipalFtBalance,
   DbPrincipalNftBalance,
+  DbPrincipalStakingSummary,
   DbPrincipalTransactionSummary,
   DbTransaction,
   DbTransactionCursor,
@@ -29,7 +30,7 @@ import {
   TX_COLUMNS,
   TX_SUMMARY_COLUMNS,
 } from './constants.js';
-import { prefixedCols } from '../helpers.js';
+import { MaterializedStxLockRow, prefixedCols, resolveMaterializedStxLock } from '../helpers.js';
 import { Principal } from '../../api/schemas/v3/entities/common.js';
 import { normalizeHashString } from '../../helpers.js';
 import { BlockIdParam } from '../../api/routes/v2/schemas.js';
@@ -1159,22 +1160,126 @@ export class PgStoreV3 extends BasePgStoreModule {
   }
 
   /**
-   * Gets all bond positions for a principal (across the bonds it is enrolled in).
+   * One-call staking overview for a principal: its (singleton) pox-5 STX-staking
+   * position plus aggregate totals across all of its bond positions.
+   * @param args - The arguments for the query.
+   * @returns The staking summary.
+   */
+  async getPrincipalStakingSummary(args: {
+    principal: Principal;
+  }): Promise<DbPrincipalStakingSummary> {
+    return await this.sqlTransaction(async sql => {
+      // The pox-5 STX staking lock (latest-wins materialized row), resolved
+      // against the current burn tip so an expired-but-not-unstaked lock reads
+      // as 0 — consistent with `/balances/stx`. pox-5 has no force-unlock
+      // height, so only natural expiry applies (forceUnlockHeights = null).
+      const [tip] = await sql<{ burn_block_height: number }[]>`
+        SELECT burn_block_height FROM chain_tip
+      `;
+      const [lockRow] = await sql<MaterializedStxLockRow[]>`
+        SELECT locked_amount, unlock_burn_height, pox_version, lock_tx_id,
+          lock_block_height, burnchain_lock_height
+        FROM stx_locked_balances
+        WHERE principal = ${args.principal} AND pox_version = 5
+        LIMIT 1
+      `;
+      const resolvedLock = resolveMaterializedStxLock(lockRow, tip?.burn_block_height ?? 0, null);
+      // The staking summary is materialized — a single-row lookup, no aggregates.
+      const [totals] = await sql<
+        {
+          stx_accrued_rewards: string;
+          stx_claimed_rewards: string;
+          bond_count: number;
+          bond_btc_locked: string;
+          bond_stx_locked: string;
+          bond_accrued_rewards: string;
+          bond_claimed_rewards: string;
+        }[]
+      >`
+        SELECT stx_accrued_rewards, stx_claimed_rewards, bond_count,
+          bond_btc_locked, bond_stx_locked, bond_accrued_rewards, bond_claimed_rewards
+        FROM principal_staking_totals
+        WHERE principal = ${args.principal}
+        LIMIT 1
+      `;
+      return {
+        stx: {
+          locked: resolvedLock.locked.toString(),
+          accrued_rewards: totals?.stx_accrued_rewards ?? '0',
+          claimed_rewards: totals?.stx_claimed_rewards ?? '0',
+        },
+        bonds: {
+          count: totals?.bond_count ?? 0,
+          btc_locked: totals?.bond_btc_locked ?? '0',
+          stx_locked: totals?.bond_stx_locked ?? '0',
+          accrued_rewards: totals?.bond_accrued_rewards ?? '0',
+          claimed_rewards: totals?.bond_claimed_rewards ?? '0',
+        },
+      };
+    });
+  }
+
+  /**
+   * Gets a principal's bond positions, cursor-paginated by `bond_index` ascending.
    * @param args - The arguments for the query.
    * @returns The principal's bond positions.
    */
-  async getPrincipalStakingPositions(args: {
+  async getPrincipalBondPositions(args: {
     principal: Principal;
-  }): Promise<DbPrincipalBondPosition[]> {
+    limit: number;
+    cursor?: BondCursor;
+  }): Promise<DbCursorPaginatedResult<DbPrincipalBondPosition>> {
     return await this.sqlTransaction(async sql => {
-      return await sql<DbPrincipalBondPosition[]>`
-        SELECT ${sql(PRINCIPAL_BOND_POSITION_COLUMNS)}
-        FROM principal_bond_positions
-        WHERE canonical = true
-          AND microblock_canonical = true
-          AND principal = ${args.principal}
-        ORDER BY bond_index ASC
+      // The position count is materialized on `principal_staking_totals` — a
+      // single-row lookup rather than a COUNT over `principal_bond_positions`.
+      const [totals] = await sql<{ bond_count: number }[]>`
+        SELECT bond_count FROM principal_staking_totals WHERE principal = ${args.principal} LIMIT 1
       `;
+      const total = totals?.bond_count ?? 0;
+
+      const cursorFilter = args.cursor ? sql`AND bond_index >= ${parseInt(args.cursor)}` : sql``;
+      const resultQuery = await sql<DbPrincipalBondPosition[]>`
+        SELECT ${sql(prefixedCols(PRINCIPAL_BOND_POSITION_COLUMNS, 'p'))}
+        FROM principal_bond_positions p
+        WHERE p.canonical = true
+          AND p.microblock_canonical = true
+          AND p.principal = ${args.principal}
+          ${cursorFilter}
+        ORDER BY p.bond_index ASC
+        LIMIT ${args.limit + 1}
+      `;
+
+      const hasNextPage = resultQuery.count > args.limit;
+      const results = hasNextPage ? resultQuery.slice(0, args.limit) : resultQuery;
+
+      const nextResult = resultQuery[resultQuery.length - 1];
+      const nextCursor = hasNextPage && nextResult ? `${nextResult.bond_index}` : null;
+      const firstResult = results[0];
+      const currentCursor = firstResult ? `${firstResult.bond_index}` : null;
+
+      let prevCursor: string | null = null;
+      if (firstResult) {
+        const prevPageQuery = await sql<{ bond_index: number }[]>`
+          SELECT bond_index FROM principal_bond_positions
+          WHERE canonical = true AND microblock_canonical = true
+            AND principal = ${args.principal}
+            AND bond_index < ${firstResult.bond_index}
+          ORDER BY bond_index DESC
+          LIMIT ${args.limit}
+        `;
+        if (prevPageQuery.length > 0) {
+          prevCursor = `${prevPageQuery[prevPageQuery.length - 1].bond_index}`;
+        }
+      }
+
+      return {
+        limit: args.limit,
+        next_cursor: nextCursor,
+        prev_cursor: prevCursor,
+        current_cursor: currentCursor,
+        total,
+        results,
+      };
     });
   }
 }

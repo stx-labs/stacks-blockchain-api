@@ -1728,6 +1728,48 @@ export interface DbPrincipalBondRewardDistributionInsertValues extends DbTxLocat
   reward_amount: string;
 }
 
+/**
+ * Per-staker reward claim source row, from the pox-5
+ * `claim-staker-rewards-for-signer` event. Claims with a `bond_index` back the
+ * running `principal_bond_positions.claimed_rewards` total under reorgs; claims
+ * with a null `bond_index` are STX-staking reward claims.
+ */
+export interface DbPrincipalBondRewardClaimInsertValues extends DbTxLocation {
+  principal: string;
+  signer_manager: string;
+  reward_cycle: number;
+  bond_index: number | null;
+  rewards_claimed: string;
+}
+
+/**
+ * Per-staker STX-staking reward distribution source row, from a pox-5
+ * `calculate-rewards` event: the sBTC reward sats a single STX locker accrued
+ * from one calculation (its share of `total_stx_staker_rewards` by locked
+ * weight). Backs the running `principal_staking_totals.stx_accrued_rewards`
+ * total under reorgs.
+ */
+export interface DbPrincipalStxRewardDistributionInsertValues extends DbTxLocation {
+  principal: string;
+  reward_cycle: number;
+  reward_amount: string;
+}
+
+/**
+ * Per-signer reward claim aggregate, from a pox-5 `claim-rewards` event. Pure
+ * bookkeeping/audit data (no running totals are derived from it).
+ */
+export interface DbSignerRewardClaimInsertValues extends DbTxLocation {
+  signer_manager: string;
+  reward_cycle: number;
+  stx_earned: string;
+  stx_rewards_per_token: string;
+  /** JSON-encoded array of `{ bond_index, earned, rewards_per_token }`. */
+  bond_rewards: string;
+  bond_totals: string;
+  total_rewards: string;
+}
+
 /** Per-bond reward distribution, from the pox-5 `bond-distribution` event. */
 export interface DbBondRewardDistributionInsertValues extends DbTxLocation {
   bond_index: number;
