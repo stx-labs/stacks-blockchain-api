@@ -23,9 +23,6 @@ const KEY_B = '0x' + '04'.repeat(33);
 interface StakingSignerItem {
   signer: string;
   signer_key: string;
-  tx_id: string;
-  block_height: number;
-  burn_block_height: number;
 }
 interface SignersPage {
   total: number;
@@ -90,7 +87,6 @@ describe('pox-5 staking signers', () => {
     assert.equal(page.results.length, 1);
     assert.equal(page.results[0].signer, SIGNER_A);
     assert.equal(page.results[0].signer_key, KEY1);
-    assert.equal(page.results[0].block_height, 1);
   });
 
   test('re-registration rotates the key (latest-wins, one row per signer)', async () => {

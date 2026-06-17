@@ -5,9 +5,6 @@ export function serializeDbStakingSigner(signer: DbStakingSigner): StakingSigner
   return {
     signer: signer.signer,
     signer_key: signer.signer_key,
-    tx_id: signer.tx_id,
-    block_height: signer.block_height,
-    burn_block_height: signer.burn_block_height,
   };
 }
 
