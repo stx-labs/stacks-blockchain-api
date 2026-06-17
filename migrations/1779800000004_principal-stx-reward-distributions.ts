@@ -8,7 +8,7 @@ export const shorthands: ColumnDefinitions | undefined = undefined;
  * STX stackers at a uniform `accrued_rewards_per_ustx` rate; we split that rate
  * across the current pox-5 STX lockers by their locked uSTX and write one row
  * here per staker per calculation. These rows back the running
- * `principal_stx_staking_rewards.accrued_rewards` total under reorgs — analogous
+ * `principal_staking_totals.stx_accrued_rewards` total under reorgs — analogous
  * to `principal_bond_reward_distributions` for bond rewards.
  */
 export function up(pgm: MigrationBuilder): void {

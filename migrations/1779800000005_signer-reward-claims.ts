@@ -9,7 +9,7 @@ export const shorthands: ColumnDefinitions | undefined = undefined;
  * the per-bond portion (`bond_rewards`), with `total_rewards` the sum. It is
  * bookkeeping/audit data with no running totals derived from it — the
  * per-staker effects live in `principal_bond_reward_claims` /
- * `principal_stx_staking_rewards` — so reorgs only flip its canonical flag.
+ * `principal_staking_totals` — so reorgs only flip its canonical flag.
  */
 export function up(pgm: MigrationBuilder): void {
   pgm.createTable('signer_reward_claims', {

@@ -1179,6 +1179,78 @@ describe('pox-5 bonds reward accrual', () => {
     assert.equal(alice.claimed, 0n, 'claim reverted');
     assert.equal(alice.claimable, ALICE_EXPECTED);
   });
+
+  test('the materialized summary aggregate tracks distribute, claim, and reorg', async () => {
+    const summaryFor = (principal: string) =>
+      getJson<StakingSummary>(`/extended/v3/principals/${principal}/staking`);
+
+    await db.update(
+      distributionBlock({
+        block_height: 2,
+        block_hash: '0x02',
+        index_block_hash: '0x02',
+        parent_block_hash: '0x01',
+        parent_index_block_hash: '0x01',
+      })
+    );
+    let summary = await summaryFor(ALICE);
+    assert.equal(summary.bonds.count, 1);
+    assert.equal(BigInt(summary.bonds.locked.btc), ALICE_SATS, 'aggregate locked btc');
+    assert.equal(BigInt(summary.bonds.locked.stx), AMOUNT_USTX, 'aggregate locked stx');
+    assert.equal(BigInt(summary.bonds.rewards.btc.accrued), ALICE_EXPECTED, 'aggregate accrued');
+
+    await db.update(
+      claimBlock({
+        block_height: 3,
+        block_hash: '0x03',
+        index_block_hash: '0x03',
+        parent_block_hash: '0x02',
+        parent_index_block_hash: '0x02',
+      })
+    );
+    summary = await summaryFor(ALICE);
+    assert.equal(BigInt(summary.bonds.rewards.btc.claimed), ALICE_CLAIM, 'aggregate claimed');
+    assert.equal(
+      BigInt(summary.bonds.rewards.btc.claimable),
+      ALICE_EXPECTED - ALICE_CLAIM,
+      'aggregate claimable'
+    );
+
+    // Fork B branches from the seed (block 1) and overtakes, orphaning the
+    // distribution and claim blocks. The position survives; accrued + claimed revert.
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 2,
+        block_hash: '0xb2',
+        index_block_hash: '0xb2',
+        parent_block_hash: '0x01',
+        parent_index_block_hash: '0x01',
+      }).build()
+    );
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 3,
+        block_hash: '0xb3',
+        index_block_hash: '0xb3',
+        parent_block_hash: '0xb2',
+        parent_index_block_hash: '0xb2',
+      }).build()
+    );
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 4,
+        block_hash: '0xb4',
+        index_block_hash: '0xb4',
+        parent_block_hash: '0xb3',
+        parent_index_block_hash: '0xb3',
+      }).build()
+    );
+    summary = await summaryFor(ALICE);
+    assert.equal(summary.bonds.count, 1, 'position survives the reorg');
+    assert.equal(BigInt(summary.bonds.locked.btc), ALICE_SATS, 'locked unchanged');
+    assert.equal(BigInt(summary.bonds.rewards.btc.accrued), 0n, 'accrued reverted');
+    assert.equal(BigInt(summary.bonds.rewards.btc.claimed), 0n, 'claimed reverted');
+  });
 });
 
 /**
@@ -1620,5 +1692,13 @@ describe('pox-5 principal bond positions pagination', () => {
     assert.equal(page2.results.length, 1);
     assert.equal(page2.results[0].bond_index, 1);
     assert.deepEqual(page2.cursor, { next: null, previous: '0', current: '1' });
+  });
+
+  test('summary materializes the aggregate of both bond positions', async () => {
+    const summary = await getJson<StakingSummary>(`/extended/v3/principals/${ALICE}/staking`);
+    assert.equal(summary.bonds.count, 2);
+    assert.equal(BigInt(summary.bonds.locked.btc), SBTC_SATS * 2n);
+    assert.equal(BigInt(summary.bonds.locked.stx), AMOUNT_USTX * 2n);
+    assert.equal(BigInt(summary.bonds.rewards.btc.accrued), 0n);
   });
 });
