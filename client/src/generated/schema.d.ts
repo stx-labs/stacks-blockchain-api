@@ -1710,6 +1710,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/extended/v3/principals/{principal}/transactions/{tx_id}/balance-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get principal transaction balance changes
+         * @description Returns the balance changes for a principal's transaction
+         */
+        get: operations["get_principal_transaction_balance_changes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/extended/v3/principals/{principal}/balance-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get principal balance changes
+         * @description Returns the balance changes for a principal across one or more transactions, as a single paginated flat array ordered by chain position descending then by asset.
+         */
+        get: operations["get_principal_balance_changes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/extended/v3/transactions": {
         parameters: {
             query?: never;
@@ -32101,6 +32141,165 @@ export interface operations {
                                 ft: boolean;
                                 /** @description Whether the principal's NFT balance was affected by the transaction */
                                 nft: boolean;
+                            };
+                        }[];
+                    };
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    get_principal_transaction_balance_changes: {
+        parameters: {
+            query?: {
+                /** @description Number of results per page */
+                limit?: number;
+                /** @description Cursor for paginating principal transaction balance changes. Format: `<asset_type>:<asset_identifier>` where `asset_type` is a numeric tag (1=STX, 2=FT, 3=NFT) and `asset_identifier` is `<stx>` for STX or a fully-qualified Clarity asset id such as `SP000…contract-name::asset-name` for FT/NFT. */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                principal: string;
+                /**
+                 * @description Transaction ID
+                 * @example 0xf6bd5f4a7b26184a3466340b2e99fd003b4962c0e382a7e4b6a13df3dd7a91c6
+                 */
+                tx_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example 1 */
+                        total: number;
+                        /**
+                         * @description Number of results per page
+                         * @default 20
+                         */
+                        limit: number;
+                        cursor: {
+                            next: string | null;
+                            previous: string | null;
+                            current: string | null;
+                        };
+                        results: {
+                            asset: {
+                                /** @enum {string} */
+                                type: "stx";
+                            } | {
+                                /** @description The asset type that was affected by the balance change. */
+                                type: "ft" | "nft";
+                                /** @description The identifier of the asset that was affected by the balance change. */
+                                identifier: string;
+                            };
+                            balance_change: {
+                                /** @description Amount sent by the principal */
+                                sent: string;
+                                /** @description Amount received by the principal */
+                                received: string;
+                                /** @description Net balance change for the principal */
+                                net: string;
+                            };
+                        }[];
+                    };
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    get_principal_balance_changes: {
+        parameters: {
+            query: {
+                /** @description Number of results per page */
+                limit?: number;
+                /** @description Cursor for paginating principal balance changes across multiple transactions. Format: `<block_height>:<microblock_sequence>:<tx_index>:<asset_type>:<asset_identifier>`. */
+                cursor?: string;
+                /** @description Transaction IDs to query balance changes for. Provide as repeated querystring values (`?tx_id=A&tx_id=B`) or as a single comma-separated value (`?tx_id=A,B`). */
+                tx_id: string[];
+            };
+            header?: never;
+            path: {
+                principal: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example 1 */
+                        total: number;
+                        /**
+                         * @description Number of results per page
+                         * @default 20
+                         */
+                        limit: number;
+                        cursor: {
+                            next: string | null;
+                            previous: string | null;
+                            current: string | null;
+                        };
+                        results: {
+                            /**
+                             * Transaction ID
+                             * @description Transaction ID
+                             * @example 0xf6bd5f4a7b26184a3466340b2e99fd003b4962c0e382a7e4b6a13df3dd7a91c6
+                             */
+                            tx_id: string;
+                            asset: {
+                                /** @enum {string} */
+                                type: "stx";
+                            } | {
+                                /** @description The asset type that was affected by the balance change. */
+                                type: "ft" | "nft";
+                                /** @description The identifier of the asset that was affected by the balance change. */
+                                identifier: string;
+                            };
+                            balance_change: {
+                                /** @description Amount sent by the principal */
+                                sent: string;
+                                /** @description Amount received by the principal */
+                                received: string;
+                                /** @description Net balance change for the principal */
+                                net: string;
                             };
                         }[];
                     };
