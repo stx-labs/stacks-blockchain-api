@@ -2550,6 +2550,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -2765,6 +2800,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -2980,6 +3050,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -3202,6 +3307,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -3416,6 +3556,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -3630,6 +3805,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -3906,6 +4116,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -4121,6 +4366,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -4336,6 +4616,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -4558,6 +4873,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -4772,6 +5122,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -4986,6 +5371,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -5210,6 +5630,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -5310,6 +5765,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -5410,6 +5900,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -5517,6 +6042,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -5616,6 +6176,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -5715,6 +6310,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -5904,6 +6534,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -6004,6 +6669,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -6104,6 +6804,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -6211,6 +6946,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -6310,6 +7080,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -6409,6 +7214,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -6762,6 +7602,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                         anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -6977,6 +7852,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                         anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -7192,6 +8102,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                         anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -7414,6 +8359,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                         anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -7628,6 +8608,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                         anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -7842,6 +8857,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                         anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -8066,6 +9116,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                         anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -8166,6 +9251,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                         anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -8266,6 +9386,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                         anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -8373,6 +9528,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                         anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -8472,6 +9662,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                         anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -8571,6 +9796,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                         anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -8777,6 +10037,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -8992,6 +10287,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -9207,6 +10537,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -9429,6 +10794,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -9643,6 +11043,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -9857,6 +11292,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -10136,6 +11606,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -10351,6 +11856,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -10566,6 +12106,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -10788,6 +12363,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -11002,6 +12612,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -11216,6 +12861,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -11777,6 +13457,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -11992,6 +13707,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -12207,6 +13957,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -12429,6 +14214,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -12643,6 +14463,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -12857,6 +14712,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -13157,6 +15047,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -13372,6 +15297,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -13587,6 +15547,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -13809,6 +15804,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -14023,6 +16053,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -14237,6 +16302,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -14542,6 +16642,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -14757,6 +16892,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -14972,6 +17142,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -15194,6 +17399,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -15408,6 +17648,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -15622,6 +17897,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -16356,6 +18666,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -16571,6 +18916,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -16786,6 +19166,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -17008,6 +19423,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -17222,6 +19672,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -17436,6 +19921,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -18651,6 +21171,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -18866,6 +21421,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -19081,6 +21671,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -19303,6 +21928,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -19517,6 +22177,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -19731,6 +22426,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -19998,6 +22728,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -20213,6 +22978,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -20428,6 +23228,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -20650,6 +23485,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -20864,6 +23734,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -21078,6 +23983,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -21396,6 +24336,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -21611,6 +24586,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -21826,6 +24836,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -22048,6 +25093,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -22262,6 +25342,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -22476,6 +25591,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -22988,6 +26138,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -23088,6 +26273,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -23188,6 +26408,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -23295,6 +26550,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -23394,6 +26684,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -23493,6 +26818,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -23834,6 +27194,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -24049,6 +27444,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -24264,6 +27694,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -24486,6 +27951,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -24700,6 +28200,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -24914,6 +28449,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -25138,6 +28708,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -25238,6 +28843,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -25338,6 +28978,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -25445,6 +29120,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -25544,6 +29254,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -25643,6 +29388,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -25761,6 +29541,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -25861,6 +29676,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -25961,6 +29811,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -26068,6 +29953,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -26167,6 +30087,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -26266,6 +30221,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -26388,6 +30378,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -26603,6 +30628,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -26818,6 +30878,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -27040,6 +31135,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -27254,6 +31384,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -27468,6 +31633,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -28347,6 +32547,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -28562,6 +32797,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -28777,6 +33047,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -28999,6 +33304,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -29213,6 +33553,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -29427,6 +33802,41 @@ export interface operations {
                                     contract_address: string;
                                     contract_name: string;
                                 };
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                amount: string;
+                                /** @enum {string} */
+                                type: "staking";
+                            } | {
+                                principal: {
+                                    /** @enum {string} */
+                                    type_id: "principal_origin";
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_standard";
+                                    address: string;
+                                } | {
+                                    /** @enum {string} */
+                                    type_id: "principal_contract";
+                                    address: string;
+                                    contract_name: string;
+                                };
+                                condition_code: "not_performed" | "maybe_performed" | "performed";
+                                /** @enum {string} */
+                                type: "pox";
                             })[];
                             /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                             anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -30578,6 +34988,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -30793,6 +35238,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -31008,6 +35488,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -31230,6 +35745,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -31444,6 +35994,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -31658,6 +36243,41 @@ export interface operations {
                                         contract_address: string;
                                         contract_name: string;
                                     };
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                                    amount: string;
+                                    /** @enum {string} */
+                                    type: "staking";
+                                } | {
+                                    principal: {
+                                        /** @enum {string} */
+                                        type_id: "principal_origin";
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_standard";
+                                        address: string;
+                                    } | {
+                                        /** @enum {string} */
+                                        type_id: "principal_contract";
+                                        address: string;
+                                        contract_name: string;
+                                    };
+                                    condition_code: "not_performed" | "maybe_performed" | "performed";
+                                    /** @enum {string} */
+                                    type: "pox";
                                 })[];
                                 /** @description `on_chain_only`: the transaction MUST be included in an anchored block, `off_chain_only`: the transaction MUST be included in a microblock, `any`: the leader can choose where to include the transaction. */
                                 anchor_mode: "on_chain_only" | "off_chain_only" | "any";
@@ -34601,6 +39221,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         /** @description Number of events in the transaction */
                         event_count: number;
@@ -34744,6 +39399,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         /** @description Number of events in the transaction */
                         event_count: number;
@@ -34884,6 +39574,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         /** @description Number of events in the transaction */
                         event_count: number;
@@ -35028,6 +39753,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         /** @description Number of events in the transaction */
                         event_count: number;
@@ -35161,6 +39921,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         /** @description Number of events in the transaction */
                         event_count: number;
@@ -35310,6 +40105,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         /** @description Number of events in the transaction */
                         event_count: number;
@@ -35429,6 +40259,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         replaced_by_tx_id: string | null;
                         /** @enum {string} */
@@ -35534,6 +40399,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         replaced_by_tx_id: string | null;
                         /** @enum {string} */
@@ -35636,6 +40536,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         replaced_by_tx_id: string | null;
                         /** @enum {string} */
@@ -35742,6 +40677,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         replaced_by_tx_id: string | null;
                         /** @enum {string} */
@@ -35837,6 +40807,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         replaced_by_tx_id: string | null;
                         /** @enum {string} */
@@ -35932,6 +40937,41 @@ export interface operations {
                                 contract_address: string;
                                 contract_name: string;
                             };
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "sent_equal_to" | "sent_greater_than" | "sent_greater_than_or_equal_to" | "sent_less_than" | "sent_less_than_or_equal_to";
+                            amount: string;
+                            /** @enum {string} */
+                            type: "staking";
+                        } | {
+                            principal: {
+                                /** @enum {string} */
+                                type_id: "principal_origin";
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_standard";
+                                address: string;
+                            } | {
+                                /** @enum {string} */
+                                type_id: "principal_contract";
+                                address: string;
+                                contract_name: string;
+                            };
+                            condition_code: "not_performed" | "maybe_performed" | "performed";
+                            /** @enum {string} */
+                            type: "pox";
                         })[];
                         replaced_by_tx_id: string | null;
                         /** @enum {string} */

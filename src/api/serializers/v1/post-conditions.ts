@@ -34,6 +34,8 @@ const assetInfoTypeMap = {
   [PostConditionAssetInfoID.STX]: 'stx',
   [PostConditionAssetInfoID.FungibleAsset]: 'fungible',
   [PostConditionAssetInfoID.NonfungibleAsset]: 'non_fungible',
+  [PostConditionAssetInfoID.Staking]: 'staking',
+  [PostConditionAssetInfoID.Pox]: 'pox',
 } as const;
 
 export function serializePostCondition(pc: TxPostCondition) {
@@ -71,6 +73,19 @@ export function serializePostCondition(pc: TxPostCondition) {
           hex: pc.asset_value.hex,
           repr: pc.asset_value.repr,
         },
+      };
+    case PostConditionAssetInfoID.Staking:
+      return {
+        type: assetInfoTypeMap[pc.asset_info_id],
+        condition_code: pc.condition_name,
+        amount: pc.amount,
+        principal: serializePostConditionPrincipal(pc.principal),
+      };
+    case PostConditionAssetInfoID.Pox:
+      return {
+        type: assetInfoTypeMap[pc.asset_info_id],
+        condition_code: pc.condition_name,
+        principal: serializePostConditionPrincipal(pc.principal),
       };
   }
 }
