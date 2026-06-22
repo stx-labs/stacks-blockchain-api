@@ -75,6 +75,19 @@ export function serializePostCondition(pc: TxPostCondition): PostCondition {
           repr: pc.asset_value.repr,
         },
       };
+    case PostConditionAssetInfoID.Staking:
+      return {
+        type: 'staking',
+        condition_code: pc.condition_name,
+        amount: pc.amount,
+        principal: serializePostConditionPrincipal(pc.principal),
+      };
+    case PostConditionAssetInfoID.Pox:
+      return {
+        type: 'pox',
+        condition_code: pc.condition_name,
+        principal: serializePostConditionPrincipal(pc.principal),
+      };
   }
 }
 

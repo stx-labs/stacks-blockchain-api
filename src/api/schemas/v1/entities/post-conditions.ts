@@ -67,8 +67,29 @@ const PostConditionNonFungibleAssetSchema = Type.Object({
   }),
 });
 
+const PostConditionPoxConditionCodeSchema = Type.Union([
+  Type.Literal('not_performed'),
+  Type.Literal('maybe_performed'),
+  Type.Literal('performed'),
+]);
+
+const PostConditionStakingSchema = Type.Object({
+  principal: PostConditionPrincipalSchema,
+  condition_code: PostConditionFungibleConditionCodeSchema,
+  amount: Type.String(),
+  type: Type.Literal('staking'),
+});
+
+const PostConditionPoxSchema = Type.Object({
+  principal: PostConditionPrincipalSchema,
+  condition_code: PostConditionPoxConditionCodeSchema,
+  type: Type.Literal('pox'),
+});
+
 export const PostConditionSchema = Type.Union([
   PostConditionStxSchema,
   PostConditionFungibleAssetSchema,
   PostConditionNonFungibleAssetSchema,
+  PostConditionStakingSchema,
+  PostConditionPoxSchema,
 ]);
