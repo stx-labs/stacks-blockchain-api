@@ -26,7 +26,7 @@ import {
 import { DbFaucetRequestCurrency } from '../../../datastore/common.js';
 import { getChainIDNetwork, getStxFaucetNetwork, stxToMicroStx } from '../../../helpers.js';
 import { StacksCoreRpcClient } from '../../../core-rpc/client.js';
-import { isProdEnv, logger } from '@stacks/api-toolkit';
+import { logger } from '@stacks/api-toolkit';
 import { ENV } from '../../../env.js';
 import { FastifyPluginAsync, preHandlerHookHandler } from 'fastify';
 import { Type, TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
@@ -242,22 +242,24 @@ export const FaucetRoutes: FastifyPluginAsync<
         const ip =
           (Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor?.split(',')[0])?.trim() ??
           req.ip;
+        const now = Date.now();
 
         // Guard condition: requests are limited to 5 times per 5 minutes.
         // Only based on address for now, but we're keeping the IP in case
         // we want to escalate and implement a per IP policy
-        const lastRequests = await fastify.db.getBTCFaucetRequests(address);
-        const now = Date.now();
-        const window = 5 * 60 * 1000; // 5 minutes
-        const requestsInWindow = lastRequests.results
-          .map(r => now - r.occurred_at)
-          .filter(r => r <= window);
-        if (requestsInWindow.length >= 5) {
-          logger.warn(`BTC faucet rate limit hit for address ${address}`);
-          return await reply.status(429).send({
-            error: 'Too many requests',
-            success: false,
-          });
+        if (ENV.TESTNET_FAUCETS_RATE_LIMIT_ENABLED) {
+          const lastRequests = await fastify.db.getBTCFaucetRequests(address);
+          const window = 5 * 60 * 1000; // 5 minutes
+          const requestsInWindow = lastRequests.results
+            .map(r => now - r.occurred_at)
+            .filter(r => r <= window);
+          if (requestsInWindow.length >= 5) {
+            logger.warn(`BTC faucet rate limit hit for address ${address}`);
+            return await reply.status(429).send({
+              error: 'Too many requests',
+              success: false,
+            });
+          }
         }
 
         const tx = await makeBtcFaucetPayment(btc.networks.regtest, address, btcAmount);
@@ -474,7 +476,7 @@ export const FaucetRoutes: FastifyPluginAsync<
         const isStackingReq = req.query.stacking ?? false;
         const now = Date.now();
 
-        if (isProdEnv) {
+        if (ENV.TESTNET_FAUCETS_RATE_LIMIT_ENABLED) {
           const lastRequests = await fastify.db.getSTXFaucetRequests(recipientAddress);
           const [window, triggerCount] = isStackingReq
             ? [FAUCET_STACKING_WINDOW, FAUCET_STACKING_TRIGGER_COUNT]
@@ -662,7 +664,7 @@ export const FaucetRoutes: FastifyPluginAsync<
           req.ip;
         const now = Date.now();
 
-        if (isProdEnv) {
+        if (ENV.TESTNET_FAUCETS_RATE_LIMIT_ENABLED) {
           const lastRequests = await fastify.db.getSBTCFaucetRequests(recipientAddress);
           const requestsInWindow = lastRequests.results
             .map(r => now - r.occurred_at)

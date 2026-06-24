@@ -206,6 +206,11 @@ const schema = Type.Object({
   BTC_FAUCET_PK: Type.String({
     default: '29c028009a8331358adcc61bb6397377c995d327ac0343ed8e8f1d4d3ef85c27',
   }),
+  /**
+   * Enable faucet request rate limiting for all faucets (STX, BTC, sBTC). Set to `false` to disable
+   * rate limits in special testnet environments.
+   */
+  TESTNET_FAUCETS_RATE_LIMIT_ENABLED: Type.Boolean({ default: true }),
   /** Enable the BTC regtest faucet endpoints on Stacks testnet. */
   TESTNET_BTC_FAUCET_ENABLED: Type.Boolean({ default: true }),
   /** Enable the STX faucet endpoints on Stacks testnet. */
