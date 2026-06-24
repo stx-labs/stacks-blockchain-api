@@ -26,7 +26,7 @@ import {
 import { DbFaucetRequestCurrency } from '../../../datastore/common.js';
 import { getChainIDNetwork, getStxFaucetNetwork, stxToMicroStx } from '../../../helpers.js';
 import { StacksCoreRpcClient } from '../../../core-rpc/client.js';
-import { isProdEnv, logger } from '@stacks/api-toolkit';
+import { logger } from '@stacks/api-toolkit';
 import { ENV } from '../../../env.js';
 import { FastifyPluginAsync, preHandlerHookHandler } from 'fastify';
 import { Type, TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
@@ -476,7 +476,7 @@ export const FaucetRoutes: FastifyPluginAsync<
         const isStackingReq = req.query.stacking ?? false;
         const now = Date.now();
 
-        if (isProdEnv && ENV.TESTNET_FAUCETS_RATE_LIMIT_ENABLED) {
+        if (ENV.TESTNET_FAUCETS_RATE_LIMIT_ENABLED) {
           const lastRequests = await fastify.db.getSTXFaucetRequests(recipientAddress);
           const [window, triggerCount] = isStackingReq
             ? [FAUCET_STACKING_WINDOW, FAUCET_STACKING_TRIGGER_COUNT]
@@ -664,7 +664,7 @@ export const FaucetRoutes: FastifyPluginAsync<
           req.ip;
         const now = Date.now();
 
-        if (isProdEnv && ENV.TESTNET_FAUCETS_RATE_LIMIT_ENABLED) {
+        if (ENV.TESTNET_FAUCETS_RATE_LIMIT_ENABLED) {
           const lastRequests = await fastify.db.getSBTCFaucetRequests(recipientAddress);
           const requestsInWindow = lastRequests.results
             .map(r => now - r.occurred_at)
