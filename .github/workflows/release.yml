@@ -46,7 +46,9 @@ jobs:
 
   publish-docker:
     runs-on: ubuntu-latest
+    environment: Production
     permissions:
+      contents: read
       packages: write
     steps:
       - name: Checkout tag
@@ -64,8 +66,8 @@ jobs:
         id: docker_meta
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
         with:
-          # TODO: Add ghcr after migrating to stx-labs
           images: |
+            ghcr.io/${{ github.repository }}
             hirosystems/${{ github.event.repository.name }}
           tags: |
             type=semver,pattern={{version}},value=${{ inputs.version }}
@@ -73,11 +75,18 @@ jobs:
             type=semver,pattern={{major}},value=${{ inputs.version }}
             type=raw,value=latest,enable=${{ !contains(inputs.version, '-') }}
 
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Login to DockerHub
         uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          username: ${{ secrets.HIROSYSTEMS_DOCKERHUB_USERNAME }}
+          password: ${{ secrets.HIROSYSTEMS_DOCKERHUB_TOKEN }}
 
       - name: Build/Tag/Push Image
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
@@ -88,7 +97,7 @@ jobs:
           labels: ${{ steps.docker_meta.outputs.labels }}
           push: true
 
-  # TODO: Add back in after migrating to stx-labs and apply a full release template.
+  # TODO: Add back in after applying a full release template.
   # github-release:
   #   runs-on: ubuntu-latest
   #   permissions:
