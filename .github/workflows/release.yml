@@ -116,5 +116,6 @@ jobs:
             PRERELEASE_FLAG="--prerelease"
           fi
           gh release create "v${{ inputs.version }}" \
+            --draft \
             --generate-notes \
             $PRERELEASE_FLAG
