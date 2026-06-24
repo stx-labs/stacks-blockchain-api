@@ -24,6 +24,11 @@ jobs:
         with:
           node-version-file: '.nvmrc'
 
+      - name: Upgrade to latest npm
+        run: |
+          npm install -g npm@~11.10.0
+          npm -v
+
       - name: Install deps
         run: npm ci --audit=false
 
