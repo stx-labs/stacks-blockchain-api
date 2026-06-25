@@ -1207,8 +1207,8 @@ export class PgWriteStore extends PgStore {
    * Locked STX is a SET/latest-wins value (not additive like ft_balances), so a reorg can't be
    * handled with signed deltas — instead we re-derive each affected principal's current lock from
    * the latest applicable canonical lock-changing event across all blocks: pox-1..4
-   * `stx_lock_events` and the synthetic pox-5 `stake`/`stake-update` (lock) and `unstake` (clear)
-   * events.
+   * `stx_lock_events` and the synthetic pox-5 `stake`/`stake-update`/`unstake` events (which all set
+   * the lock with an absolute amount and `unlock_burn_height`).
    *
    * Must run AFTER the `stx_lock_events` and `pox5_events` canonical flips for this block have
    * completed (i.e. after the reorg queue drains), so the "latest canonical event" reflects the
