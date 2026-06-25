@@ -59,13 +59,17 @@ describe('pox-5 stake locked balances', () => {
     amount_increase: (UPDATED_AMOUNT - STAKE_AMOUNT).toString(),
     cycles_to_extend: '1',
   };
+  // Unstaking moves the unlock to the end of the current cycle — an earlier
+  // height than the (extended) stake unlock, but still in the future. The STX
+  // stays locked until then; it does NOT unlock immediately.
+  const UNSTAKE_UNLOCK = 450;
   const unstakeData = {
     staker: ALICE,
     signer: SIGNER,
     amount_ustx: STAKE_AMOUNT.toString(),
     first_reward_cycle: String(FIRST_REWARD_CYCLE),
     unlock_cycle: String(UNLOCK_CYCLE),
-    unlock_burn_height: String(STAKE_UNLOCK),
+    unlock_burn_height: String(UNSTAKE_UNLOCK),
   };
 
   beforeEach(async () => {
@@ -114,7 +118,7 @@ describe('pox-5 stake locked balances', () => {
     assert.equal(BigInt(row.unlock_burn_height), BigInt(UPDATED_UNLOCK));
   });
 
-  test('unstake clears the locked balance', async () => {
+  test('unstake defers the unlock to the end of the cycle (keeps the lock until then)', async () => {
     await db.update(
       new TestBlockBuilder({
         block_height: 2,
@@ -127,7 +131,13 @@ describe('pox-5 stake locked balances', () => {
         .addTxPox5Event({ name: Pox5EventName.Unstake, data: unstakeData })
         .build()
     );
-    assert.equal(await lockedRow(ALICE), undefined, 'locked balance row removed');
+    // The lock is NOT removed — it persists with the unstake's (end-of-cycle)
+    // unlock height. The STX stays locked until that burn height; lock expiry
+    // is applied on read, not by deleting the row here.
+    const row = await lockedRow(ALICE);
+    assert.ok(row, 'locked balance row still present after unstake');
+    assert.equal(BigInt(row.locked_amount), STAKE_AMOUNT);
+    assert.equal(BigInt(row.unlock_burn_height), BigInt(UNSTAKE_UNLOCK));
   });
 });
 
@@ -206,6 +216,86 @@ describe('pox-5 locked STX in balance read path', () => {
     assert.equal(balance.locked, 0n);
     assert.equal(balance.lockTxId, '');
     assert.equal(balance.burnchainUnlockHeight, 0);
+  });
+
+  function unstakeData(amount: bigint, unlock: number) {
+    return {
+      staker: ALICE,
+      signer: SIGNER,
+      amount_ustx: amount.toString(),
+      first_reward_cycle: '8',
+      unlock_cycle: '20',
+      unlock_burn_height: String(unlock),
+    };
+  }
+
+  test('unstaking does NOT immediately unlock — STX stays locked until the cycle-end unlock height', async () => {
+    // Block 1: stake (unlock far out, e.g. extended). Block 2: unstake, which
+    // moves the unlock to the end of the current cycle — still in the future
+    // relative to the burn tip (TIP_BURN_HEIGHT = 100).
+    const STILL_LOCKED_UNLOCK = 300;
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 1,
+        block_hash: '0x01',
+        index_block_hash: '0x01',
+        burn_block_height: TIP_BURN_HEIGHT,
+      })
+        .addTx({ tx_id: '0x' + 'a1'.repeat(32) })
+        .addTxPox5Event({ name: Pox5EventName.Stake, data: stakeData(STAKE_AMOUNT, ACTIVE_UNLOCK) })
+        .build()
+    );
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 2,
+        block_hash: '0x02',
+        index_block_hash: '0x02',
+        parent_block_hash: '0x01',
+        parent_index_block_hash: '0x01',
+        burn_block_height: TIP_BURN_HEIGHT,
+      })
+        .addTx({ tx_id: '0x' + 'a2'.repeat(32) })
+        .addTxPox5Event({
+          name: Pox5EventName.Unstake,
+          data: unstakeData(STAKE_AMOUNT, STILL_LOCKED_UNLOCK),
+        })
+        .build()
+    );
+    // The reported bug: after unstake the STX showed as unlocked immediately.
+    // It must stay locked until the (end-of-cycle) unlock height.
+    const balance = await db.getStxBalance({ stxAddress: ALICE, includeUnanchored: false });
+    assert.equal(balance.locked, STAKE_AMOUNT, 'STX still locked right after unstake');
+    assert.equal(balance.burnchainUnlockHeight, STILL_LOCKED_UNLOCK, 'unlock deferred to cycle end');
+  });
+
+  test('after the cycle-end unlock height passes, an unstaked position reports zero locked STX', async () => {
+    // Unstake with an unlock height already below the burn tip → unlocked.
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 1,
+        block_hash: '0x01',
+        index_block_hash: '0x01',
+        burn_block_height: TIP_BURN_HEIGHT,
+      })
+        .addTx({ tx_id: '0x' + 'a1'.repeat(32) })
+        .addTxPox5Event({ name: Pox5EventName.Stake, data: stakeData(STAKE_AMOUNT, ACTIVE_UNLOCK) })
+        .build()
+    );
+    await db.update(
+      new TestBlockBuilder({
+        block_height: 2,
+        block_hash: '0x02',
+        index_block_hash: '0x02',
+        parent_block_hash: '0x01',
+        parent_index_block_hash: '0x01',
+        burn_block_height: TIP_BURN_HEIGHT,
+      })
+        .addTx({ tx_id: '0x' + 'a2'.repeat(32) })
+        .addTxPox5Event({ name: Pox5EventName.Unstake, data: unstakeData(STAKE_AMOUNT, EXPIRED_UNLOCK) })
+        .build()
+    );
+    const balance = await db.getStxBalance({ stxAddress: ALICE, includeUnanchored: false });
+    assert.equal(balance.locked, 0n, 'unlocked once the cycle-end height has passed');
   });
 
   test('the v3 /balances/stx endpoint reports the active pox-5 lock', async () => {

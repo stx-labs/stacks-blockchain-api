@@ -128,6 +128,7 @@ import {
   Pox5EventSetupBond,
   Pox5EventStake,
   Pox5EventStakeUpdate,
+  Pox5EventUnstake,
   Pox5EventUnstakeSbtc,
   Pox5EventUpdateBondRegistration,
 } from '@stacks/codec';
@@ -599,10 +600,8 @@ export class PgWriteStore extends PgStore {
             break;
           case Pox5EventName.Stake:
           case Pox5EventName.StakeUpdate:
-            await this.upsertStxLockedBalance(sql, txLocation, poxEvent);
-            break;
           case Pox5EventName.Unstake:
-            await this.clearStxLockedBalance(sql, poxEvent.data.staker);
+            await this.upsertStxLockedBalance(sql, txLocation, poxEvent);
             break;
           case Pox5EventName.RegisterSigner:
             await this.upsertStakingSigner(sql, txLocation, poxEvent);
@@ -612,7 +611,7 @@ export class PgWriteStore extends PgStore {
           case Pox5EventName.GrantSignerKey:
           case Pox5EventName.RevokeSignerGrant:
           case Pox5EventName.SetBondAdmin:
-            // TODO: Implement
+            // No-op
             break;
         }
       }
@@ -1080,11 +1079,6 @@ export class PgWriteStore extends PgStore {
     }
   }
 
-  /**
-   * Materialize a principal's current STX lock state (latest lock wins). Called
-   * for pox-5 `stake`/`stake-update` events, which carry the absolute locked
-   * amount and unlock height.
-   */
   /** Low-level upsert of a principal's materialized STX lock (latest lock wins). */
   private async setStxLockedBalance(
     sql: PgSqlClient,
@@ -1119,10 +1113,17 @@ export class PgWriteStore extends PgStore {
     `;
   }
 
+  /**
+   * Materialize a principal's current STX lock state (latest lock wins). Called for pox-5 `stake` /
+   * `stake-update` / `unstake` events, which all carry the absolute locked amount and the
+   * `unlock_burn_height`. `unstake` is included deliberately: it doesn't unlock instantly — it sets
+   * the lock's unlock height to the end of the current cycle, and the materialized lock stays
+   * locked until that burn height is reached (zeroed out on read by lock expiry).
+   */
   private async upsertStxLockedBalance(
     sql: PgSqlClient,
     txLocation: DbTxLocation,
-    event: Pox5EventStake | Pox5EventStakeUpdate
+    event: Pox5EventStake | Pox5EventStakeUpdate | Pox5EventUnstake
   ) {
     await this.setStxLockedBalance(sql, {
       principal: event.data.staker,
@@ -1133,11 +1134,6 @@ export class PgWriteStore extends PgStore {
       lockBlockHeight: txLocation.block_height,
       burnchainLockHeight: txLocation.burn_block_height,
     });
-  }
-
-  /** Clear a principal's materialized STX lock (e.g. on pox-5 `unstake`). */
-  private async clearStxLockedBalance(sql: PgSqlClient, principal: string) {
-    await sql`DELETE FROM stx_locked_balances WHERE principal = ${principal}`;
   }
 
   /**
@@ -1205,20 +1201,19 @@ export class PgWriteStore extends PgStore {
   }
 
   /**
-   * Recompute the materialized `stx_locked_balances` rows for every principal
-   * touched by a block whose canonical flag just flipped during a reorg.
+   * Recompute the materialized `stx_locked_balances` rows for every principal touched by a block
+   * whose canonical flag just flipped during a reorg.
    *
-   * Locked STX is a SET/latest-wins value (not additive like ft_balances), so a
-   * reorg can't be handled with signed deltas — instead we re-derive each
-   * affected principal's current lock from the latest applicable canonical
-   * lock-changing event across all blocks: pox-1..4 `stx_lock_events` and the
-   * synthetic pox-5 `stake`/`stake-update` (lock) and `unstake` (clear) events.
+   * Locked STX is a SET/latest-wins value (not additive like ft_balances), so a reorg can't be
+   * handled with signed deltas — instead we re-derive each affected principal's current lock from
+   * the latest applicable canonical lock-changing event across all blocks: pox-1..4
+   * `stx_lock_events` and the synthetic pox-5 `stake`/`stake-update` (lock) and `unstake` (clear)
+   * events.
    *
-   * Must run AFTER the `stx_lock_events` and `pox5_events` canonical flips for
-   * this block have completed (i.e. after the reorg queue drains), so the
-   * "latest canonical event" reflects the post-flip state. Because the recompute
-   * reads global canonical state, the last-flipped block touching a principal
-   * always produces that principal's final, correct value.
+   * Must run AFTER the `stx_lock_events` and `pox5_events` canonical flips for this block have
+   * completed (i.e. after the reorg queue drains), so the "latest canonical event" reflects the
+   * post-flip state. Because the recompute reads global canonical state, the last-flipped block
+   * touching a principal always produces that principal's final, correct value.
    */
   private async recomputeStxLockedBalances(sql: PgSqlClient, indexBlockHash: string) {
     // Principals whose lock state may have changed in this block.
@@ -1236,10 +1231,9 @@ export class PgWriteStore extends PgStore {
     if (principals.length === 0) {
       return;
     }
-    // Process affected principals in chunks (same approach as other batched
-    // write paths). For each chunk: drop their current materialized rows, then
-    // re-insert the correct rows (if any) derived from the latest canonical
-    // lock-changing event.
+    // Process affected principals in chunks (same approach as other batched write paths). For each
+    // chunk: drop their current materialized rows, then re-insert the correct rows (if any) derived
+    // from the latest canonical lock-changing event.
     for (const batch of batchIterate(principals, INSERT_BATCH_SIZE)) {
       await sql`
         DELETE FROM stx_locked_balances
@@ -1276,7 +1270,10 @@ export class PgWriteStore extends PgStore {
               AND e.contract_name <> 'pox-5'
               AND e.locked_address IN ${sql(batch)}
             UNION ALL
-            -- pox-5 stake / stake-update (sets the lock)
+            -- pox-5 stake / stake-update / unstake all set the lock with an
+            -- absolute amount + unlock_burn_height. unstake moves the unlock
+            -- height to the end of the current cycle (it does NOT clear the
+            -- lock); the lock then expires on read once that height is reached.
             SELECT
               p.data->>'staker' AS principal,
               p.block_height, p.microblock_sequence, p.tx_index, p.event_index,
@@ -1289,23 +1286,7 @@ export class PgWriteStore extends PgStore {
               p.burn_block_height AS burnchain_lock_height
             FROM pox5_events p
             WHERE p.canonical = true AND p.microblock_canonical = true
-              AND p.name IN ('stake', 'stake-update')
-              AND p.data->>'staker' IN ${sql(batch)}
-            UNION ALL
-            -- pox-5 unstake (clears the lock)
-            SELECT
-              p.data->>'staker' AS principal,
-              p.block_height, p.microblock_sequence, p.tx_index, p.event_index,
-              false AS is_set,
-              0::numeric AS locked_amount,
-              0::bigint AS unlock_burn_height,
-              5 AS pox_version,
-              p.tx_id AS lock_tx_id,
-              p.block_height AS lock_block_height,
-              p.burn_block_height AS burnchain_lock_height
-            FROM pox5_events p
-            WHERE p.canonical = true AND p.microblock_canonical = true
-              AND p.name = 'unstake'
+              AND p.name IN ('stake', 'stake-update', 'unstake')
               AND p.data->>'staker' IN ${sql(batch)}
           ) candidates
           ORDER BY principal,
