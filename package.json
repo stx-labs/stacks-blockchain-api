@@ -1,5 +1,5 @@
 {
-  "name": "@hirosystems/stacks-blockchain-api",
+  "name": "@stx-labs/stacks-blockchain-api",
   "version": "9.0.0-pox5.12",
   "type": "module",
   "main": "./lib/index.js",
@@ -48,14 +48,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hirosystems/stacks-blockchain-api.git"
+    "url": "git+https://github.com/stx-labs/stacks-blockchain-api.git"
   },
-  "author": "Hiro Systems PBC <engineering@hiro.so> (https://hiro.so)",
+  "author": "Stacks Labs",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/hirosystems/stacks-blockchain-api/issues"
+    "url": "https://github.com/stx-labs/stacks-blockchain-api/issues"
   },
-  "homepage": "https://github.com/hirosystems/stacks-blockchain-api#readme",
+  "homepage": "https://github.com/stx-labs/stacks-blockchain-api#readme",
   "prettier": "@stacks/prettier-config",
   "engines": {
     "node": ">=24"
