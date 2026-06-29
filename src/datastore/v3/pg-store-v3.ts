@@ -355,6 +355,31 @@ export class PgStoreV3 extends BasePgStoreModule {
   }
 
   /**
+   * Gets a principal's balance of a single fungible token via a point lookup on
+   * the `ft_balances (address, token)` primary key. Returns a `"0"` balance when
+   * the principal does not hold the token.
+   * @param args - The arguments for the query.
+   * @returns The principal's balance of the given token.
+   */
+  async getPrincipalFtBalance(args: {
+    principal: Principal;
+    token: string;
+  }): Promise<DbPrincipalFtBalance> {
+    return await this.sqlTransaction(async sql => {
+      const result = await sql<{ balance: string }[]>`
+        SELECT balance::text AS balance
+        FROM ft_balances
+        WHERE address = ${args.principal} AND token = ${args.token}
+        LIMIT 1
+      `;
+      return {
+        token: args.token,
+        balance: result.count > 0 ? result[0].balance : '0',
+      };
+    });
+  }
+
+  /**
    * Gets a principal's individually-owned NFT instances, keyset-paginated by
    * `(asset_identifier, value)` (the unique key for an NFT instance), sorted
    * ascending. Backed by the `nft_custody` index on
