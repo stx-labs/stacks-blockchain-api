@@ -33,7 +33,8 @@ export interface paths {
         };
         /**
          * Get recent transactions
-         * @description Retrieves all recently mined transactions
+         * @deprecated
+         * @description Retrieves all recently mined transactions. **Deprecated:** use `GET /extended/v3/transactions` instead.
          */
         get: operations["get_transaction_list"];
         put?: never;
@@ -73,9 +74,12 @@ export interface paths {
         };
         /**
          * Get mempool transactions
+         * @deprecated
          * @description Retrieves all transactions that have been recently broadcast to the mempool. These are pending transactions awaiting confirmation.
          *
          *             If you need to monitor new transactions, we highly recommend subscribing to [WebSockets or Socket.io](https://github.com/hirosystems/stacks-blockchain-api/tree/master/client) for real-time updates.
+         *
+         *             **Deprecated:** use `GET /extended/v3/mempool/transactions` instead.
          */
         get: operations["get_mempool_transaction_list"];
         put?: never;
@@ -137,7 +141,8 @@ export interface paths {
         };
         /**
          * Get transaction
-         * @description Retrieves transaction details for a given transaction ID
+         * @deprecated
+         * @description Retrieves transaction details for a given transaction ID. **Deprecated:** use `GET /extended/v3/transactions/{tx_id}` instead.
          */
         get: operations["get_transaction_by_id"];
         put?: never;
@@ -157,7 +162,8 @@ export interface paths {
         };
         /**
          * Get raw transaction
-         * @description Retrieves a hex encoded serialized transaction for a given ID
+         * @deprecated
+         * @description Retrieves a hex encoded serialized transaction for a given ID. **Deprecated:** use the Stacks node RPC endpoint `GET /v3/transaction/{tx_id}` to fetch a single raw transaction instead.
          */
         get: operations["get_raw_transaction_by_id"];
         put?: never;
@@ -178,7 +184,7 @@ export interface paths {
         /**
          * Transactions by block hash
          * @deprecated
-         * @description Retrieves a list of all transactions within a block for a given block hash. **This endpoint is deprecated in favor of `get_transactions_by_block`.**
+         * @description Retrieves a list of all transactions within a block for a given block hash. **Deprecated:** use `GET /extended/v3/blocks/{height_or_hash}/transactions` instead.
          */
         get: operations["get_transactions_by_block_hash"];
         put?: never;
@@ -199,7 +205,7 @@ export interface paths {
         /**
          * Transactions by block height
          * @deprecated
-         * @description Retrieves all transactions within a block at a given height. **This endpoint is deprecated in favor of `get_transactions_by_block`.**
+         * @description Retrieves all transactions within a block at a given height. **Deprecated:** use `GET /extended/v3/blocks/{height_or_hash}/transactions` instead.
          */
         get: operations["get_transactions_by_block_height"];
         put?: never;
@@ -783,7 +789,7 @@ export interface paths {
         /**
          * Get account STX balance
          * @deprecated
-         * @description Retrieves STX token balance for a given Address or Contract Identifier. **This endpoint is deprecated in favor of `get_principal_stx_balance`.**
+         * @description Retrieves STX token balance for a given Address or Contract Identifier. **Deprecated:** use `GET /extended/v3/principals/{principal}/balances/stx` instead.
          */
         get: operations["get_account_stx_balance"];
         put?: never;
@@ -804,7 +810,7 @@ export interface paths {
         /**
          * Get account balances
          * @deprecated
-         * @description Retrieves total account balance information for a given Address or Contract Identifier. This includes the balances of STX Tokens, Fungible Tokens and Non-Fungible Tokens for the account. **This endpoint is deprecated in favor of `get_principal_ft_balances`.**
+         * @description Retrieves total account balance information for a given Address or Contract Identifier. This includes the balances of STX Tokens, Fungible Tokens and Non-Fungible Tokens for the account. **Deprecated:** use `GET /extended/v3/principals/{principal}/balances/stx`, `GET /extended/v3/principals/{principal}/balances/ft`, and `GET /extended/v3/principals/{principal}/balances/nft` instead.
          */
         get: operations["get_account_balance"];
         put?: never;
@@ -825,7 +831,7 @@ export interface paths {
         /**
          * Get account transactions
          * @deprecated
-         * @description Retrieves a list of all Transactions for a given Address or Contract Identifier. **This endpoint is deprecated in favor of `get_address_transactions`.**
+         * @description Retrieves a list of all Transactions for a given Address or Contract Identifier. **Deprecated:** use `GET /extended/v3/principals/{principal}/transactions` instead.
          */
         get: operations["get_account_transactions"];
         put?: never;
@@ -846,7 +852,7 @@ export interface paths {
         /**
          * Get account transaction information for specific transaction
          * @deprecated
-         * @description Retrieves transaction details for a given Transaction Id, for a given account or contract Identifier. **This endpoint is deprecated in favor of `get_address_transaction_events`.**
+         * @description Retrieves transaction details for a given Transaction Id, for a given account or contract Identifier. **Deprecated:** use `GET /extended/v3/principals/{principal}/transactions/{tx_id}/balance-changes` instead.
          */
         get: operations["get_single_transaction_with_transfers"];
         put?: never;
@@ -867,7 +873,7 @@ export interface paths {
         /**
          * Get account transactions including STX transfers for each transaction.
          * @deprecated
-         * @description Retrieve all transactions for an account or contract identifier including STX transfers for each transaction. **This endpoint is deprecated in favor of `get_address_transactions`.**
+         * @description Retrieve all transactions for an account or contract identifier including STX transfers for each transaction. **Deprecated:** use `GET /extended/v3/principals/{principal}/transactions` instead.
          */
         get: operations["get_account_transactions_with_transfers"];
         put?: never;
@@ -888,7 +894,7 @@ export interface paths {
         /**
          * Get account assets
          * @deprecated
-         * @description Retrieves a list of all assets events associated with an account or a Contract Identifier. This includes Transfers, Mints. **This endpoint is deprecated in favor of `get_address_transaction_events`.**
+         * @description Retrieves a list of all assets events associated with an account or a Contract Identifier. This includes Transfers, Mints. **Deprecated:** this endpoint has no direct v3 replacement; the closest equivalent is `GET /extended/v3/principals/{principal}/balance-changes`.
          */
         get: operations["get_account_assets"];
         put?: never;
@@ -909,7 +915,7 @@ export interface paths {
         /**
          * Get inbound STX transfers
          * @deprecated
-         * @description Retrieves a list of STX transfers with memos to the given principal. This includes regular transfers from a stx-transfer transaction type, and transfers from contract-call transactions a the `send-many-memo` bulk sending contract. **This endpoint is deprecated in favor of `get_address_transactions`.**
+         * @description Retrieves a list of STX transfers with memos to the given principal. This includes regular transfers from a stx-transfer transaction type, and transfers from contract-call transactions at the `send-many-memo` bulk sending contract. **Deprecated:** this endpoint has no direct v3 replacement.
          */
         get: operations["get_account_inbound"];
         put?: never;
@@ -949,7 +955,8 @@ export interface paths {
         };
         /**
          * Get the latest nonce used by an account
-         * @description Retrieves the latest nonce values used by an account by inspecting the mempool, microblock transactions, and anchored transactions.
+         * @deprecated
+         * @description Retrieves the latest nonce values used by an account by inspecting the mempool, microblock transactions, and anchored transactions. **Deprecated:** use `GET /extended/v3/principals/{principal}/nonces` instead.
          */
         get: operations["get_account_nonces"];
         put?: never;
@@ -1304,7 +1311,8 @@ export interface paths {
         };
         /**
          * Get transactions by block
-         * @description Retrieves transactions confirmed in a single block
+         * @deprecated
+         * @description Retrieves transactions confirmed in a single block. **Deprecated:** use `GET /extended/v3/blocks/{height_or_hash}/transactions` instead.
          */
         get: operations["get_transactions_by_block"];
         put?: never;
@@ -1604,9 +1612,12 @@ export interface paths {
         };
         /**
          * Get address transactions
+         * @deprecated
          * @description Retrieves a paginated list of confirmed transactions sent or received by a STX address or Smart Contract ID, alongside the total amount of STX sent or received and the number of STX, FT and NFT transfers contained within each transaction.
          *
          *             More information on Transaction types can be found [here](https://docs.stacks.co/transactions/how-transactions-work#types).
+         *
+         *             **Deprecated:** use `GET /extended/v3/principals/{principal}/transactions` instead.
          */
         get: operations["get_address_transactions"];
         put?: never;
@@ -1626,7 +1637,8 @@ export interface paths {
         };
         /**
          * Get events for an address transaction
-         * @description Retrieves a paginated list of all STX, FT and NFT events concerning a STX address or Smart Contract ID within a specific transaction.
+         * @deprecated
+         * @description Retrieves a paginated list of all STX, FT and NFT events concerning a STX address or Smart Contract ID within a specific transaction. **Deprecated:** use `GET /extended/v3/principals/{principal}/transactions/{tx_id}/balance-changes` instead.
          */
         get: operations["get_address_transaction_events"];
         put?: never;
@@ -1646,7 +1658,8 @@ export interface paths {
         };
         /**
          * Get principal STX balance
-         * @description Retrieves STX account balance information for a given Address or Contract Identifier.
+         * @deprecated
+         * @description Retrieves STX account balance information for a given Address or Contract Identifier. **Deprecated:** use `GET /extended/v3/principals/{principal}/balances/stx` instead.
          */
         get: operations["get_principal_stx_balance"];
         put?: never;
@@ -1666,7 +1679,8 @@ export interface paths {
         };
         /**
          * Get principal FT balances
-         * @description Retrieves Fungible-token account balance information for a given Address or Contract Identifier.
+         * @deprecated
+         * @description Retrieves Fungible-token account balance information for a given Address or Contract Identifier. **Deprecated:** use `GET /extended/v3/principals/{principal}/balances/ft` instead.
          */
         get: operations["get_principal_ft_balances"];
         put?: never;
@@ -1686,7 +1700,8 @@ export interface paths {
         };
         /**
          * Get principal FT balance
-         * @description Retrieves a specific fungible-token balance for a given principal.
+         * @deprecated
+         * @description Retrieves a specific fungible-token balance for a given principal. **Deprecated:** use `GET /extended/v3/principals/{principal}/balances/ft/{asset_identifier}` instead.
          */
         get: operations["get_principal_ft_balance"];
         put?: never;
@@ -1897,6 +1912,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/extended/v3/principals/{principal}/balances/ft/{asset_identifier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get principal FT balance
+         * @description Get a principal's balance of a single fungible token. Returns a zero balance if the principal does not currently hold the token.
+         */
+        get: operations["get_principal_balance_ft"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/extended/v3/principals/{principal}/balances/nft": {
         parameters: {
             query?: never;
@@ -1909,6 +1944,26 @@ export interface paths {
          * @description Get the non-fungible token instances currently owned by a principal, ordered by asset identifier and value.
          */
         get: operations["get_principal_balances_nft"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/extended/v3/principals/{principal}/nonces": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get principal nonces
+         * @description Get a Stacks account's latest nonce state by inspecting its confirmed (anchored + microblock) transactions and the mempool, including the nonce to use for its next transaction. Only standard principals have nonces; contract principals are not valid.
+         */
+        get: operations["get_principal_nonces"];
         put?: never;
         post?: never;
         delete?: never;
@@ -38106,6 +38161,55 @@ export interface operations {
             };
         };
     };
+    get_principal_balance_ft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                principal: string;
+                /**
+                 * @description Asset Identifier
+                 * @example SP000000000000000000002Q6VF78.pox-3::stx-token
+                 */
+                asset_identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Fungible token asset identifier
+                         * @example SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token::sbtc-token
+                         */
+                        asset_identifier: string;
+                        /** @description The principal's balance of this token, as a string-quoted integer in base units */
+                        balance: string;
+                    };
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
     get_principal_balances_nft: {
         parameters: {
             query?: {
@@ -38153,6 +38257,58 @@ export interface operations {
                                 repr: string;
                             };
                         }[];
+                    };
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    get_principal_nonces: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Stacks Address
+                 * @example SP318Q55DEKHRXJK696033DQN5C54D9K2EE6DHRWP
+                 */
+                principal: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description The nonce to use for this principal's next transaction, derived from the latest confirmed and mempool nonces. May be inaccurate if the API is not fully synchronized. */
+                        next_nonce: number;
+                        last_confirmed_nonce: number | null;
+                        /** PrincipalMempoolNonces */
+                        mempool: {
+                            last_nonce: number | null;
+                            /** @description Intermediate nonces found in the mempool between the last confirmed nonce and the highest mempool nonce. */
+                            pending_nonces: number[];
+                            /** @description Expected intermediate nonces between the last confirmed nonce and the highest mempool nonce that are absent from the mempool — likely stalling transactions. */
+                            missing_nonces: number[];
+                        };
                     };
                 };
             };
