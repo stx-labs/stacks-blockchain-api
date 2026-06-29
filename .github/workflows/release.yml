@@ -114,11 +114,23 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          VERSION="${{ inputs.version }}"
           PRERELEASE_FLAG=""
-          if echo "${{ inputs.version }}" | grep -q "-"; then
+          if echo "$VERSION" | grep -q "-"; then
             PRERELEASE_FLAG="--prerelease"
           fi
-          gh release create "v${{ inputs.version }}" \
+
+          # Fill the template: VERSION, date, and the auto-generated changelog
+          # (the API computes the previous tag automatically).
+          export VERSION
+          export RELEASE_DATE="$(date -u +%Y-%m-%d)"
+          export CHANGELOG="$(gh api "repos/${{ github.repository }}/releases/generate-notes" \
+            -f tag_name="v$VERSION" --jq '.body')"
+
+          envsubst '${VERSION} ${RELEASE_DATE} ${CHANGELOG}' \
+            < .github/RELEASE_TEMPLATE.md > release-notes.md
+
+          gh release create "v$VERSION" \
             --draft \
-            --generate-notes \
+            --notes-file release-notes.md \
             $PRERELEASE_FLAG
