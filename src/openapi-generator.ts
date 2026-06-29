@@ -7,9 +7,18 @@ import { StacksApiRoutes } from './api/init.js';
 import { ErrorResponseSchema } from './api/schemas/v1/responses/responses.js';
 
 /**
- * Generates `openapi.yaml` based on current Swagger definitions.
+ * Generates an OpenAPI spec based on current Swagger definitions.
+ *
+ * Controlled by two env vars:
+ * - `OPENAPI_OUTPUT`: output file path (defaults to `./openapi.yaml`, the committed public spec).
+ * - `OPENAPI_INCLUDE_DEPRECATED`: when `'true'`, deprecated endpoints are kept in the spec. This is
+ *   used to generate the input for the client codegen so the client library retains typed bindings
+ *   for deprecated endpoints. The committed `openapi.yaml` omits them (default behavior).
  */
 async function generateOpenApiFiles() {
+  const outputPath = process.env.OPENAPI_OUTPUT ?? './openapi.yaml';
+  const includeDeprecated = process.env.OPENAPI_INCLUDE_DEPRECATED === 'true';
+
   const fastify = Fastify({
     trustProxy: true,
     logger: true,
@@ -25,8 +34,9 @@ async function generateOpenApiFiles() {
       };
     }) => {
       // Exclude deprecated endpoints from the generated spec entirely
-      // (`@fastify/swagger` omits any route whose schema is marked `hide`).
-      if (route.schema?.deprecated) {
+      // (`@fastify/swagger` omits any route whose schema is marked `hide`), unless we're
+      // generating the client spec, which must retain bindings for deprecated endpoints.
+      if (!includeDeprecated && route.schema?.deprecated) {
         route.schema.hide = true;
         return;
       }
@@ -40,7 +50,7 @@ async function generateOpenApiFiles() {
   await fastify.register(FastifySwagger, OpenApiSchemaOptions);
   await fastify.register(StacksApiRoutes);
   await fastify.ready();
-  writeFileSync('./openapi.yaml', fastify.swagger({ yaml: true }));
+  writeFileSync(outputPath, fastify.swagger({ yaml: true }));
   await fastify.close();
 }
 

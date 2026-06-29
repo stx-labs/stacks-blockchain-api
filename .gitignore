@@ -130,3 +130,6 @@ yarn.lock
 docs/
 
 .claude/
+
+# Intermediate full OpenAPI spec used only for client codegen (includes deprecated endpoints)
+.openapi-client.yaml
