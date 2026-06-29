@@ -172,7 +172,7 @@ export const AddressRoutes: FastifyPluginAsync<
         operationId: 'get_account_balance',
         summary: 'Get account balances',
         description:
-          'Retrieves total account balance information for a given Address or Contract Identifier. This includes the balances of STX Tokens, Fungible Tokens and Non-Fungible Tokens for the account. **This endpoint is deprecated in favor of `get_principal_ft_balances`.**',
+          'Retrieves total account balance information for a given Address or Contract Identifier. This includes the balances of STX Tokens, Fungible Tokens and Non-Fungible Tokens for the account. **Deprecated:** use `GET /extended/v3/principals/{principal}/balances/stx`, `GET /extended/v3/principals/{principal}/balances/ft`, and `GET /extended/v3/principals/{principal}/balances/nft` instead.',
         tags: ['Accounts'],
         params: Type.Object({
           principal: PrincipalSchema,
@@ -533,7 +533,7 @@ export const AddressRoutes: FastifyPluginAsync<
         operationId: 'get_account_assets',
         summary: 'Get account assets',
         description:
-          'Retrieves a list of all assets events associated with an account or a Contract Identifier. This includes Transfers, Mints. **This endpoint is deprecated in favor of `get_address_transaction_events`.**',
+          'Retrieves a list of all assets events associated with an account or a Contract Identifier. This includes Transfers, Mints. **Deprecated:** this endpoint has no direct v3 replacement; the closest equivalent is `GET /extended/v3/principals/{principal}/balance-changes`.',
         tags: ['Accounts'],
         params: Type.Object({
           principal: PrincipalSchema,
@@ -583,7 +583,7 @@ export const AddressRoutes: FastifyPluginAsync<
         operationId: 'get_account_inbound',
         summary: 'Get inbound STX transfers',
         description:
-          'Retrieves a list of STX transfers with memos to the given principal. This includes regular transfers from a stx-transfer transaction type, and transfers from contract-call transactions a the `send-many-memo` bulk sending contract. **This endpoint is deprecated in favor of `get_address_transactions`.**',
+          'Retrieves a list of STX transfers with memos to the given principal. This includes regular transfers from a stx-transfer transaction type, and transfers from contract-call transactions a the `send-many-memo` bulk sending contract. **Deprecated:** this endpoint has no direct v3 replacement.',
         tags: ['Accounts'],
         params: Type.Object({
           principal: PrincipalSchema,

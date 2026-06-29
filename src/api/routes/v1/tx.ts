@@ -493,8 +493,9 @@ export const TxRoutes: FastifyPluginAsync<
       preHandler: handleTransactionCache,
       schema: {
         operationId: 'get_raw_transaction_by_id',
+        deprecated: true,
         summary: 'Get raw transaction',
-        description: `Retrieves a hex encoded serialized transaction for a given ID`,
+        description: `Retrieves a hex encoded serialized transaction for a given ID. **Deprecated:** use the Stacks node RPC endpoint \`GET /v3/transaction/{tx_id}\` to fetch a single raw transaction instead.`,
         tags: ['Transactions'],
         params: Type.Object({
           tx_id: TransactionIdParamSchema,
