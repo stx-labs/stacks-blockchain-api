@@ -154,14 +154,14 @@ jobs:
         uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
 
       - name: Configure AWS Credentials via OIDC
-        uses: stx-labs/actions/aws/configure-aws-credentials@a1754bb138bf66f595c6c42068fbc2e09a447e73
+        uses: aws-actions/configure-aws-credentials@ff717079ee2060e4bcee96c4779b553acc87447c # v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Login to Amazon ECR
         id: ecr_login
-        uses: stx-labs/actions/aws/amazon-ecr-login@a1754bb138bf66f595c6c42068fbc2e09a447e73
+        uses: aws-actions/amazon-ecr-login@d539f0932e70871a027e9d5a9d8fc38589180a64 # v2
 
       - name: Docker Meta
         id: docker_meta
