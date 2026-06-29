@@ -94,6 +94,12 @@ const schema = Type.Object({
    * the /v2 proxy to mutlicast. The file should be a newline-delimited list of URLs.
    */
   STACKS_API_EXTRA_TX_ENDPOINTS_FILE: Type.Optional(Type.String()),
+  /**
+   * Master switch for all deprecated API endpoints. Enabled by default. Set to `false` to disable
+   * every endpoint marked as deprecated at once; disabled endpoints respond with `410 Gone`.
+   * Intended to be flipped at a planned sunset date.
+   */
+  ENABLE_DEPRECATED_ENDPOINTS: Type.Boolean({ default: true }),
 
   /** Web Socket ping interval to determine client availability, in seconds */
   STACKS_API_WS_PING_INTERVAL: Type.Integer({ default: 5, minimum: 0 }),
