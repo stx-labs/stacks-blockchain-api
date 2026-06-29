@@ -47,6 +47,7 @@ export const AddressRoutesV2: FastifyPluginAsync<
       preHandler: handlePrincipalCache,
       schema: {
         operationId: 'get_address_transactions',
+        deprecated: true,
         summary: 'Get address transactions',
         description: `Retrieves a paginated list of confirmed transactions sent or received by a STX address or Smart Contract ID, alongside the total amount of STX sent or received and the number of STX, FT and NFT transfers contained within each transaction.
 
@@ -108,6 +109,7 @@ export const AddressRoutesV2: FastifyPluginAsync<
       preHandler: handleTransactionCache,
       schema: {
         operationId: 'get_address_transaction_events',
+        deprecated: true,
         summary: 'Get events for an address transaction',
         description: `Retrieves a paginated list of all STX, FT and NFT events concerning a STX address or Smart Contract ID within a specific transaction.`,
         tags: ['Transactions'],
@@ -158,6 +160,7 @@ export const AddressRoutesV2: FastifyPluginAsync<
       },
       schema: {
         operationId: 'get_principal_stx_balance',
+        deprecated: true,
         summary: 'Get principal STX balance',
         description: `Retrieves STX account balance information for a given Address or Contract Identifier.`,
         tags: ['Accounts'],
@@ -238,6 +241,7 @@ export const AddressRoutesV2: FastifyPluginAsync<
       preHandler: handlePrincipalCache,
       schema: {
         operationId: 'get_principal_ft_balances',
+        deprecated: true,
         summary: 'Get principal FT balances',
         description: `Retrieves Fungible-token account balance information for a given Address or Contract Identifier.`,
         tags: ['Accounts'],

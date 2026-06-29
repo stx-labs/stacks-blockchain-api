@@ -67,6 +67,7 @@ export const TxRoutes: FastifyPluginAsync<
       },
       schema: {
         operationId: 'get_transaction_list',
+        deprecated: true,
         summary: 'Get recent transactions',
         description: `Retrieves all recently mined transactions`,
         tags: ['Transactions'],
@@ -246,6 +247,7 @@ export const TxRoutes: FastifyPluginAsync<
       preHandler: handleMempoolCache,
       schema: {
         operationId: 'get_mempool_transaction_list',
+        deprecated: true,
         summary: 'Get mempool transactions',
         description: `Retrieves all transactions that have been recently broadcast to the mempool. These are pending transactions awaiting confirmation.
 
@@ -436,6 +438,7 @@ export const TxRoutes: FastifyPluginAsync<
       preHandler: handleTransactionCache,
       schema: {
         operationId: 'get_transaction_by_id',
+        deprecated: true,
         summary: 'Get transaction',
         description: `Retrieves transaction details for a given transaction ID`,
         tags: ['Transactions'],

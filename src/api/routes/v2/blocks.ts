@@ -174,6 +174,7 @@ export const BlockRoutesV2: FastifyPluginAsync<
       },
       schema: {
         operationId: 'get_transactions_by_block',
+        deprecated: true,
         summary: 'Get transactions by block',
         description: `Retrieves transactions confirmed in a single block`,
         tags: ['Transactions'],
