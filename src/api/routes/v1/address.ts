@@ -724,8 +724,9 @@ export const AddressRoutes: FastifyPluginAsync<
       preHandler: handlePrincipalMempoolCache,
       schema: {
         operationId: 'get_account_nonces',
+        deprecated: true,
         summary: 'Get the latest nonce used by an account',
-        description: `Retrieves the latest nonce values used by an account by inspecting the mempool, microblock transactions, and anchored transactions.`,
+        description: `Retrieves the latest nonce values used by an account by inspecting the mempool, microblock transactions, and anchored transactions. **Deprecated:** use \`GET /extended/v3/principals/{principal}/nonces\` instead.`,
         tags: ['Accounts'],
         params: Type.Object({
           principal: PrincipalSchema,

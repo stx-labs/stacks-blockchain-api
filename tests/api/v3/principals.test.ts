@@ -1354,4 +1354,81 @@ describe('principals', () => {
       });
     });
   });
+
+  describe('/v3/principals/:principal/nonces', () => {
+    const nonceAddr = 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5';
+
+    const getNonces = async (principal: string) => {
+      const res = await api.fastifyApp.inject({
+        method: 'GET',
+        url: `/extended/v3/principals/${principal}/nonces`,
+      });
+      assert.equal(res.statusCode, 200, res.body);
+      return JSON.parse(res.body);
+    };
+
+    // Confirms `nonceAddr` transactions at nonces 0, 1, 2 in block 3.
+    const buildConfirmedNonces = () => {
+      const block = new TestBlockBuilder({
+        block_height: 3,
+        block_hash: hex(3),
+        index_block_hash: hex(3),
+        parent_index_block_hash: hex(2),
+        parent_block_hash: hex(2),
+        burn_block_height: 3,
+      });
+      for (let nonce = 0; nonce <= 2; nonce++) {
+        block.addTx({
+          tx_id: hex(310 + nonce),
+          block_hash: hex(3),
+          index_block_hash: hex(3),
+          burn_block_height: 3,
+          tx_index: nonce,
+          sender_address: nonceAddr,
+          nonce,
+        });
+      }
+      return block.build();
+    };
+
+    test('returns a zeroed result for a principal with no activity', async () => {
+      const body = await getNonces(emptyPrincipal);
+      assert.deepEqual(body, {
+        next_nonce: 0,
+        last_confirmed_nonce: null,
+        mempool: { last_nonce: null, pending_nonces: [], missing_nonces: [] },
+      });
+    });
+
+    test('reports the last confirmed nonce and next nonce with no mempool gap', async () => {
+      await db.update(buildConfirmedNonces());
+      // A single pending mempool tx at the next sequential nonce (3) — no gap.
+      await db.updateMempoolTxs({
+        mempoolTxs: [testMempoolTx({ tx_id: hex(401), sender_address: nonceAddr, nonce: 3 })],
+      });
+      const body = await getNonces(nonceAddr);
+      assert.deepEqual(body, {
+        next_nonce: 4,
+        last_confirmed_nonce: 2,
+        mempool: { last_nonce: 3, pending_nonces: [], missing_nonces: [] },
+      });
+    });
+
+    test('detects missing and pending mempool nonces across a gap', async () => {
+      await db.update(buildConfirmedNonces());
+      // Mempool has nonces 3 and 5 (4 is missing), leaving a gap above confirmed nonce 2.
+      await db.updateMempoolTxs({
+        mempoolTxs: [
+          testMempoolTx({ tx_id: hex(402), sender_address: nonceAddr, nonce: 3 }),
+          testMempoolTx({ tx_id: hex(403), sender_address: nonceAddr, nonce: 5 }),
+        ],
+      });
+      const body = await getNonces(nonceAddr);
+      assert.equal(body.next_nonce, 6);
+      assert.equal(body.last_confirmed_nonce, 2);
+      assert.equal(body.mempool.last_nonce, 5);
+      assert.deepEqual(body.mempool.pending_nonces, [3]);
+      assert.deepEqual(body.mempool.missing_nonces, [4]);
+    });
+  });
 });
