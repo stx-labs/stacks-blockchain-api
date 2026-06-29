@@ -8,6 +8,7 @@ import { Type, TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { Server } from 'node:http';
 import { getPagingQueryLimit, ResourceType } from '../../pagination.js';
 import {
+  AddressSchema,
   AssetIdentifierSchema,
   PrincipalSchema,
   TransactionIdSchema,
@@ -50,6 +51,7 @@ import {
   PrincipalBalanceChangeSchema,
   PrincipalTransactionBalanceChangeSchema,
 } from '../../schemas/v3/entities/principal-balance-changes.js';
+import { PrincipalNoncesSchema } from '../../schemas/v3/entities/principal-nonces.js';
 
 export const PrincipalsRoutes: FastifyPluginAsync<
   Record<never, never>,
@@ -437,6 +439,36 @@ export const PrincipalsRoutes: FastifyPluginAsync<
             repr: decodeClarityValueToRepr(r.value),
           },
         })),
+      });
+    }
+  );
+
+  fastify.get(
+    '/principals/:principal/nonces',
+    {
+      preHandler: handlePrincipalMempoolCache,
+      schema: {
+        operationId: 'get_principal_nonces',
+        summary: 'Get principal nonces',
+        description:
+          "Get a Stacks account's latest nonce state by inspecting its confirmed (anchored + microblock) transactions and the mempool, including the nonce to use for its next transaction. Only standard principals have nonces; contract principals are not valid.",
+        tags: ['Accounts'],
+        params: Type.Object({ principal: AddressSchema }),
+        response: {
+          200: PrincipalNoncesSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const nonces = await fastify.db.getAddressNonces({ stxAddress: req.params.principal });
+      await reply.send({
+        next_nonce: nonces.possibleNextNonce,
+        last_confirmed_nonce: nonces.lastExecutedTxNonce,
+        mempool: {
+          last_nonce: nonces.lastMempoolTxNonce,
+          pending_nonces: nonces.detectedMempoolNonces,
+          missing_nonces: nonces.detectedMissingNonces,
+        },
       });
     }
   );
