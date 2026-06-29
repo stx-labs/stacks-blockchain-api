@@ -69,7 +69,7 @@ export const TxRoutes: FastifyPluginAsync<
         operationId: 'get_transaction_list',
         deprecated: true,
         summary: 'Get recent transactions',
-        description: `Retrieves all recently mined transactions`,
+        description: `Retrieves all recently mined transactions. **Deprecated:** use \`GET /extended/v3/transactions\` instead.`,
         tags: ['Transactions'],
         querystring: Type.Object({
           offset: OffsetParam(),
@@ -251,7 +251,9 @@ export const TxRoutes: FastifyPluginAsync<
         summary: 'Get mempool transactions',
         description: `Retrieves all transactions that have been recently broadcast to the mempool. These are pending transactions awaiting confirmation.
 
-        If you need to monitor new transactions, we highly recommend subscribing to [WebSockets or Socket.io](https://github.com/hirosystems/stacks-blockchain-api/tree/master/client) for real-time updates.`,
+        If you need to monitor new transactions, we highly recommend subscribing to [WebSockets or Socket.io](https://github.com/hirosystems/stacks-blockchain-api/tree/master/client) for real-time updates.
+
+        **Deprecated:** use \`GET /extended/v3/mempool/transactions\` instead.`,
         tags: ['Transactions'],
         querystring: Type.Object({
           sender_address: Type.Optional(AddressParamSchema),
@@ -440,7 +442,7 @@ export const TxRoutes: FastifyPluginAsync<
         operationId: 'get_transaction_by_id',
         deprecated: true,
         summary: 'Get transaction',
-        description: `Retrieves transaction details for a given transaction ID`,
+        description: `Retrieves transaction details for a given transaction ID. **Deprecated:** use \`GET /extended/v3/transactions/{tx_id}\` instead.`,
         tags: ['Transactions'],
         params: Type.Object({
           tx_id: TransactionIdParamSchema,
@@ -535,7 +537,7 @@ export const TxRoutes: FastifyPluginAsync<
         operationId: 'get_transactions_by_block_hash',
         summary: 'Transactions by block hash',
         description:
-          'Retrieves a list of all transactions within a block for a given block hash. **This endpoint is deprecated in favor of `get_transactions_by_block`.**',
+          'Retrieves a list of all transactions within a block for a given block hash. **Deprecated:** use `GET /extended/v3/blocks/{height_or_hash}/transactions` instead.',
         tags: ['Transactions'],
         params: Type.Object({
           block_hash: Type.String(),
@@ -582,7 +584,7 @@ export const TxRoutes: FastifyPluginAsync<
         operationId: 'get_transactions_by_block_height',
         summary: 'Transactions by block height',
         description:
-          'Retrieves all transactions within a block at a given height. **This endpoint is deprecated in favor of `get_transactions_by_block`.**',
+          'Retrieves all transactions within a block at a given height. **Deprecated:** use `GET /extended/v3/blocks/{height_or_hash}/transactions` instead.',
         tags: ['Transactions'],
         params: Type.Object({
           height: BlockHeightSchema,

@@ -176,7 +176,7 @@ export const BlockRoutesV2: FastifyPluginAsync<
         operationId: 'get_transactions_by_block',
         deprecated: true,
         summary: 'Get transactions by block',
-        description: `Retrieves transactions confirmed in a single block`,
+        description: `Retrieves transactions confirmed in a single block. **Deprecated:** use \`GET /extended/v3/blocks/{height_or_hash}/transactions\` instead.`,
         tags: ['Transactions'],
         params: BlockParamsSchema,
         querystring: Type.Object({
