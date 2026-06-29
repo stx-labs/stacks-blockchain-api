@@ -15,10 +15,22 @@ async function generateOpenApiFiles() {
     logger: true,
   }).withTypeProvider<TypeBoxTypeProvider>();
 
-  // If a response schema is defined but lacks a '4xx' response, add it
   fastify.addHook(
     'onRoute',
-    (route: { schema?: { response: Record<string | number, TSchema> } }) => {
+    (route: {
+      schema?: {
+        response?: Record<string | number, TSchema>;
+        deprecated?: boolean;
+        hide?: boolean;
+      };
+    }) => {
+      // Exclude deprecated endpoints from the generated spec entirely
+      // (`@fastify/swagger` omits any route whose schema is marked `hide`).
+      if (route.schema?.deprecated) {
+        route.schema.hide = true;
+        return;
+      }
+      // If a response schema is defined but lacks a '4xx' response, add it
       if (route.schema?.response && !route.schema?.response['4xx']) {
         route.schema.response['4xx'] = ErrorResponseSchema;
       }

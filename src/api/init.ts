@@ -179,9 +179,11 @@ export async function startApiServer(opts: {
   // Setup direct proxy to core-node RPC endpoints (/v2)
   await fastify.register(CoreNodeRpcProxyRouter, { prefix: '/v2' });
 
-  // Middleware to annotate http responses with deprecation warnings
+  // Middleware to annotate http responses with deprecation warnings, and to disable deprecated
+  // endpoints entirely (410 Gone) once `ENABLE_DEPRECATED_ENDPOINTS` is flipped off at sunset.
   await fastify.register(DeprecationPlugin, {
     defaultDeprecatedMessage: 'See https://docs.hiro.so/stacks/api for more information',
+    enableDeprecatedEndpoints: ENV.ENABLE_DEPRECATED_ENDPOINTS,
   });
 
   const serverSockets = new Set<Socket>();

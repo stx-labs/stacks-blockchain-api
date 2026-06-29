@@ -102,7 +102,7 @@ export const AddressRoutes: FastifyPluginAsync<
         operationId: 'get_account_stx_balance',
         summary: 'Get account STX balance',
         description:
-          'Retrieves STX token balance for a given Address or Contract Identifier. **This endpoint is deprecated in favor of `get_principal_stx_balance`.**',
+          'Retrieves STX token balance for a given Address or Contract Identifier. **Deprecated:** use `GET /extended/v3/principals/{principal}/balances/stx` instead.',
         tags: ['Accounts'],
         params: Type.Object({
           principal: PrincipalSchema,
@@ -279,7 +279,7 @@ export const AddressRoutes: FastifyPluginAsync<
         operationId: 'get_account_transactions',
         summary: 'Get account transactions',
         description:
-          'Retrieves a list of all Transactions for a given Address or Contract Identifier. **This endpoint is deprecated in favor of `get_address_transactions`.**',
+          'Retrieves a list of all Transactions for a given Address or Contract Identifier. **Deprecated:** use `GET /extended/v3/principals/{principal}/transactions` instead.',
         tags: ['Accounts'],
         params: Type.Object({
           principal: PrincipalSchema,
@@ -352,7 +352,7 @@ export const AddressRoutes: FastifyPluginAsync<
         operationId: 'get_single_transaction_with_transfers',
         summary: 'Get account transaction information for specific transaction',
         description:
-          'Retrieves transaction details for a given Transaction Id, for a given account or contract Identifier. **This endpoint is deprecated in favor of `get_address_transaction_events`.**',
+          'Retrieves transaction details for a given Transaction Id, for a given account or contract Identifier. **Deprecated:** use `GET /extended/v3/principals/{principal}/transactions/{tx_id}/balance-changes` instead.',
         tags: ['Accounts'],
         params: Type.Object({
           principal: PrincipalSchema,
@@ -418,7 +418,7 @@ export const AddressRoutes: FastifyPluginAsync<
         operationId: 'get_account_transactions_with_transfers',
         summary: 'Get account transactions including STX transfers for each transaction.',
         description:
-          'Retrieve all transactions for an account or contract identifier including STX transfers for each transaction. **This endpoint is deprecated in favor of `get_address_transactions`.**',
+          'Retrieve all transactions for an account or contract identifier including STX transfers for each transaction. **Deprecated:** use `GET /extended/v3/principals/{principal}/transactions` instead.',
         tags: ['Accounts'],
         params: Type.Object({
           principal: PrincipalSchema,
