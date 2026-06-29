@@ -18,7 +18,11 @@ async function generateOpenApiFiles() {
   fastify.addHook(
     'onRoute',
     (route: {
-      schema?: { response: Record<string | number, TSchema>; deprecated?: boolean; hide?: boolean };
+      schema?: {
+        response?: Record<string | number, TSchema>;
+        deprecated?: boolean;
+        hide?: boolean;
+      };
     }) => {
       // Exclude deprecated endpoints from the generated spec entirely
       // (`@fastify/swagger` omits any route whose schema is marked `hide`).

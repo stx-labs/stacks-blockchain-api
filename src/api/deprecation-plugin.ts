@@ -54,7 +54,7 @@ const pluginCb: FastifyPluginAsync<{
  * If a route's schema has `deprecated: true`, a `Warning` header will be added to the response.
  * - If the schema includes a `deprecatedMessage`, it will be used in the warning.
  * - If not, the plugin uses the `defaultDeprecatedMessage` provided in the plugin options.
- * - If neither is available, a generic warning message `299 - "Deprecated"` is used.
+ * - If neither is available, a generic warning message like `299 - "Deprecated: Endpoint is deprecated"` is used.
  *
  * If `enableDeprecatedEndpoints` is `false`, all deprecated routes are disabled and respond with
  * `410 Gone` instead of executing. This is the master kill-switch flipped at a sunset date.
