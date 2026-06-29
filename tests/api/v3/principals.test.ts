@@ -1400,6 +1400,14 @@ describe('principals', () => {
       });
     });
 
+    test('rejects a contract principal with 400 (contracts have no nonces)', async () => {
+      const res = await api.fastifyApp.inject({
+        method: 'GET',
+        url: `/extended/v3/principals/SP000000000000000000002Q6VF78.pox-3/nonces`,
+      });
+      assert.equal(res.statusCode, 400, res.body);
+    });
+
     test('reports the last confirmed nonce and next nonce with no mempool gap', async () => {
       await db.update(buildConfirmedNonces());
       // A single pending mempool tx at the next sequential nonce (3) — no gap.

@@ -1,7 +1,7 @@
 import { Static, Type } from '@sinclair/typebox';
 
 export const AddressSchema = Type.String({
-  pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{28,41}',
+  pattern: '^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{28,41}$',
   title: 'Stacks Address',
   description: 'Stacks Address',
   examples: ['SP318Q55DEKHRXJK696033DQN5C54D9K2EE6DHRWP'],

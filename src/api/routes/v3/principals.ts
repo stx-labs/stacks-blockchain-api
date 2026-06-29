@@ -8,6 +8,7 @@ import { Type, TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { Server } from 'node:http';
 import { getPagingQueryLimit, ResourceType } from '../../pagination.js';
 import {
+  AddressSchema,
   AssetIdentifierSchema,
   PrincipalSchema,
   TransactionIdSchema,
@@ -450,9 +451,9 @@ export const PrincipalsRoutes: FastifyPluginAsync<
         operationId: 'get_principal_nonces',
         summary: 'Get principal nonces',
         description:
-          "Get a principal's latest nonce state by inspecting its confirmed (anchored + microblock) transactions and the mempool, including the nonce to use for its next transaction.",
+          "Get a Stacks account's latest nonce state by inspecting its confirmed (anchored + microblock) transactions and the mempool, including the nonce to use for its next transaction. Only standard principals have nonces; contract principals are not valid.",
         tags: ['Accounts'],
-        params: Type.Object({ principal: PrincipalSchema }),
+        params: Type.Object({ principal: AddressSchema }),
         response: {
           200: PrincipalNoncesSchema,
         },
