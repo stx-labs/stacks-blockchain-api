@@ -1187,6 +1187,50 @@ describe('principals', () => {
         current: `1000000:${tokenSmall}`,
       });
     });
+
+    describe('single token lookup', () => {
+      const getFtBalance = (principal: string, assetIdentifier: string) =>
+        api.fastifyApp.inject({
+          method: 'GET',
+          url: `/extended/v3/principals/${principal}/balances/ft/${assetIdentifier}`,
+        });
+
+      test('returns the balance for a single held token', async () => {
+        await db.update(buildFtBlock());
+        const res = await getFtBalance(ftAddr, tokenMid);
+        assert.equal(res.statusCode, 200, res.body);
+        assert.deepEqual(JSON.parse(res.body), {
+          asset_identifier: tokenMid,
+          balance: '2000000',
+        });
+      });
+
+      test('returns a zero balance for a token the principal does not hold', async () => {
+        await db.update(buildFtBlock());
+        const tokenNone = 'SP000000000000000000002Q6VF78.token-none::none';
+        const res = await getFtBalance(ftAddr, tokenNone);
+        assert.equal(res.statusCode, 200, res.body);
+        assert.deepEqual(JSON.parse(res.body), {
+          asset_identifier: tokenNone,
+          balance: '0',
+        });
+      });
+
+      test('returns a zero balance for a token that nets to zero', async () => {
+        await db.update(buildFtBlock());
+        const res = await getFtBalance(ftAddr, tokenZero);
+        assert.equal(res.statusCode, 200, res.body);
+        assert.deepEqual(JSON.parse(res.body), {
+          asset_identifier: tokenZero,
+          balance: '0',
+        });
+      });
+
+      test('rejects a malformed asset identifier with 400', async () => {
+        const res = await getFtBalance(ftAddr, 'not-a-valid-asset-id');
+        assert.equal(res.statusCode, 400, res.body);
+      });
+    });
   });
 
   describe('/v3/principals/:principal/balances/nft', () => {

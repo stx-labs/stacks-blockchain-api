@@ -296,8 +296,9 @@ export const AddressRoutesV2: FastifyPluginAsync<
       preHandler: handlePrincipalCache,
       schema: {
         operationId: 'get_principal_ft_balance',
+        deprecated: true,
         summary: 'Get principal FT balance',
-        description: `Retrieves a specific fungible-token balance for a given principal.`,
+        description: `Retrieves a specific fungible-token balance for a given principal. **Deprecated:** use \`GET /extended/v3/principals/{principal}/balances/ft/{asset_identifier}\` instead.`,
         tags: ['Accounts'],
         params: Type.Object({
           principal: PrincipalSchema,

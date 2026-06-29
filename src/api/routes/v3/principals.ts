@@ -7,7 +7,11 @@ import { FastifyPluginAsync } from 'fastify';
 import { Type, TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { Server } from 'node:http';
 import { getPagingQueryLimit, ResourceType } from '../../pagination.js';
-import { PrincipalSchema, TransactionIdSchema } from '../../schemas/v3/entities/common.js';
+import {
+  AssetIdentifierSchema,
+  PrincipalSchema,
+  TransactionIdSchema,
+} from '../../schemas/v3/entities/common.js';
 import {
   BondCursorSchema,
   CursorPaginationQuerystring,
@@ -356,6 +360,37 @@ export const PrincipalsRoutes: FastifyPluginAsync<
           asset_identifier: r.token,
           balance: r.balance,
         })),
+      });
+    }
+  );
+
+  fastify.get(
+    '/principals/:principal/balances/ft/:asset_identifier',
+    {
+      preHandler: handlePrincipalCache,
+      schema: {
+        operationId: 'get_principal_balance_ft',
+        summary: 'Get principal FT balance',
+        description:
+          "Get a principal's balance of a single fungible token. Returns a zero balance if the principal does not currently hold the token.",
+        tags: ['Accounts'],
+        params: Type.Object({
+          principal: PrincipalSchema,
+          asset_identifier: AssetIdentifierSchema,
+        }),
+        response: {
+          200: PrincipalFtPositionSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const result = await fastify.db.v3.getPrincipalFtBalance({
+        principal: req.params.principal,
+        token: req.params.asset_identifier,
+      });
+      await reply.send({
+        asset_identifier: result.token,
+        balance: result.balance,
       });
     }
   );
