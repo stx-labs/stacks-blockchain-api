@@ -24,11 +24,11 @@ import {
 } from '../../schemas/v3/cursors.js';
 import { decodeClarityValueToRepr } from '@stacks/codec';
 import { PrincipalTransactionSummarySchema } from '../../schemas/v3/entities/principal-transactions.js';
+import { serializePrincipalTransactionSummary } from '../../serializers/v3/transactions.js';
 import {
   serializePrincipalBalanceChange,
   serializePrincipalTransactionBalanceChange,
-  serializePrincipalTransactionSummary,
-} from '../../serializers/v3/transactions.js';
+} from '../../serializers/v3/balance-changes.js';
 import {
   PrincipalBondPositionSchema,
   PrincipalStakingSummarySchema,

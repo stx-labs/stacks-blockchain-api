@@ -114,6 +114,7 @@ jobs:
     needs: publish-npm
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
+    environment: Production
     permissions:
       contents: write
     steps:
