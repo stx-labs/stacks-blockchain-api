@@ -528,6 +528,92 @@ export class PgStoreV3 extends BasePgStoreModule {
   }
 
   /**
+   * Gets the mempool transaction summaries for pending transactions that involve
+   * a principal — as the sender, a token-transfer recipient, the deployed
+   * contract, or the called contract — keyset-paginated by `(receipt_time, tx_id)`
+   * descending. Mirrors {@link getMempoolTransactionSummaries} but scoped to a
+   * single principal.
+   * @param args - The arguments for the query.
+   * @returns The principal's pending mempool transaction summaries.
+   */
+  async getPrincipalMempoolTransactionSummaries(args: {
+    principal: Principal;
+    limit: number;
+    cursor?: string;
+  }): Promise<DbCursorPaginatedResult<DbMempoolTransactionSummary>> {
+    return await this.sqlTransaction(async sql => {
+      const encodeMempoolTxSummaryCursor = (
+        tx: Pick<DbMempoolTransactionSummary, 'receipt_time' | 'tx_id'>
+      ) => `${tx.receipt_time}:${tx.tx_id}`;
+
+      // Pending txs that involve the principal in any role.
+      const principalFilter = sql`
+        AND (
+          sender_address = ${args.principal}
+          OR token_transfer_recipient_address = ${args.principal}
+          OR smart_contract_contract_id = ${args.principal}
+          OR contract_call_contract_id = ${args.principal}
+        )
+      `;
+
+      let cursorFilter = sql``;
+      if (args.cursor) {
+        const [receiptTime, txId] = args.cursor.split(':');
+        cursorFilter = sql`
+          AND (receipt_time, tx_id) <= (${parseInt(receiptTime, 10)}, ${txId})
+        `;
+      }
+
+      const resultQuery = await sql<(DbMempoolTransactionSummary & { total: number })[]>`
+        SELECT
+          ${sql(MEMPOOL_TX_SUMMARY_COLUMNS)},
+          (
+            SELECT COUNT(*)::int FROM mempool_txs
+            WHERE pruned = false ${principalFilter}
+          ) AS total
+        FROM mempool_txs
+        WHERE pruned = false ${principalFilter} ${cursorFilter}
+        ORDER BY receipt_time DESC, tx_id DESC
+        LIMIT ${args.limit + 1}
+      `;
+
+      const hasNextPage = resultQuery.count > args.limit;
+      const results = hasNextPage ? resultQuery.slice(0, args.limit) : resultQuery;
+      const total = resultQuery.count > 0 ? resultQuery[0].total : 0;
+      const firstResult = results[0];
+      const extraResult = hasNextPage ? resultQuery[args.limit] : null;
+
+      let prevCursor: string | null = null;
+      if (firstResult) {
+        const prevPageQuery = await sql<
+          Pick<DbMempoolTransactionSummary, 'receipt_time' | 'tx_id'>[]
+        >`
+          SELECT receipt_time, tx_id
+          FROM mempool_txs
+          WHERE pruned = false ${principalFilter}
+            AND (receipt_time, tx_id) > (${firstResult.receipt_time}, ${firstResult.tx_id})
+          ORDER BY receipt_time ASC, tx_id ASC
+          LIMIT ${args.limit}
+        `;
+        prevCursor =
+          prevPageQuery.length > 0
+            ? encodeMempoolTxSummaryCursor(prevPageQuery[prevPageQuery.length - 1])
+            : null;
+      }
+
+      return {
+        limit: args.limit,
+        offset: 0,
+        next_cursor: extraResult ? encodeMempoolTxSummaryCursor(extraResult) : null,
+        prev_cursor: prevCursor,
+        current_cursor: firstResult ? encodeMempoolTxSummaryCursor(firstResult) : null,
+        total,
+        results,
+      };
+    });
+  }
+
+  /**
    * Gets the summaries for a block's transactions.
    * @param args - The arguments for the query.
    * @returns The summaries for the block's transactions.

@@ -18,6 +18,7 @@ import {
   CursorPaginationQuerystring,
   CursorPaginatedResponse,
   FtBalanceCursorSchema,
+  MempoolTransactionCursorSchema,
   NftBalanceCursorSchema,
   TransactionCursorSchema,
 } from '../../schemas/v3/cursors.js';
@@ -52,6 +53,8 @@ import {
   PrincipalTransactionBalanceChangeSchema,
 } from '../../schemas/v3/entities/principal-balance-changes.js';
 import { PrincipalNoncesSchema } from '../../schemas/v3/entities/principal-nonces.js';
+import { MempoolTransactionSummarySchema } from '../../schemas/v3/entities/mempool-transaction-summaries.js';
+import { serializeDbMempoolTransactionSummary } from '../../serializers/v3/mempool-transactions.js';
 
 export const PrincipalsRoutes: FastifyPluginAsync<
   Record<never, never>,
@@ -469,6 +472,46 @@ export const PrincipalsRoutes: FastifyPluginAsync<
           pending_nonces: nonces.detectedMempoolNonces,
           missing_nonces: nonces.detectedMissingNonces,
         },
+      });
+    }
+  );
+
+  fastify.get(
+    '/principals/:principal/mempool/transactions',
+    {
+      preHandler: handlePrincipalMempoolCache,
+      schema: {
+        operationId: 'get_principal_mempool_transactions',
+        summary: 'Get principal mempool transactions',
+        description:
+          'Returns a list of pending mempool transactions that involve a principal — as the sender, a token-transfer recipient, the deployed contract, or the called contract.',
+        tags: ['Transactions'],
+        params: Type.Object({ principal: PrincipalSchema }),
+        querystring: CursorPaginationQuerystring(MempoolTransactionCursorSchema, ResourceType.Tx),
+        response: {
+          200: CursorPaginatedResponse(
+            MempoolTransactionSummarySchema,
+            MempoolTransactionCursorSchema,
+            ResourceType.Tx
+          ),
+        },
+      },
+    },
+    async (req, reply) => {
+      const results = await fastify.db.v3.getPrincipalMempoolTransactionSummaries({
+        principal: req.params.principal,
+        limit: req.query.limit ?? getPagingQueryLimit(ResourceType.Tx),
+        cursor: req.query.cursor,
+      });
+      await reply.send({
+        limit: results.limit,
+        total: results.total,
+        cursor: {
+          next: results.next_cursor,
+          previous: results.prev_cursor,
+          current: results.current_cursor,
+        },
+        results: results.results.map(r => serializeDbMempoolTransactionSummary(r)),
       });
     }
   );

@@ -1439,4 +1439,106 @@ describe('principals', () => {
       assert.deepEqual(body.mempool.missing_nonces, [4]);
     });
   });
+
+  describe('/v3/principals/:principal/mempool/transactions', () => {
+    // Addresses not touched by the shared block setup, so the seeded mempool txs
+    // are not pruned by confirmed txs from the same sender.
+    const memAddr = 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5';
+    const otherAddr = 'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6';
+    const poxContract = 'SP000000000000000000002Q6VF78.pox-4';
+
+    const getMempoolTxs = async (principal: string, query: Record<string, string> = {}) => {
+      const res = await api.fastifyApp.inject({
+        method: 'GET',
+        url: `/extended/v3/principals/${principal}/mempool/transactions`,
+        query,
+      });
+      assert.equal(res.statusCode, 200, res.body);
+      return JSON.parse(res.body);
+    };
+
+    // Seeds 4 pending txs: memAddr as sender (1000), memAddr as token-transfer
+    // recipient (2000), a contract-call to poxContract by otherAddr (3000), and an
+    // unrelated transfer between other parties (4000).
+    const seedMempool = () =>
+      db.updateMempoolTxs({
+        mempoolTxs: [
+          testMempoolTx({
+            tx_id: hex(0x51),
+            receipt_time: 1000,
+            sender_address: memAddr,
+            nonce: 0,
+          }),
+          testMempoolTx({
+            tx_id: hex(0x52),
+            receipt_time: 2000,
+            sender_address: otherAddr,
+            token_transfer_recipient_address: memAddr,
+            nonce: 1,
+          }),
+          testMempoolTx({
+            tx_id: hex(0x53),
+            receipt_time: 3000,
+            type_id: DbTxTypeId.ContractCall,
+            sender_address: otherAddr,
+            contract_call_contract_id: poxContract,
+            contract_call_function_name: 'stack-stx',
+            nonce: 2,
+          }),
+          testMempoolTx({
+            tx_id: hex(0x54),
+            receipt_time: 4000,
+            sender_address: otherAddr,
+            token_transfer_recipient_address: 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG',
+            nonce: 3,
+          }),
+        ],
+      });
+
+    test('returns an empty page for a principal with no mempool activity', async () => {
+      const body = await getMempoolTxs(emptyPrincipal);
+      assert.equal(body.total, 0);
+      assert.deepEqual(body.results, []);
+      assert.deepEqual(body.cursor, { next: null, previous: null, current: null });
+    });
+
+    test('returns pending txs where the principal is the sender or a recipient', async () => {
+      await seedMempool();
+      const body = await getMempoolTxs(memAddr);
+      assert.equal(body.total, 2);
+      // Ordered by receipt_time desc: recipient tx (2000) before sender tx (1000).
+      assert.deepEqual(
+        body.results.map((r: { tx_id: string }) => r.tx_id),
+        [hex(0x52), hex(0x51)]
+      );
+      // The unrelated tx is excluded.
+      assert.ok(!body.results.some((r: { tx_id: string }) => r.tx_id === hex(0x54)));
+    });
+
+    test('returns pending txs where a contract principal is the called contract', async () => {
+      await seedMempool();
+      const body = await getMempoolTxs(poxContract);
+      assert.equal(body.total, 1);
+      assert.deepEqual(
+        body.results.map((r: { tx_id: string }) => r.tx_id),
+        [hex(0x53)]
+      );
+    });
+
+    test('paginates with cursors', async () => {
+      await seedMempool();
+      const page1 = await getMempoolTxs(memAddr, { limit: '1' });
+      assert.equal(page1.total, 2);
+      assert.deepEqual(
+        page1.results.map((r: { tx_id: string }) => r.tx_id),
+        [hex(0x52)]
+      );
+      const page2 = await getMempoolTxs(memAddr, { limit: '1', cursor: page1.cursor.next });
+      assert.deepEqual(
+        page2.results.map((r: { tx_id: string }) => r.tx_id),
+        [hex(0x51)]
+      );
+      assert.equal(page2.cursor.next, null);
+    });
+  });
 });
