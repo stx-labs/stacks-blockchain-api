@@ -1446,6 +1446,7 @@ describe('principals', () => {
     const memAddr = 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5';
     const otherAddr = 'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6';
     const poxContract = 'SP000000000000000000002Q6VF78.pox-4';
+    const deployContract = 'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6.cool-contract';
 
     const getMempoolTxs = async (principal: string, query: Record<string, string> = {}) => {
       const res = await api.fastifyApp.inject({
@@ -1457,9 +1458,10 @@ describe('principals', () => {
       return JSON.parse(res.body);
     };
 
-    // Seeds 4 pending txs: memAddr as sender (1000), memAddr as token-transfer
-    // recipient (2000), a contract-call to poxContract by otherAddr (3000), and an
-    // unrelated transfer between other parties (4000).
+    // Seeds 5 pending txs: memAddr as sender (1000), memAddr as token-transfer
+    // recipient (2000), a contract-call to poxContract by otherAddr (3000), an
+    // unrelated transfer between other parties (4000), and a smart-contract deploy
+    // of deployContract by otherAddr (5000).
     const seedMempool = () =>
       db.updateMempoolTxs({
         mempoolTxs: [
@@ -1492,6 +1494,14 @@ describe('principals', () => {
             token_transfer_recipient_address: 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG',
             nonce: 3,
           }),
+          testMempoolTx({
+            tx_id: hex(0x55),
+            receipt_time: 5000,
+            type_id: DbTxTypeId.SmartContract,
+            sender_address: otherAddr,
+            smart_contract_contract_id: deployContract,
+            nonce: 4,
+          }),
         ],
       });
 
@@ -1522,6 +1532,16 @@ describe('principals', () => {
       assert.deepEqual(
         body.results.map((r: { tx_id: string }) => r.tx_id),
         [hex(0x53)]
+      );
+    });
+
+    test('returns pending txs where a contract principal is being deployed', async () => {
+      await seedMempool();
+      const body = await getMempoolTxs(deployContract);
+      assert.equal(body.total, 1);
+      assert.deepEqual(
+        body.results.map((r: { tx_id: string }) => r.tx_id),
+        [hex(0x55)]
       );
     });
 
