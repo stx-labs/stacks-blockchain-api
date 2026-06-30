@@ -358,9 +358,12 @@ export const TxRoutes: FastifyPluginAsync<
       },
       schema: {
         operationId: 'get_filtered_events',
+        deprecated: true,
         summary: 'Transaction Events',
         description: `Retrieves the list of events filtered by principal (STX address or Smart Contract ID), transaction id or event types.
-        The list of event types is ('smart_contract_log', 'stx_lock', 'stx_asset', 'fungible_token_asset', 'non_fungible_token_asset').`,
+        The list of event types is ('smart_contract_log', 'stx_lock', 'stx_asset', 'fungible_token_asset', 'non_fungible_token_asset').
+
+        **Deprecated:** this endpoint has no direct v3 replacement.`,
         tags: ['Transactions'],
         querystring: Type.Object({
           tx_id: Type.Optional(TransactionIdParamSchema),

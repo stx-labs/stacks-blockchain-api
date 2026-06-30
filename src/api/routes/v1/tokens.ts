@@ -36,11 +36,14 @@ export const TokenRoutes: FastifyPluginAsync<
       preHandler: handleChainTipCache,
       schema: {
         operationId: 'get_nft_holdings',
+        deprecated: true,
         summary: 'Non-Fungible Token holdings',
         description: `Retrieves the list of Non-Fungible Tokens owned by the given principal (STX address or Smart Contract ID).
         Results can be filtered by one or more asset identifiers and can include metadata about the transaction that made the principal own each token.
 
-        More information on Non-Fungible Tokens on the Stacks blockchain can be found [here](https://docs.stacks.co/build/create-tokens/creating-a-nft).`,
+        More information on Non-Fungible Tokens on the Stacks blockchain can be found [here](https://docs.stacks.co/build/create-tokens/creating-a-nft).
+
+        **Deprecated:** use \`GET /extended/v3/principals/{principal}/balances/nft\` instead.`,
         tags: ['Non-Fungible Tokens'],
         querystring: Type.Object({
           principal: PrincipalSchema,
