@@ -673,8 +673,9 @@ export const AddressRoutes: FastifyPluginAsync<
       preHandler: handlePrincipalMempoolCache,
       schema: {
         operationId: 'get_address_mempool_transactions',
+        deprecated: true,
         summary: 'Transactions for address',
-        description: `Retrieves all transactions for a given address that are currently in mempool`,
+        description: `Retrieves all transactions for a given address that are currently in mempool. **Deprecated:** use \`GET /extended/v3/principals/{principal}/mempool/transactions\` instead.`,
         tags: ['Transactions'],
         params: Type.Object({
           principal: PrincipalSchema,
