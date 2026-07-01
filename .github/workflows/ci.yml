@@ -86,6 +86,7 @@ jobs:
             # krypton:pox-4-stack-extend-increase,
             # krypton:rpc,
             snp,
+            pox5:pox-transition,
           ]
     runs-on: ubuntu-latest
     steps:

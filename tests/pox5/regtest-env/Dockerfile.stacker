@@ -1,0 +1,14 @@
+FROM node:20-bookworm AS builder
+
+RUN apt-get update && apt-get install -y curl gettext-base jq
+
+WORKDIR /root
+COPY ./stacking/package.json /root/
+RUN npm i
+
+COPY ./stacking/contracts/*.clar /root/contracts/
+COPY ./stacking/*.ts /root/
+
+ENV NODE_OPTIONS=--enable-source-maps
+
+CMD ["./node_modules/.bin/tsx", "/root/stacking.ts"]
