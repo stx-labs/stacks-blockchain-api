@@ -120,8 +120,11 @@ export interface paths {
         };
         /**
          * Transaction Events
+         * @deprecated
          * @description Retrieves the list of events filtered by principal (STX address or Smart Contract ID), transaction id or event types.
          *             The list of event types is ('smart_contract_log', 'stx_lock', 'stx_asset', 'fungible_token_asset', 'non_fungible_token_asset').
+         *
+         *             **Deprecated:** this endpoint has no direct v3 replacement.
          */
         get: operations["get_filtered_events"];
         put?: never;
@@ -348,10 +351,13 @@ export interface paths {
         };
         /**
          * Non-Fungible Token holdings
+         * @deprecated
          * @description Retrieves the list of Non-Fungible Tokens owned by the given principal (STX address or Smart Contract ID).
          *             Results can be filtered by one or more asset identifiers and can include metadata about the transaction that made the principal own each token.
          *
          *             More information on Non-Fungible Tokens on the Stacks blockchain can be found [here](https://docs.stacks.co/build/create-tokens/creating-a-nft).
+         *
+         *             **Deprecated:** use `GET /extended/v3/principals/{principal}/balances/nft` instead.
          */
         get: operations["get_nft_holdings"];
         put?: never;
@@ -935,7 +941,8 @@ export interface paths {
         };
         /**
          * Transactions for address
-         * @description Retrieves all transactions for a given address that are currently in mempool
+         * @deprecated
+         * @description Retrieves all transactions for a given address that are currently in mempool. **Deprecated:** use `GET /extended/v3/principals/{principal}/mempool/transactions` instead.
          */
         get: operations["get_address_mempool_transactions"];
         put?: never;
@@ -1964,6 +1971,26 @@ export interface paths {
          * @description Get a Stacks account's latest nonce state by inspecting its confirmed (anchored + microblock) transactions and the mempool, including the nonce to use for its next transaction. Only standard principals have nonces; contract principals are not valid.
          */
         get: operations["get_principal_nonces"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/extended/v3/principals/{principal}/mempool/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get principal mempool transactions
+         * @description Returns a list of pending mempool transactions that involve a principal — as the sender, a token-transfer recipient, the deployed contract, or the called contract.
+         */
+        get: operations["get_principal_mempool_transactions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -38309,6 +38336,231 @@ export interface operations {
                             /** @description Expected intermediate nonces between the last confirmed nonce and the highest mempool nonce that are absent from the mempool — likely stalling transactions. */
                             missing_nonces: number[];
                         };
+                    };
+                };
+            };
+            /** @description Default Response */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: string;
+                        message?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    get_principal_mempool_transactions: {
+        parameters: {
+            query?: {
+                /** @description Number of results per page */
+                limit?: number;
+                /** @description Cursor for paginating mempool transactions. Format: receipt_time:tx_id */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                principal: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example 1 */
+                        total: number;
+                        /**
+                         * @description Number of results per page
+                         * @default 20
+                         */
+                        limit: number;
+                        cursor: {
+                            next: string | null;
+                            previous: string | null;
+                            current: string | null;
+                        };
+                        results: ({
+                            /** @description Transaction ID */
+                            tx_id: string;
+                            sender: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            };
+                            sponsor: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            } | null;
+                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
+                            fee_rate: string;
+                            /** @description A unix timestamp (in seconds) indicating when the transaction broadcast was received by the node. */
+                            receipt_time: number;
+                            /** @description Height of the block this transaction was received by the node */
+                            receipt_block_height: number;
+                            /** @description Status of the mempool transaction */
+                            status: "pending" | "dropped_replace_by_fee" | "dropped_replace_across_fork" | "dropped_too_expensive" | "dropped_stale_garbage_collect" | "dropped_problematic";
+                            /** @enum {string} */
+                            type: "token_transfer";
+                            token_transfer: {
+                                recipient: string;
+                                /** @description Transfer amount as Integer string (64-bit unsigned integer) */
+                                amount: string;
+                                memo: {
+                                    hex: string;
+                                    repr: string;
+                                } | null;
+                            };
+                        } | {
+                            /** @description Transaction ID */
+                            tx_id: string;
+                            sender: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            };
+                            sponsor: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            } | null;
+                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
+                            fee_rate: string;
+                            /** @description A unix timestamp (in seconds) indicating when the transaction broadcast was received by the node. */
+                            receipt_time: number;
+                            /** @description Height of the block this transaction was received by the node */
+                            receipt_block_height: number;
+                            /** @description Status of the mempool transaction */
+                            status: "pending" | "dropped_replace_by_fee" | "dropped_replace_across_fork" | "dropped_too_expensive" | "dropped_stale_garbage_collect" | "dropped_problematic";
+                            /** @enum {string} */
+                            type: "smart_contract";
+                            smart_contract: {
+                                clarity_version: number | null;
+                                /** @description Contract identifier formatted as `<principaladdress>.<contract_name>` */
+                                contract_id: string;
+                            };
+                        } | {
+                            /** @description Transaction ID */
+                            tx_id: string;
+                            sender: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            };
+                            sponsor: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            } | null;
+                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
+                            fee_rate: string;
+                            /** @description A unix timestamp (in seconds) indicating when the transaction broadcast was received by the node. */
+                            receipt_time: number;
+                            /** @description Height of the block this transaction was received by the node */
+                            receipt_block_height: number;
+                            /** @description Status of the mempool transaction */
+                            status: "pending" | "dropped_replace_by_fee" | "dropped_replace_across_fork" | "dropped_too_expensive" | "dropped_stale_garbage_collect" | "dropped_problematic";
+                            /** @enum {string} */
+                            type: "contract_call";
+                            contract_call: {
+                                /** @description Contract identifier formatted as `<principaladdress>.<contract_name>` */
+                                contract_id: string;
+                                /** @description Name of the Clarity function to be invoked */
+                                function_name: string;
+                            };
+                        } | {
+                            /** @description Transaction ID */
+                            tx_id: string;
+                            sender: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            };
+                            sponsor: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            } | null;
+                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
+                            fee_rate: string;
+                            /** @description A unix timestamp (in seconds) indicating when the transaction broadcast was received by the node. */
+                            receipt_time: number;
+                            /** @description Height of the block this transaction was received by the node */
+                            receipt_block_height: number;
+                            /** @description Status of the mempool transaction */
+                            status: "pending" | "dropped_replace_by_fee" | "dropped_replace_across_fork" | "dropped_too_expensive" | "dropped_stale_garbage_collect" | "dropped_problematic";
+                            /** @enum {string} */
+                            type: "poison_microblock";
+                        } | {
+                            /** @description Transaction ID */
+                            tx_id: string;
+                            sender: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            };
+                            sponsor: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            } | null;
+                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
+                            fee_rate: string;
+                            /** @description A unix timestamp (in seconds) indicating when the transaction broadcast was received by the node. */
+                            receipt_time: number;
+                            /** @description Height of the block this transaction was received by the node */
+                            receipt_block_height: number;
+                            /** @description Status of the mempool transaction */
+                            status: "pending" | "dropped_replace_by_fee" | "dropped_replace_across_fork" | "dropped_too_expensive" | "dropped_stale_garbage_collect" | "dropped_problematic";
+                            /** @enum {string} */
+                            type: "coinbase";
+                        } | {
+                            /** @description Transaction ID */
+                            tx_id: string;
+                            sender: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            };
+                            sponsor: {
+                                /** @description Address of the transaction initiator */
+                                address: string;
+                                /** @description Nonce of the transaction initiator */
+                                nonce: number;
+                            } | null;
+                            /** @description Transaction fee as Integer string (64-bit unsigned integer). */
+                            fee_rate: string;
+                            /** @description A unix timestamp (in seconds) indicating when the transaction broadcast was received by the node. */
+                            receipt_time: number;
+                            /** @description Height of the block this transaction was received by the node */
+                            receipt_block_height: number;
+                            /** @description Status of the mempool transaction */
+                            status: "pending" | "dropped_replace_by_fee" | "dropped_replace_across_fork" | "dropped_too_expensive" | "dropped_stale_garbage_collect" | "dropped_problematic";
+                            /** @enum {string} */
+                            type: "tenure_change";
+                        })[];
                     };
                 };
             };
